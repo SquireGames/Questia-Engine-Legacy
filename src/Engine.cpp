@@ -5,12 +5,17 @@ Engine::Engine(std::string windowName, int tickRate):
 	//managers
 	, resourceManager()
 	, guiManager(window, resourceManager)
+	, tileEngine(window, resourceManager)
 	//variables
 	, timePerFrame(sf::seconds(1.f/std::max(1, tickRate)))
-{
+{	
 	//TODO load from file
 	window.setVerticalSyncEnabled(true);
 	window.setView(sf::View(sf::Vector2f(window.getSize().x/2, window.getSize().y/2), sf::Vector2f(window.getSize())));
+	
+	//TODO remove - test TileEngine
+	//tileEngine.loadMap("Demo_1", TileEng::TextureMode::Map, TileEng::TileMode::Batch);
+	//tileEngine.setPosition(100,100);
 }
 
 bool Engine::run()
@@ -59,7 +64,6 @@ void Engine::processInput()
 
 void Engine::render()
 {
-	window.clear(sf::Color::White);
-	//...
 	window.display();
+	window.clear(sf::Color::White);
 }

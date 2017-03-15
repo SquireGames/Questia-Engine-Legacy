@@ -13,7 +13,7 @@ TileEngine::~TileEngine()
 
 }
 
-void TileEngine::loadMap(std::string _mapName, SaveFile_TileEngine::TextureMode textureMode, SaveFile_TileEngine::TileMode tileMode)
+void TileEngine::loadMap(std::string _mapName, TileEng::TextureMode textureMode, TileEng::TileMode tileMode)
 {
     //get the texture atlas
     resourceManager.getTexture("TILESTORAGE");

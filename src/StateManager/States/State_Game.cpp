@@ -50,7 +50,7 @@ State_Game::State_Game(sf::RenderWindow &window):
     guiManager.setFont(Data_Desktop::getInstance().font1);
 
     ///tile engine
-    tileEngine.loadMap(Data_Desktop::getInstance().mapToEdit, SaveFile_TileEngine::TextureMode::Map, SaveFile_TileEngine::TileMode::Batch);
+    tileEngine.loadMap(Data_Desktop::getInstance().mapToEdit, TileEng::TextureMode::Map, TileEng::TileMode::Batch);
 
     //temp
     visibleScreen.setPrimitiveType(sf::PrimitiveType::LinesStrip);
