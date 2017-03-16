@@ -9,6 +9,8 @@
 #include "QuestiaEng/GuiManager/GuiLoader.h"
 #include "QuestiaEng/TileEngine/TileEngine.h"
 
+#include "QuestiaEng/SaveFile_Options.h"
+
 class Engine
 {
 public:
@@ -34,6 +36,9 @@ public:
 
 private:
 	sf::RenderWindow window;
+
+	//options
+	SaveFile_Options saveFile;
 
 	//manager
 	ResourceManager resourceManager;
