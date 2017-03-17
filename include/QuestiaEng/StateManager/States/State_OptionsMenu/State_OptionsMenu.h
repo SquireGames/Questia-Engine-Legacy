@@ -21,7 +21,7 @@
 #include "QuestiaEng/StateManager/States/State_OptionsMenu/Option_Base.h"
 #include "QuestiaEng/StateManager/States/State_OptionsMenu/OptionManager.h"
 
-#include "QuestiaEng/Utl/Controls/Keyboard.h"
+#include "QuestiaEng/Utl/Controls/Input.h"
 
 #include "QuestiaEng/SaveFile_Options.h"
 

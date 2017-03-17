@@ -243,7 +243,7 @@ void State_OptionsMenu::update(sf::Time elapsedTime)
 		//regular
 		else if(guiManager.isClicked("mainMenu"))
 		{
-			StateManager::getInstance().changeState(new State_Transition(window, GameState::State_MainMenu));
+			//StateManager::getInstance().changeeState(new State_Transition(window, GameState::State_MainMenu));
 		}
 		else if(guiManager.isClicked("apply"))
 		{
@@ -287,7 +287,7 @@ void State_OptionsMenu::update(sf::Time elapsedTime)
 			//music
 			//...
 
-			StateManager::getInstance().changeState(new State_Transition(window, GameState::State_OptionsMenu));
+			//StateManager::getInstance().changeeState(new State_Transition(window, GameState::State_OptionsMenu));
 		}
 	}
 }

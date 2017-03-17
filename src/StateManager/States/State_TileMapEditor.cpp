@@ -128,7 +128,7 @@ void State_TileMapEditor::processImput(sf::Keyboard::Key key, bool isPressed)
     {
         tileEngineEditor.overrideMap();
 
-        StateManager::getInstance().changeState(new State_Transition(window, GameState::State_MainMenu));
+        //StateManager::getInstance().changeeState(new State_Transition(window, GameState::State_MainMenu));
     }
     else if(key == sf::Keyboard::W)
     {
@@ -621,12 +621,12 @@ void State_TileMapEditor::handleQueryWindow(QueryWindow* qWindow)
         tileEngineEditor.createMap(mapName, x, y, z);
 
         Data_Desktop::getInstance().mapToEdit = mapName;
-        StateManager::getInstance().changeState(new State_Transition(window, GameState::State_TileMapEditor));
+        //StateManager::getInstance().changeeState(new State_Transition(window, GameState::State_TileMapEditor));
     }
     else if(qWindow->isWindow("Open Map"))
     {
         Data_Desktop::getInstance().mapToEdit = qWindow->getChoice_string();
-        StateManager::getInstance().changeState(new State_Transition(window, GameState::State_TileMapEditor));
+        //StateManager::getInstance().changeeState(new State_Transition(window, GameState::State_TileMapEditor));
     }
     else if(qWindow->isWindow("Save As"))
     {
@@ -634,7 +634,7 @@ void State_TileMapEditor::handleQueryWindow(QueryWindow* qWindow)
         tileEngineEditor.createMap(qWindow->getResult_string("map_name"), tileEngineEditor.getMapWidth(), tileEngineEditor.getMapHeight(), tileEngineEditor.getMapLayers());
         tileEngineEditor.overrideMap();
         Data_Desktop::getInstance().mapToEdit = qWindow->getResult_string("map_name");
-        StateManager::getInstance().changeState(new State_Transition(window, GameState::State_TileMapEditor));
+        //StateManager::getInstance().changeeState(new State_Transition(window, GameState::State_TileMapEditor));
     }
 }
 

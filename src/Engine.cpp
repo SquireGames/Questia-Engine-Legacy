@@ -7,8 +7,11 @@ Engine::Engine(std::string windowName, int tickRate):
 	, window(sf::VideoMode(1920, 1080), windowName, saveFile.getWindowMode() ? sf::Style::Default : sf::Style::Fullscreen)
 	//managers
 	, resourceManager()
+	, inputBuffer()
 	, guiManager(window, resourceManager)
+	, guiLoader()
 	, tileEngine(window, resourceManager)
+	, stateManager(*this)
 	//variables
 	, timePerFrame(sf::seconds(1.f/std::max(1, tickRate)))
 {
@@ -26,6 +29,14 @@ Engine::Engine(std::string windowName, int tickRate):
 	}
 	//center view
 	window.setView(sf::View(sf::Vector2f(window.getSize().x/2, window.getSize().y/2), sf::Vector2f(window.getSize())));
+	
+	//TODO remove, print options for debugging
+	std::cout << "------------------" << std::endl;
+	std::cout << "LAUNCH OPTIONS " << std::endl;
+	std::cout << "------------------" << std::endl;
+	std::cout << "Window mode: " << (saveFile.getWindowMode() ? "Default" : "Fullscreen") << std::endl;
+	std::cout << "------------------" << std::endl;
+	
 }
 
 bool Engine::run()

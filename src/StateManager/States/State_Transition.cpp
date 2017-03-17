@@ -62,49 +62,49 @@ void State_Transition::displayTextures()
 		std::cout<<"--------------------"<<std::endl;
 		std::cout<<"DEBUG: State_MainMenu Initialized"<<std::endl;
 		std::cout<<"--------------------"<<std::endl;
-		StateManager::getInstance().changeState(new State_MainMenu(window));
+		//StateManager::getInstance().changeeState(new State_MainMenu(window));
 		break;
 	case 2:
 		std::cout<<"--------------------"<<std::endl;
 		std::cout<<"DEBUG: State_Game Initialized"<<std::endl;
 		std::cout<<"--------------------"<<std::endl;
-		StateManager::getInstance().changeState(new State_Game(window));
+		//StateManager::getInstance().changeeState(new State_Game(window));
 		break;
 	case 3:
 		std::cout<<"--------------------"<<std::endl;
 		std::cout<<"DEBUG: State_OptionsMenu Initialized"<<std::endl;
 		std::cout<<"--------------------"<<std::endl;
-		StateManager::getInstance().changeState(new State_OptionsMenu(window));
+		//StateManager::getInstance().changeeState(new State_OptionsMenu(window));
 		break;
 	case 4:
 		std::cout<<"--------------------"<<std::endl;
 		std::cout<<"DEBUG: State_CharacterSelection Initialized"<<std::endl;
 		std::cout<<"--------------------"<<std::endl;
-		StateManager::getInstance().changeState(new State_CharacterSelection(window));
+		//StateManager::getInstance().changeeState(new State_CharacterSelection(window));
 		break;
 	case 5:
 		std::cout<<"--------------------"<<std::endl;
 		std::cout<<"DEBUG: State_TileMapEditor Initialized"<<std::endl;
 		std::cout<<"--------------------"<<std::endl;
-		StateManager::getInstance().changeState(new State_TileMapEditor(window, Data_Desktop::getInstance().mapToEdit));
+		//StateManager::getInstance().changeeState(new State_TileMapEditor(window, Data_Desktop::getInstance().mapToEdit));
 		break;
 	case 6:
 		std::cout<<"--------------------"<<std::endl;
 		std::cout<<"DEBUG: State_MapSelector Initialized"<<std::endl;
 		std::cout<<"--------------------"<<std::endl;
-		StateManager::getInstance().changeState(new State_MapSelector(window));
+		//StateManager::getInstance().changeeState(new State_MapSelector(window));
 		break;
 	case 7:
 		std::cout<<"--------------------"<<std::endl;
 		std::cout<<"DEBUG: State_MultiplayerGame Initialized"<<std::endl;
 		std::cout<<"--------------------"<<std::endl;
-		StateManager::getInstance().changeState(new State_MultiplayerGame(window));
+		//StateManager::getInstance().changeeState(new State_MultiplayerGame(window));
 		break;
 	case 8:
 		std::cout<<"--------------------"<<std::endl;
 		std::cout<<"DEBUG: State_MultiplayerSelection Initialized"<<std::endl;
 		std::cout<<"--------------------"<<std::endl;
-		StateManager::getInstance().changeState(new State_MultiplayerSelection(window));
+		//StateManager::getInstance().changeeState(new State_MultiplayerSelection(window));
 		break;
 	}
 }

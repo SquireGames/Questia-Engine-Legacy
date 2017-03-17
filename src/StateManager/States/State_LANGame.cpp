@@ -79,7 +79,7 @@ void State_Game::processImput(sf::Keyboard::Key key,bool isPressed)
 
     if(key == sf::Keyboard::M)
     {
-        StateManager::getInstance().changeState(new State_Transition(window, 1));
+        //StateManager::getInstance().changeeState(new State_Transition(window, 1));
     }
 
     if(key == sf::Keyboard::W || key == sf::Keyboard::Up)

@@ -7,7 +7,7 @@
 #include "QuestiaEng/StateManager/States/State_OptionsMenu/Option_Base.h"
 #include "QuestiaEng/Utl/FileData.h"
 #include "QuestiaEng/Utl/Utl.h"
-#include "QuestiaEng/Utl/Controls/Keyboard.h"
+#include "QuestiaEng/Utl/Controls/Input.h"
 
 class SaveFile_Options
 {
@@ -21,19 +21,19 @@ public:
     void reloadOptions();
 
     int getWindowMode();
-    int getFps();
+    int getFps();	
     std::string getFont();
-    int getMusicVolume();
-    std::string getGuiPack();
-    ctr::Input getKey_moveUp();
-    ctr::Input getKey_moveDown();
-    ctr::Input getKey_moveLeft();
-    ctr::Input getKey_moveRight();
-    ctr::Input getKey_skill_1();
-    ctr::Input getKey_skill_2();
-    ctr::Input getKey_skill_3();
-    ctr::Input getKey_skill_4();
-    ctr::Input getKey_skill_5();
+    int getMusicVolume();	
+    std::string getGuiPack();		
+    ctr::Input getKey_moveUp();		
+    ctr::Input getKey_moveDown();	
+    ctr::Input getKey_moveLeft();	
+    ctr::Input getKey_moveRight();	
+    ctr::Input getKey_skill_1();	
+    ctr::Input getKey_skill_2();	
+    ctr::Input getKey_skill_3();	
+    ctr::Input getKey_skill_4();	
+    ctr::Input getKey_skill_5();	
     ctr::Input getKey_skill_6();
 
     std::string getWindowMode_name();

@@ -167,7 +167,7 @@ void State_MultiplayerGame::update(sf::Time elapsedTime)
     {
         if(newGuiManager.isClicked("mainMenu"))
         {
-            StateManager::getInstance().changeState(new State_Transition(window, 1));
+            //StateManager::getInstance().changeeState(new State_Transition(window, 1));
         }
         else if(newGuiManager.isClicked("exitGame"))
         {

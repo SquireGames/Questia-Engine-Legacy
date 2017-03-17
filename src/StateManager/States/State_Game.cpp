@@ -116,7 +116,7 @@ void State_Game::update(sf::Time elapsedTime)
         if(guiManager.isClicked("mainMenu"))
         {
             threadPool.kill();
-            StateManager::getInstance().changeState(new State_Transition(window, GameState::State_MainMenu));
+            //StateManager::getInstance().changeeState(new State_Transition(window, GameState::State_MainMenu));
         }
         else if(guiManager.isClicked("exitGame"))
         {

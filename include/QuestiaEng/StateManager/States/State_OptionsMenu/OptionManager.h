@@ -10,7 +10,7 @@
 
 #include "QuestiaEng/GuiManager/GuiManager.h"
 
-#include "QuestiaEng/Utl/Controls/Keyboard.h"
+#include "QuestiaEng/Utl/Controls/Input.h"
 
 struct ButtonData
 {

@@ -1,6 +1,7 @@
 #include "QuestiaEng/StateManager/StateManager.h"
 
-StateManager::StateManager()
+StateManager::StateManager(Engine& eng):
+	eng(eng)
 {
 	std::cout << "DEBUG: StateManager Initialized" << std::endl;
 }
@@ -11,15 +12,11 @@ StateManager::~StateManager()
 	std::cout << "DEBUG: StateManager Destroyed" << std::endl;
 }
 
-StateManager& StateManager::getInstance()
-{
-	static StateManager instance;
-	return instance;
-}
-
 void StateManager::createState(State* state)
 {
 	this->stateStack.push(state);
+	stateStack.top()->eng = &eng;
+	stateStack.top()->init();
 }
 
 void StateManager::deleteState()
@@ -42,9 +39,10 @@ void StateManager::processImputState(sf::Keyboard::Key key, bool isPressed)
 	stateStack.top()->processImput(key, isPressed);
 }
 
-void StateManager::updateState(sf::Time elapsedTime)
+void StateManager::updateState()
 {
-	stateStack.top()->update(elapsedTime);
+	//TODO implement time into state updates
+	stateStack.top()->update(sf::Time::Zero);
 }
 
 void StateManager::displayTexturesState()
