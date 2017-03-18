@@ -5,6 +5,10 @@ Engine::Engine(std::string windowName, int tickRate):
 	saveFile()
 	//window
 	, window(sf::VideoMode(1920, 1080), windowName, saveFile.getWindowMode() ? sf::Style::Default : sf::Style::Fullscreen)
+	, size_real(sf::VideoMode::getDesktopMode().width, sf::VideoMode::getDesktopMode().height)
+	, size_scaled(window.getSize().x, window.getSize().y)
+	, scaleFactor(1920.f / static_cast<float>(size_scaled.x), 1080.f / static_cast<float>(size_scaled.y))
+	, mousePos(sf::Mouse::getPosition(window).x * scaleFactor.x, sf::Mouse::getPosition(window).y * scaleFactor.y)
 	//managers
 	, resourceManager()
 	, inputBuffer()
@@ -12,8 +16,14 @@ Engine::Engine(std::string windowName, int tickRate):
 	, guiLoader()
 	, tileEngine(window, resourceManager)
 	, stateManager(*this)
+	//input
+	, mouseListener()
 	//variables
+	, font()
+	, clock()
 	, timePerFrame(sf::seconds(1.f/std::max(1, tickRate)))
+	, timeSinceLastTick()
+	
 {
 	//load render refresh rate
 	switch(saveFile.getFps())
@@ -29,14 +39,24 @@ Engine::Engine(std::string windowName, int tickRate):
 	}
 	//center view
 	window.setView(sf::View(sf::Vector2f(window.getSize().x/2, window.getSize().y/2), sf::Vector2f(window.getSize())));
-	
+
+	//set font
+	if(!font.loadFromFile("Media/Fonts/" + saveFile.getFont()))
+	{
+		font.loadFromFile("Media/Fonts/acidstructure.ttf");
+	}
+	guiManager.setFont(font);
+
 	//TODO remove, print options for debugging
 	std::cout << "------------------" << std::endl;
 	std::cout << "LAUNCH OPTIONS " << std::endl;
 	std::cout << "------------------" << std::endl;
-	std::cout << "Window mode: " << (saveFile.getWindowMode() ? "Default" : "Fullscreen") << std::endl;
+	std::cout << "Window mode:  " << (saveFile.getWindowMode() ? "Default" : "Fullscreen") << std::endl;
+	std::cout << "Window size:  " << size_real.x << ", " << size_real.y << std::endl;
+	std::cout << "Scaled size:  " << size_scaled.x << ", " << size_scaled.y << std::endl;
+	std::cout << "Scale factor: " << scaleFactor.x << ", " << scaleFactor.y << std::endl;
 	std::cout << "------------------" << std::endl;
-	
+
 }
 
 bool Engine::run()
@@ -46,9 +66,18 @@ bool Engine::run()
 
 bool Engine::tick()
 {
+	//update scaled mouse position
 	sf::Time elapsedTime = clock.restart();
 	timeSinceLastTick += elapsedTime;
-	return (timeSinceLastTick > timePerFrame) ? (timeSinceLastTick -= timePerFrame, true) : false;
+	if(timeSinceLastTick > timePerFrame)
+	{
+		timeSinceLastTick -= timePerFrame;
+		mousePos = utl::Vector2f(sf::Mouse::getPosition(window).x * scaleFactor.x, sf::Mouse::getPosition(window).y * scaleFactor.y);
+		guiManager.setMousePosition(mousePos);
+		mouseListener.update();
+		return true;
+	}
+	return false;
 }
 
 void Engine::processInput()
@@ -60,9 +89,7 @@ void Engine::processInput()
 		switch(event.type)
 		{
 		case sf::Event::TextEntered:
-			{
-				inputBuffer.enqueue(event.text.unicode);
-			}
+			inputBuffer.enqueue(event.text.unicode);
 			break;
 		case sf::Event::KeyPressed:
 			break;
@@ -71,6 +98,8 @@ void Engine::processInput()
 		case sf::Event::MouseWheelMoved:
 			break;
 		case sf::Event::Resized:
+			size_scaled = utl::Vector2ui(window.getSize().x, window.getSize().y);
+			scaleFactor = utl::Vector2f(1920.f / static_cast<float>(size_scaled.x), 1080.f / static_cast<float>(size_scaled.y));
 			break;
 		case sf::Event::MouseButtonReleased:
 			break;

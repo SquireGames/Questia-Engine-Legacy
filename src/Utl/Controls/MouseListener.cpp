@@ -7,9 +7,9 @@ MouseListener::MouseListener()
 
 void MouseListener::update()
 {
-    bool new_isMouseHeld_l= sf::Mouse::isButtonPressed(sf::Mouse::Left);
-    bool new_isMouseHeld_m = sf::Mouse::isButtonPressed(sf::Mouse::Right);
-    bool new_isMouseHeld_r = sf::Mouse::isButtonPressed(sf::Mouse::Middle);
+    bool new_isMouseHeld_l = sf::Mouse::isButtonPressed(sf::Mouse::Left);
+    bool new_isMouseHeld_m = sf::Mouse::isButtonPressed(sf::Mouse::Middle);
+    bool new_isMouseHeld_r = sf::Mouse::isButtonPressed(sf::Mouse::Right);
     bool new_isMouseHeld_1 = sf::Mouse::isButtonPressed(sf::Mouse::XButton1);
     bool new_isMouseHeld_2 = sf::Mouse::isButtonPressed(sf::Mouse::XButton2);
 
@@ -32,67 +32,67 @@ void MouseListener::update()
     isMouseHeld_2 = new_isMouseHeld_2;
 }
 
-bool MouseListener::isMouseHeld(sf::Mouse::Button button)
+bool MouseListener::isMouseHeld(ctr::Input button)
 {
     switch(button)
     {
-    case sf::Mouse::Button::Left:
+    case ctr::Input::LMouse:
         return isMouseHeld_l;
         break;
-    case sf::Mouse::Button::Right:
+    case ctr::Input::RMouse:
         return isMouseHeld_r;
         break;
-    case sf::Mouse::Button::Middle:
+    case ctr::Input::MMouse:
         return isMouseHeld_m;
         break;
-    case sf::Mouse::Button::XButton1:
+    case ctr::Input::Macro1:
         return isMouseHeld_1;
         break;
-    case sf::Mouse::Button::XButton2:
+    case ctr::Input::Macro2:
         return isMouseHeld_2;
         break;
     }
 }
 
-bool MouseListener::isMousePressed(sf::Mouse::Button button)
+bool MouseListener::isMousePressed(ctr::Input button)
 {
     switch(button)
     {
-    case sf::Mouse::Button::Left:
+    case ctr::Input::LMouse:
         return isMousePressed_l;
         break;
-    case sf::Mouse::Button::Right:
+    case ctr::Input::RMouse:
         return isMousePressed_r;
         break;
-    case sf::Mouse::Button::Middle:
+    case ctr::Input::MMouse:
         return isMousePressed_m;
         break;
-    case sf::Mouse::Button::XButton1:
+    case ctr::Input::Macro1:
         return isMousePressed_1;
         break;
-    case sf::Mouse::Button::XButton2:
+    case ctr::Input::Macro2:
         return isMousePressed_2;
         break;
     }
 }
 
-bool MouseListener::isMouseReleased(sf::Mouse::Button button)
+bool MouseListener::isMouseReleased(ctr::Input button)
 {
     switch(button)
     {
-    case sf::Mouse::Button::Left:
+    case ctr::Input::LMouse:
         return isMouseReleased_l;
         break;
-    case sf::Mouse::Button::Right:
+    case ctr::Input::RMouse:
         return isMouseReleased_r;
         break;
-    case sf::Mouse::Button::Middle:
+    case ctr::Input::MMouse:
         return isMouseReleased_m;
         break;
-    case sf::Mouse::Button::XButton1:
+    case ctr::Input::Macro1:
         return isMouseReleased_1;
         break;
-    case sf::Mouse::Button::XButton2:
+    case ctr::Input::Macro2:
         return isMouseReleased_2;
         break;
     }

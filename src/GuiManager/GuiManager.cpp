@@ -7,7 +7,7 @@ GuiManager::GuiManager(sf::RenderWindow &_window, ResourceManager &_resourceMana
     , currentButtonAtrEdit ("NOBUTTONATR")
     , currentGroupEdit("NOGROUP")
     , currentListEdit("NOLIST")
-    , mouseCoords(std::make_pair(0,0))
+    , mouseCoords(0,0)
 {
 
 }
@@ -268,8 +268,8 @@ bool GuiManager::isClicked(std::string buttonName)
             buttonCoords.first  += buttonMap[buttonName]->scrollAmount_x;
             buttonCoords.second += buttonMap[buttonName]->scrollAmount_y;
 
-            if(mouseCoords.first  > buttonCoords.first  && mouseCoords.first  < buttonCoords.first  + buttonBounds.first &&
-                    mouseCoords.second > buttonCoords.second && mouseCoords.second < buttonCoords.second + buttonBounds.second)
+            if(mouseCoords.x  > buttonCoords.first  && mouseCoords.x  < buttonCoords.first  + buttonBounds.first &&
+                    mouseCoords.y > buttonCoords.second && mouseCoords.y < buttonCoords.second + buttonBounds.second)
             {
                 return true;
             }
@@ -314,13 +314,13 @@ void GuiManager::deleteButton(std::string buttonName)
     buttonMap.erase(buttonName);
 }
 
-void GuiManager::setMousePosition(std::pair <float, float> _mouseCoords)
+void GuiManager::setMousePosition(utl::Vector2f _mouseCoords)
 {
     mouseCoords = _mouseCoords;
 
     for(std::map<std::string, Button*>::iterator it = buttonMap.begin(); it != buttonMap.end(); ++it)
     {
-        it->second->update(static_cast <std::pair <int, int> > (_mouseCoords));
+        it->second->update(std::make_pair((int)_mouseCoords.x, (int)_mouseCoords.y));
     }
 }
 

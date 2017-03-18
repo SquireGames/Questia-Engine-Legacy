@@ -178,7 +178,7 @@ void State_TileMapEditor::update(sf::Time)
     executor.processTasks();
 
     //gui
-    guiManager.setMousePosition(std::make_pair(Data_Desktop::getInstance().getScaledMousePosition(window).x,Data_Desktop::getInstance().getScaledMousePosition(window).y));
+    //guiManager.setMousePosition(std::make_pair(Data_Desktop::getInstance().getScaledMousePosition(window).x,Data_Desktop::getInstance().getScaledMousePosition(window).y));
 
     //tickers
     ticker_overlayToggle.tick();
@@ -335,12 +335,12 @@ void State_TileMapEditor::updateState_idle()
         selectedTile = utl::Vector2i(mousePos.x, mousePos.y);
         break;
     case SelectionType::span:
-        if(mouseListener.isMousePressed(sf::Mouse::Left))
+       // if(mouseListener.isMousePressed(sf::Mouse::Left))
         {
             selectedTile = utl::Vector2i(mousePos.x, mousePos.y);
             selectionSize = utl::Vector2i(1,1);
         }
-        else if(mouseListener.isMouseReleased(sf::Mouse::Left)  || mouseListener.isMouseHeld(sf::Mouse::Left))
+      //  else if(mouseListener.isMouseReleased(sf::Mouse::Left)  || mouseListener.isMouseHeld(sf::Mouse::Left))
         {
             selectionSize = utl::Vector2i(mousePos.x - selectedTile.x, mousePos.y - selectedTile.y);
 

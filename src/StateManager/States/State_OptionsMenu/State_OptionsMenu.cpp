@@ -171,7 +171,7 @@ void State_OptionsMenu::processImput(sf::Keyboard::Key key, bool isPressed)
 void State_OptionsMenu::update(sf::Time elapsedTime)
 {
 	///update mouse
-	guiManager.setMousePosition(std::make_pair(Data_Desktop::getInstance().getScaledMousePosition(window).x,Data_Desktop::getInstance().getScaledMousePosition(window).y));
+	//guiManager.setMousePosition(std::make_pair(Data_Desktop::getInstance().getScaledMousePosition(window).x,Data_Desktop::getInstance().getScaledMousePosition(window).y));
 
 	///scroll input
 	if(!optionManager.isMouseOverAssignedInput())

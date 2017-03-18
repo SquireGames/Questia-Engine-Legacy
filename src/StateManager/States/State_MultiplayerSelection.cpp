@@ -21,7 +21,7 @@ void State_MultiplayerSelection::processImput(sf::Keyboard::Key key,bool isPress
 
 void State_MultiplayerSelection::update(sf::Time elapsedTime)
 {
-    guiManager.setMousePosition(std::make_pair(Data_Desktop::getInstance().getScaledMousePosition(window).x,Data_Desktop::getInstance().getScaledMousePosition(window).y));
+   // guiManager.setMousePosition(std::make_pair(Data_Desktop::getInstance().getScaledMousePosition(window).x,Data_Desktop::getInstance().getScaledMousePosition(window).y));
 
     if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
     {

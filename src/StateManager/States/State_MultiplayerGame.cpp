@@ -134,7 +134,7 @@ void State_MultiplayerGame::processImput(sf::Keyboard::Key key,bool isPressed)
 
 void State_MultiplayerGame::update(sf::Time elapsedTime)
 {
-    newGuiManager.setMousePosition(std::make_pair(Data_Desktop::getInstance().getScaledMousePosition(window).x,Data_Desktop::getInstance().getScaledMousePosition(window).y));
+    //newGuiManager.setMousePosition(std::make_pair(Data_Desktop::getInstance().getScaledMousePosition(window).x,Data_Desktop::getInstance().getScaledMousePosition(window).y));
 
 
     if(!pause)
