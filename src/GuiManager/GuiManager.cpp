@@ -20,6 +20,20 @@ GuiManager::~GuiManager()
     }
 }
 
+void GuiManager::purgeButtons()
+{
+	for(std::map<std::string, Button*>::iterator it = buttonMap.begin(); it != buttonMap.end(); ++it)
+    {
+        delete it->second;
+    }
+	
+	buttonMap.clear();
+    buttonDrawList.clear();
+    groupMap.clear();
+    groupTemplateMap.clear();
+    listMap.clear();
+}
+
 void GuiManager::createButtonTemplate(std::string buttonName)
 {
     if(!buttonMap.count(buttonName))
