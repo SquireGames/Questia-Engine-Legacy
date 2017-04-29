@@ -28,9 +28,9 @@ public:
 	void pushState(std::string stateName);
 	//queues deletion of top state (if any)
 	void popState();
-	//queues deletion of top state (if any), replaces with new state
+	//queues deletion of top state (if any), queues new state
 	void changeState(std::string stateName);
-	//queues deletion of top state (if any), draws loading state while changing to new state
+	//queues transition, which pops top (if any) and loads new state on other thread
 	void transitionState(std::string newState, std::string loadingState);
 
 	//state functions
@@ -39,26 +39,35 @@ public:
 	void sDisplay();
 	
 	//state functions
-	void sUpdate_second();
-	void sProcessInput_second(std::string input);
-	void sDisplay_second();
+	void sUpdate(unsigned int offset);
+	void sProcessInput(unsigned int offset, std::string input);
+	void sDisplay(unsigned int offset);
 
 private:
-	//sees if there are states to be deleted
-	void checkDelQueue();
-	//does actual state deletion
+	//sees if there are states to be deleted, made, or transitioned
+	void checkQueues();
+	//does actual state deletion, creation, transition
 	void deleteState(unsigned int index);
+	void createState(std::string stateName);
+	void makeTransition(std::string newState, std::string loadingState);
 	
 	//handles loading screen
 	void checkLoading();
+
+	//holds index of highest state
+	unsigned int stackIndex = -1;
 
 	//state containers
 	std::vector<std::unique_ptr<State>> stateStack;
 	std::map<std::string, std::function<State*()>> stateMap;
 	
-	//used to queue deletion
+	//used to queue deletion. new state, and transitions
 	bool isDelQueued = false;
+	bool isStateQueued = false;
+	bool isTransitionQueued = false;
 	int delIndex = 0;
+	std::string newStateName;
+	std::string newTransitionName;
 	
 	//used for loading screen
 	bool isStateLoading = false;

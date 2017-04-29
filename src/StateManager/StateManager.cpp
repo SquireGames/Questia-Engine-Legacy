@@ -15,7 +15,7 @@ StateManager::~StateManager()
 	{
 		loadingThread.join();
 	}
-	
+
 	std::cout << "DEBUG: StateManager Destroyed" << std::endl;
 }
 
@@ -26,13 +26,8 @@ void StateManager::reg(std::string name, std::function<State*()> state)
 
 void StateManager::pushState(std::string stateName)
 {
-	if(stateMap.count(stateName))
-	{
-		stateStack.push_back(std::unique_ptr<State>(stateMap[stateName]()));
-		//init state
-		stateStack.at(stateStack.size() - 1)->eng = &eng;
-		stateStack.at(stateStack.size() - 1)->init();
-	}
+	isStateQueued = true;
+	newStateName = stateName;
 }
 void StateManager::popState()
 {
@@ -42,37 +37,43 @@ void StateManager::popState()
 		delIndex = stateStack.size() - 1;
 	}
 }
+void StateManager::transitionState(std::string newState, std::string loadingState)
+{
+	isTransitionQueued = true;
+	newStateName = newState;
+	newTransitionName = loadingState;
+}
+
 void StateManager::deleteState(unsigned int index)
 {
 	//swap states until index is at the back
-	for(unsigned int it = index; it < (stateStack.size() - 1); it++)
+	for(unsigned int it = index; it < stackIndex; it++)
 	{
 		std::swap(stateStack[it], stateStack[it + 1]);
 	}
 	//delete state
 	stateStack.pop_back();
+	stackIndex--;
 	isDelQueued = false;
 }
-void StateManager::checkDelQueue()
+void StateManager::createState(std::string stateName)
 {
-	if(isDelQueued)
+	if(stateMap.count(stateName))
 	{
-		deleteState(delIndex);
+		stackIndex++;
+		stateStack.push_back(std::unique_ptr<State>(stateMap[stateName]()));
+		//init state
+		stateStack.at(stackIndex)->eng = &eng;
+		stateStack.at(stackIndex)->init();
 	}
+	isStateQueued = false;
 }
-void StateManager::changeState(std::string stateName)
+void StateManager::makeTransition(std::string newState, std::string loadingState)
 {
-	//queue a state deletion
-	popState();
-	//add new state to front of stack
-	pushState(stateName);
-}
-void StateManager::transitionState(std::string newState, std::string loadingState)
-{
-	//queue state deletion
-	popState();
-	//load the transition state
-	pushState(loadingState);
+	//delete the top state
+	if(stateStack.size()) {deleteState(stackIndex);};
+	//create the transition state
+	createState(loadingState);
 
 	//initialize transition thread
 	isStateLoading = true;
@@ -84,7 +85,33 @@ void StateManager::transitionState(std::string newState, std::string loadingStat
 		state->init();
 		thrPromise.set_value(state);
 	});
+	isTransitionQueued = false;
 }
+
+void StateManager::checkQueues()
+{	
+	if(isDelQueued)
+	{
+		deleteState(delIndex);
+	}
+	if(isStateQueued)
+	{
+		createState(newStateName);
+	}
+	if(isTransitionQueued)
+	{
+		makeTransition(newStateName, newTransitionName);
+	}
+	checkLoading();
+}
+void StateManager::changeState(std::string stateName)
+{
+	//queue a state deletion
+	popState();
+	//add new state to front of stack
+	pushState(stateName);
+}
+
 
 void StateManager::checkLoading()
 {
@@ -97,6 +124,7 @@ void StateManager::checkLoading()
 			loadingThread.join();
 			popState();
 			stateStack.push_back(std::unique_ptr<State>(thrFuture.get()));
+			stackIndex++;
 			thrPromise = std::promise<State*>();
 			thrFuture = std::future<State*>();
 			std::cout << "Thread done!" << std::endl;
@@ -108,24 +136,47 @@ void StateManager::sUpdate()
 {
 	if(stateStack.size())
 	{
-		stateStack.at(stateStack.size() - 1)->update(sf::Time::Zero);
+		stateStack.at(stackIndex)->update(sf::Time::Zero);
 	}
-	checkDelQueue();
-	checkLoading();
+	checkQueues();
 }
 void StateManager::sProcessInput(std::string input)
 {
 	if(stateStack.size())
 	{
-		stateStack.at(stateStack.size() - 1)->processInput(sf::Keyboard::Unknown, false);
+		stateStack.at(stackIndex)->processInput(sf::Keyboard::Unknown, false);
 	}
-	checkDelQueue();
-	checkLoading();
+	checkQueues();
 }
 void StateManager::sDisplay()
 {
 	if(stateStack.size())
 	{
-		stateStack.at(stateStack.size() - 1)->displayTextures();
+		stateStack.at(stackIndex)->displayTextures();
 	}
 }
+
+void StateManager::sUpdate(unsigned int offset)
+{
+	if(stateStack.size())
+	{
+		stateStack.at(stackIndex - offset)->update(sf::Time::Zero);
+	}
+	checkQueues();
+}
+void StateManager::sProcessInput(unsigned int offset, std::string input)
+{
+	if(stateStack.size())
+	{
+		stateStack.at(stackIndex - offset)->processInput(sf::Keyboard::Unknown, false);
+	}
+	checkQueues();
+}
+void StateManager::sDisplay(unsigned int offset)
+{
+	if(stateStack.size())
+	{
+		stateStack.at(stackIndex - offset)->displayTextures();
+	}
+}
+
