@@ -121,7 +121,7 @@ State_TileMapEditor::~State_TileMapEditor()
 
 ///state functions
 
-void State_TileMapEditor::processImput(sf::Keyboard::Key key, bool isPressed)
+void State_TileMapEditor::processInput(sf::Keyboard::Key key, bool isPressed)
 {
     pendingInput = true;
     if(key == sf::Keyboard::Escape && isPressed)

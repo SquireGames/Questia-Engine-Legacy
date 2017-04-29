@@ -14,7 +14,7 @@ State_MultiplayerSelection::~State_MultiplayerSelection()
 
 }
 
-void State_MultiplayerSelection::processImput(sf::Keyboard::Key key,bool isPressed)
+void State_MultiplayerSelection::processInput(sf::Keyboard::Key key,bool isPressed)
 {
 
 }

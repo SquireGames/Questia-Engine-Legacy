@@ -13,22 +13,22 @@ TileEngine::~TileEngine()
 
 }
 
-void TileEngine::loadMap(std::string _mapName, TileEng::TextureMode textureMode, TileEng::TileMode tileMode)
+void TileEngine::loadMap(std::string _mapName, TileMap::TextureMode textureMode, TileMap::TileMode tileMode)
 {
     //get the texture atlas
     resourceManager.getTexture("TILESTORAGE");
     //get info
-    MapData mapData = std::move(saveFile.openMap(_mapName, window, textureMode, tileMode));
+    TileMap mapData = std::move(saveFile.openMap(_mapName, window, textureMode, tileMode));
 
     //get texture
     textureAtlas = &resourceManager.getBlankTexture("TILESTORAGE");
 
     //set info
-    mapWidth = mapData.width;
-    mapHeight = mapData.height;
-    mapLayers = mapData.layers;
-    maxTileSize_x = mapData.maxTileSize_x;
-    maxTileSize_y = mapData.maxTileSize_y;
+    mapWidth = mapData.getWidth();
+    mapHeight = mapData.getHeight();
+    mapLayers = mapData.getLayers();
+    maxTileSize_x = mapData.getMaxTileSize_x();
+    maxTileSize_y = mapData.getMaxTileSize_y();
 
     //get chunk size
     int remainder_x = mapWidth % 8;
@@ -67,8 +67,8 @@ void TileEngine::loadMap(std::string _mapName, TileEng::TextureMode textureMode,
     }
 
     //overriding the map fixes the need to clear it
-    tileMap = std::move(mapData.tileMap);
-    tileStorage = std::move(mapData.tileStorage);
+    tileMap = mapData.getTileMap();
+    tileStorage = mapData.getTileKey();
 
     //filling the chunks with tiles
     //iterate through all chunks

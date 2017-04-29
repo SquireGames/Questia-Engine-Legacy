@@ -90,7 +90,7 @@ State_MultiplayerGame::~State_MultiplayerGame()
     }
 }
 
-void State_MultiplayerGame::processImput(sf::Keyboard::Key key,bool isPressed)
+void State_MultiplayerGame::processInput(sf::Keyboard::Key key,bool isPressed)
 {
     if(pause)
     {

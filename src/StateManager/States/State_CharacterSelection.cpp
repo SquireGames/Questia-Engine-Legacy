@@ -11,7 +11,7 @@ State_CharacterSelection::~State_CharacterSelection()
 
 }
 
-void State_CharacterSelection::processImput(sf::Keyboard::Key key,bool isPressed)
+void State_CharacterSelection::processInput(sf::Keyboard::Key key,bool isPressed)
 {
 
 }

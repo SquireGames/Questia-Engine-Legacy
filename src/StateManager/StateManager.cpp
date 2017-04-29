@@ -10,6 +10,12 @@ StateManager::StateManager(Engine& eng):
 }
 StateManager::~StateManager()
 {
+	//make sure thread is not active for graceful exit
+	if(loadingThread.joinable())
+	{
+		loadingThread.join();
+	}
+	
 	std::cout << "DEBUG: StateManager Destroyed" << std::endl;
 }
 
@@ -91,6 +97,8 @@ void StateManager::checkLoading()
 			loadingThread.join();
 			popState();
 			stateStack.push_back(std::unique_ptr<State>(thrFuture.get()));
+			thrPromise = std::promise<State*>();
+			thrFuture = std::future<State*>();
 			std::cout << "Thread done!" << std::endl;
 		}
 	}
@@ -109,7 +117,7 @@ void StateManager::sProcessInput(std::string input)
 {
 	if(stateStack.size())
 	{
-		stateStack.at(stateStack.size() - 1)->processImput(sf::Keyboard::Unknown, false);
+		stateStack.at(stateStack.size() - 1)->processInput(sf::Keyboard::Unknown, false);
 	}
 	checkDelQueue();
 	checkLoading();

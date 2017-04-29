@@ -11,7 +11,7 @@ State_MapSelector::~State_MapSelector()
 
 }
 
-void State_MapSelector::processImput(sf::Keyboard::Key key,bool isPressed)
+void State_MapSelector::processInput(sf::Keyboard::Key key,bool isPressed)
 {
 
 }

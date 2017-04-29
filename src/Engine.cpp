@@ -23,7 +23,7 @@ Engine::Engine(std::string windowName, int tickRate):
 	, clock()
 	, timePerFrame(sf::seconds(1.f/std::max(1, tickRate)))
 	, timeSinceLastTick()
-	
+
 {
 	//load render refresh rate
 	switch(saveFile.getFps())

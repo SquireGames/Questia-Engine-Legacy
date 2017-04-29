@@ -73,7 +73,7 @@ State_Game::~State_Game()
     std::cout<<"State_Game Destroyed"<<std::endl;
 }
 
-void State_Game::processImput(sf::Keyboard::Key key,bool isPressed)
+void State_Game::processInput(sf::Keyboard::Key key,bool isPressed)
 {
     entityManager.handleInput(key, isPressed);
 

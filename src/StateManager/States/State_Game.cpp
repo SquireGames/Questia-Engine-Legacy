@@ -50,7 +50,7 @@ State_Game::State_Game(sf::RenderWindow &window):
     guiManager.setFont(Data_Desktop::getInstance().font1);
 
     ///tile engine
-    tileEngine.loadMap(Data_Desktop::getInstance().mapToEdit, TileEng::TextureMode::Map, TileEng::TileMode::Batch);
+    tileEngine.loadMap(Data_Desktop::getInstance().mapToEdit, TileMap::TextureMode::Map, TileMap::TileMode::Batch);
 
     //temp
     visibleScreen.setPrimitiveType(sf::PrimitiveType::LinesStrip);
@@ -73,7 +73,7 @@ State_Game::~State_Game()
     std::cout<<"DEBUG: State_Game Destroyed"<<std::endl;
 }
 
-void State_Game::processImput(sf::Keyboard::Key key,bool isPressed)
+void State_Game::processInput(sf::Keyboard::Key key,bool isPressed)
 {
     if(key == sf::Keyboard::Num1)
     {

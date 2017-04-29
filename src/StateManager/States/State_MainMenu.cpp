@@ -25,7 +25,7 @@ State_MainMenu::~State_MainMenu()
     std::cout<<"DEBUG: State_MainMenu Destroyed"<<std::endl;
 }
 
-void State_MainMenu::processImput(sf::Keyboard::Key key,bool isPressed)
+void State_MainMenu::processInput(sf::Keyboard::Key key,bool isPressed)
 {
 
 }

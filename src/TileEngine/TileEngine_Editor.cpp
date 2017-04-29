@@ -15,7 +15,7 @@ void TileEngine_Editor::createMap(std::string mapName, unsigned int width, unsig
 
 void TileEngine_Editor::loadMap(std::string _mapName)
 {
-    TileEngine::loadMap(_mapName, TileEng::TextureMode::All, TileEng::TileMode::Sprite);
+    TileEngine::loadMap(_mapName, TileMap::TextureMode::All, TileMap::TileMode::Sprite);
 
     //2 vertices
     gridLines.resize((mapWidth + 1) * 2 + ((mapHeight + 1) * 2));

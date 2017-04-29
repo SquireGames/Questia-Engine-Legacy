@@ -152,7 +152,7 @@ State_OptionsMenu::~State_OptionsMenu()
 	std::cout << "Options Menu Destroyed" << std::endl;
 }
 
-void State_OptionsMenu::processImput(sf::Keyboard::Key key, bool isPressed)
+void State_OptionsMenu::processInput(sf::Keyboard::Key key, bool isPressed)
 {
 	if(key == sf::Keyboard::Up)
 	{

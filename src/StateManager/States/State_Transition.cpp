@@ -39,7 +39,7 @@ State_Transition::~State_Transition()
 	std::cout<<std::endl;
 }
 
-void State_Transition::processImput(sf::Keyboard::Key key,bool isPressed)
+void State_Transition::processInput(sf::Keyboard::Key key,bool isPressed)
 {
 
 }
