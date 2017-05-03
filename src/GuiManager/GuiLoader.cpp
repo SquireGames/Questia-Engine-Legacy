@@ -529,6 +529,8 @@ gui::ButtonAtr GuiLoader::getButtonAtr(std::string buttonAtr)
     {
         return gui::ButtonAtr::Percent;
     }
+	//TODO log error
+	return gui::ButtonAtr::Sprite;
 }
 
 gui::ButtonAtrCharacteristic GuiLoader::getButtonAtrCharacteristic(std::string buttonAtrCharacteristic)
@@ -577,6 +579,8 @@ gui::ButtonAtrCharacteristic GuiLoader::getButtonAtrCharacteristic(std::string b
     {
         return gui::ButtonAtrCharacteristic::percentage;
     }
+	//TODO log error
+	return gui::ButtonAtrCharacteristic::size;
 }
 
 gui::ButtonCharacteristic GuiLoader::getButtonCharacteristic(std::string buttonCharacteristic)
@@ -617,4 +621,6 @@ gui::ButtonCharacteristic GuiLoader::getButtonCharacteristic(std::string buttonC
     {
         return gui::ButtonCharacteristic::scroll_y;
     }
+	//TODO log error
+	return gui::ButtonCharacteristic::coords; 
 }

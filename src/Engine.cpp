@@ -33,7 +33,10 @@ Engine::Engine(std::string windowName, int tickRate):
 		break;
 	case -1:
 		window.setFramerateLimit(100000);
+		window.setVerticalSyncEnabled(false);
+		break;
 	default:
+		window.setFramerateLimit(saveFile.getFps());
 		window.setVerticalSyncEnabled(false);
 		break;
 	}
@@ -107,6 +110,8 @@ void Engine::processInput()
 			break;
 		case sf::Event::Closed:
 			window.close();
+			break;
+		default:
 			break;
 		}
 	}

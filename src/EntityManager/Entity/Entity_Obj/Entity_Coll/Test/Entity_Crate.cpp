@@ -2,18 +2,18 @@
 
 Entity_Crate::Entity_Crate(unsigned int id, EntityManager& entityManager, ResourceManager& resourceManager, const utl::Vector2f& _coords):
     Entity_Coll(id, entityManager, resourceManager
-                , Bounds(Rect(utl::Vector2f(SIZE_X,SIZE_Y/2), utl::Vector2f(0,0)))
-                , Bounds(Rect(utl::Vector2f(SIZE_X,SIZE_Y), utl::Vector2f(SIZE_X/2,SIZE_Y/2)))
-                , utl::Vector2f(0,SIZE_Y/2))
+                , Bounds(Rect(utl::Vector2f(CRATE_SIZE_X,CRATE_SIZE_Y/2), utl::Vector2f(0,0)))
+                , Bounds(Rect(utl::Vector2f(CRATE_SIZE_X,CRATE_SIZE_Y), utl::Vector2f(CRATE_SIZE_X/2,CRATE_SIZE_Y/2)))
+                , utl::Vector2f(0,CRATE_SIZE_Y/2))
 {
     //relative coords
-    collBounds.rel_coords = utl::Vector2f(-(SIZE_X/2), 0);
+    collBounds.rel_coords = utl::Vector2f(-(CRATE_SIZE_X/2), 0);
     hitBounds.rel_coords  = utl::Vector2f(0, 0);
 
     //center sprite
     sprite.setTexture(resourceManager.getTexture("Media/Image/Game/Entity/Test/Crate.png"));
     sprite.setOrigin(sprite.getLocalBounds().width/2, sprite.getLocalBounds().height/2);
-    sprite.setScale(SIZE_X/sprite.getLocalBounds().width, SIZE_Y/sprite.getLocalBounds().height);
+    sprite.setScale(CRATE_SIZE_X/sprite.getLocalBounds().width, CRATE_SIZE_Y/sprite.getLocalBounds().height);
 
     //set position
     coords = _coords;

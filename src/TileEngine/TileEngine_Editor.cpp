@@ -121,11 +121,11 @@ void TileEngine_Editor::drawLayer(int layer, int transparency)
     {
         drawMin_y = 0;
     }
-    if(drawMax_x > (mapWidth-1))
+    if(drawMax_x > ((int)mapWidth-1))
     {
         drawMax_x = (mapWidth-1);
     }
-    if(drawMax_y > (mapHeight-1))
+    if(drawMax_y > ((int)mapHeight-1))
     {
         drawMax_y = (mapHeight-1);
     }
@@ -169,7 +169,7 @@ void TileEngine_Editor::overrideMap()
 
 void TileEngine_Editor::replaceTile(int newTile, int x, int y, int layer)
 {
-    if((x >= 0 && x < mapWidth) && (y >= 0 && y < mapHeight) && (layer >= 0 && layer < mapLayers))
+    if((x >= 0 && x < (int)mapWidth) && (y >= 0 && y < (int)mapHeight) && (layer >= 0 && layer < (int)mapLayers))
     {
         tileMap.at(getTile(x, y, layer)) = newTile;
     }
@@ -258,6 +258,8 @@ int TileEngine_Editor::getTileID(const std::string& source)
             return tile.first;
         }
     }
+	//TODO log error
+	return -1;
 }
 
 unsigned int TileEngine_Editor::getMapWidth()

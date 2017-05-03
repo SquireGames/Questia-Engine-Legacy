@@ -2,7 +2,7 @@
 # Variables
 #------------------- 
 CC          := g++ 
-CFLAGS      := -std=c++11 -MP -MD -fPIC
+CFLAGS      := -std=c++11 -Wall -MP -MD -fPIC
 DEBUGFLAGS  := -g -DDEBUGMODE=1
 LDFLAGS	    := -shared 
 LIB_win     := -L lib/SFML-2.4.2-win/lib -lsfml-audio -lsfml-network -lsfml-graphics -lsfml-window -lsfml-system -lstdc++fs -lktmw32

@@ -83,6 +83,7 @@ void SaveFile_Options::reloadOptions()
 	}
 }
 
+/*
 void SaveFile_Options::saveOption(Option_Base* option, std::string optionName)
 {
 	if(optionName == windowMode_name)
@@ -155,7 +156,7 @@ void SaveFile_Options::saveOption(Option_Base* option, std::string optionName)
 		key_skill_6 = static_cast<ctr::Input>(utl::asInt(option->getValueString()));
 	}
 }
-
+*/
 
 void SaveFile_Options::writeOptions()
 {

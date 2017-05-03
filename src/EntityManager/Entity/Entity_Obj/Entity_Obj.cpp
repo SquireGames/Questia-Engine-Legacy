@@ -2,8 +2,8 @@
 
 Entity_Obj::Entity_Obj(unsigned int id, EntityManager& entityManager, ResourceManager& _resourceManager, utl::Vector2f _origin):
     Entity(id, entityManager)
+	, origin(_origin)
     , resourceManager(_resourceManager)
-    , origin(_origin)
 {
 
 }

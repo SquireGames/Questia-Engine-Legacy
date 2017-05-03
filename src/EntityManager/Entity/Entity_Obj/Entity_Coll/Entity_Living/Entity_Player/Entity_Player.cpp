@@ -16,8 +16,8 @@ Entity_Player::Entity_Player(unsigned int id, EntityManager& entityManager, Reso
 
     spriteSheet.loadSprite("Media/Image/Game/Entity/Player/White.png", 8, 3);
 
-    spriteSheet.setSize(SIZE_X, SIZE_Y);
-    spriteSheet.setOrigin(SIZE_X / 4.f, SIZE_Y / 4.f);
+    spriteSheet.setSize(PLR_SIZE_X, PLR_SIZE_Y);
+    spriteSheet.setOrigin(PLR_SIZE_X / 4.f, PLR_SIZE_Y / 4.f);
 }
 
 Entity_Player::~Entity_Player()

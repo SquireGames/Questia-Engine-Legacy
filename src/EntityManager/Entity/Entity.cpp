@@ -1,8 +1,8 @@
 #include "QuestiaEng/EntityManager/Entity/Entity.h"
 
 Entity::Entity(unsigned int _id, EntityManager& _entityManager):
-    id(_id)
-    , entityManager(_entityManager)
+    entityManager(_entityManager)
+	, id(_id)
 {
     //ctor
 }

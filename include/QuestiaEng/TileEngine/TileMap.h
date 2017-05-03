@@ -14,8 +14,8 @@ public:
 	enum class TextureMode  {Map, All};
 	enum class TileMode     {Sprite, Batch};
 
-	bool fixMapData() {isMapDataSet = true;}
-	bool initialize(TextureMode textureMode, TileMode tileMode) {isInitialized = true;}
+	void fixMapData() {isMapDataSet = true;}
+	void initialize(TextureMode textureMode, TileMode tileMode) {isInitialized = true;}
 	
 	void setTileMap(std::vector <int> p_tileMap)		{ if(!isInitialized) {tileMap = p_tileMap;}}
 	void setTileKey(std::map <int, Tile> p_tileKey)		{ if(!isInitialized) {tileKey = p_tileKey;}}

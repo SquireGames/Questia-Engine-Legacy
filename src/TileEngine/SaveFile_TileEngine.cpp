@@ -206,7 +206,6 @@ void SaveFile_TileEngine::loadTiles(std::vector <std::pair <int, std::string> >&
 	{
 		for(auto& tileData : tileLocations)
 		{
-			const int& tileID = tileData.first;
 			const std::string& filePath = tileData.second;
 
 			if(filePath.substr(filePath.length() - 4) == ".png")
