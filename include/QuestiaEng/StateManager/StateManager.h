@@ -35,12 +35,12 @@ public:
 
 	//state functions
 	void sUpdate();
-	void sProcessInput(std::string input);
+	void sProcessInput(std::u32string& inputText);
 	void sDisplay();
 	
 	//state functions
 	void sUpdate(unsigned int offset);
-	void sProcessInput(unsigned int offset, std::string input);
+	void sProcessInput(unsigned int offset, std::u32string& inputText);
 	void sDisplay(unsigned int offset);
 
 private:

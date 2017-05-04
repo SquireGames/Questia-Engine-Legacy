@@ -4,8 +4,3 @@ State::~State()
 {
 
 }
-
-void State::init()
-{
-	
-}

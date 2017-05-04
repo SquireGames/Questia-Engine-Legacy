@@ -140,11 +140,12 @@ void StateManager::sUpdate()
 	}
 	checkQueues();
 }
-void StateManager::sProcessInput(std::string input)
+void StateManager::sProcessInput(std::u32string& inputText)
 {
 	if(stateStack.size())
 	{
-		stateStack.at(stackIndex)->processInput(sf::Keyboard::Unknown, false);
+		stateStack.at(stackIndex)->processInput(inputText);
+		inputText.clear();
 	}
 	checkQueues();
 }
@@ -164,11 +165,12 @@ void StateManager::sUpdate(unsigned int offset)
 	}
 	checkQueues();
 }
-void StateManager::sProcessInput(unsigned int offset, std::string input)
+void StateManager::sProcessInput(unsigned int offset, std::u32string& inputText)
 {
 	if(stateStack.size())
 	{
-		stateStack.at(stackIndex - offset)->processInput(sf::Keyboard::Unknown, false);
+		stateStack.at(stackIndex - offset)->processInput(inputText);
+		inputText.clear();
 	}
 	checkQueues();
 }

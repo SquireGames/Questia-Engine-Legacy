@@ -11,7 +11,6 @@ Engine::Engine(std::string windowName, int tickRate):
 	, mousePos(sf::Mouse::getPosition(window).x * scaleFactor.x, sf::Mouse::getPosition(window).y * scaleFactor.y)
 	//managers
 	, resourceManager()
-	, inputBuffer()
 	, guiManager(window, resourceManager)
 	, guiLoader()
 	, tileEngine(window, resourceManager)
@@ -20,6 +19,7 @@ Engine::Engine(std::string windowName, int tickRate):
 	, mouseListener()
 	//variables
 	, font()
+	, inputBuffer()
 	, clock()
 	, timePerFrame(sf::seconds(1.f/std::max(1, tickRate)))
 	, timeSinceLastTick()
@@ -49,6 +49,9 @@ Engine::Engine(std::string windowName, int tickRate):
 		font.loadFromFile("Media/Fonts/acidstructure.ttf");
 	}
 	guiManager.setFont(font);
+	
+	//allocate space for inputBuffer
+	inputBuffer.reserve(4);
 
 	//TODO remove, print options for debugging
 	std::cout << "------------------" << std::endl;
@@ -92,7 +95,8 @@ void Engine::processInput()
 		switch(event.type)
 		{
 		case sf::Event::TextEntered:
-			inputBuffer.enqueue(event.text.unicode);
+			//TODO only allow certain ranges of unicode
+			inputBuffer += event.text.unicode;
 			break;
 		case sf::Event::KeyPressed:
 			break;

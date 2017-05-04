@@ -27,7 +27,7 @@ public:
     //draws map with sprites
     void drawMap();
     //draws out all tiles
-    void drawTiles();
+    void drawTiles(sf::Font& font);
     //only draws specific layers (transparency out of 100)
     void drawLayer(int layer, int transparency);
 

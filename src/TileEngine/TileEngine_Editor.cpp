@@ -74,7 +74,7 @@ void TileEngine_Editor::drawMap()
     TileEngine::drawTiles();
 }
 
-void TileEngine_Editor::drawTiles()
+void TileEngine_Editor::drawTiles(sf::Font& font)
 {
     int previousTileHeightMax = 0;
     int traversedHeight = 0;
@@ -88,7 +88,7 @@ void TileEngine_Editor::drawTiles()
         std::string& tileDir = sortedTiles[it_folder].first;
         std::vector<Tile*>& tiles = sortedTiles[it_folder].second;
 
-        sf::Text dirText = sf::Text(tileDir, Data_Desktop::getInstance().font1, 20);
+        sf::Text dirText = sf::Text(tileDir, font, 20);
         dirText.setFillColor(sf::Color::Black);
         dirText.setPosition(0, (64 * (it_folder + traversedHeight)) - 30);
         window.draw(dirText);
