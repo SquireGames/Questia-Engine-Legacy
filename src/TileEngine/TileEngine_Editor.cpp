@@ -3,6 +3,7 @@
 //ctor
 TileEngine_Editor::TileEngine_Editor(sf::RenderWindow& _window, ResourceManager& _resourceManager):
     TileEngine(_window, _resourceManager)
+	, saveFile(resourceManager)
     , gridLines()
 {
     gridLines.setPrimitiveType(sf::PrimitiveType::Lines);
@@ -18,35 +19,35 @@ void TileEngine_Editor::loadMap(std::string _mapName)
     TileEngine::loadMap(_mapName, TileMap::TextureMode::All, TileMap::TileMode::Sprite);
 
     //2 vertices
-    gridLines.resize((mapWidth + 1) * 2 + ((mapHeight + 1) * 2));
+    gridLines.resize((currentMap.getWidth() + 1) * 2 + ((currentMap.getHeight() + 1) * 2));
     //vertex count
     unsigned int vertexCount = 0;
     //vertex
     sf::Vertex vertex;
     vertex.color = sf::Color::Black;
     //horizontal lines
-    for(unsigned int it = 0; it != (mapHeight + 1); it++)
+    for(unsigned int it = 0; it != (currentMap.getHeight() + 1); it++)
     {
         vertex.position = sf::Vector2f(0, it * 64);
         gridLines[vertexCount] = vertex;
         vertexCount++;
-        vertex.position = sf::Vector2f(mapWidth * 64, it * 64);
+        vertex.position = sf::Vector2f(currentMap.getWidth() * 64, it * 64);
         gridLines[vertexCount] = vertex;
         vertexCount++;
     }
     //vertical lines
-    for(unsigned int it = 0; it != (mapWidth + 1); it++)
+    for(unsigned int it = 0; it != (currentMap.getWidth() + 1); it++)
     {
         vertex.position = sf::Vector2f(it * 64, 0);
         gridLines[vertexCount] = vertex;
         vertexCount++;
-        vertex.position = sf::Vector2f(it * 64, mapHeight * 64);
+        vertex.position = sf::Vector2f(it * 64, currentMap.getHeight() * 64);
         gridLines[vertexCount] = vertex;
         vertexCount++;
     }
 
     //iterate through tiles, sort by folders
-    for(auto& it : tileStorage)
+    for(auto& it : currentMap.getTileKey())
     {
         Tile& tile = it.second;
         std::string& folder = tile.folder;
@@ -107,8 +108,8 @@ void TileEngine_Editor::drawTiles(sf::Font& font)
 void TileEngine_Editor::drawLayer(int layer, int transparency)
 {
     //find boundaries
-    int drawMin_x = (cameraPosition.x / 64.f) - (0.5 * tileFit_x) - (maxTileSize_x - 1);
-    int drawMin_y = (cameraPosition.y / 64.f) - (0.5 * tileFit_y) - (maxTileSize_y - 1);
+    int drawMin_x = (cameraPosition.x / 64.f) - (0.5 * tileFit_x) - (currentMap.getMaxTileSize_x() - 1);
+    int drawMin_y = (cameraPosition.y / 64.f) - (0.5 * tileFit_y) - (currentMap.getMaxTileSize_y() - 1);
     int drawMax_x = (cameraPosition.x / 64.f) + (0.5 * tileFit_x);
     int drawMax_y = (cameraPosition.y / 64.f) + (0.5 * tileFit_y);
 
@@ -121,13 +122,13 @@ void TileEngine_Editor::drawLayer(int layer, int transparency)
     {
         drawMin_y = 0;
     }
-    if(drawMax_x > ((int)mapWidth-1))
+    if(drawMax_x > ((int)currentMap.getWidth()-1))
     {
-        drawMax_x = (mapWidth-1);
+        drawMax_x = (currentMap.getWidth()-1);
     }
-    if(drawMax_y > ((int)mapHeight-1))
+    if(drawMax_y > ((int)currentMap.getHeight()-1))
     {
-        drawMax_y = (mapHeight-1);
+        drawMax_y = (currentMap.getHeight()-1);
     }
 
     //changed transparency list
@@ -139,13 +140,13 @@ void TileEngine_Editor::drawLayer(int layer, int transparency)
         for(int tileIt_y = drawMin_y; tileIt_y <= drawMax_y; tileIt_y++)
         {
             //get tile index and id
-            const int& currentTileIndex = tileMap[getTile(tileIt_x, tileIt_y, layer)];
+            const int& currentTileIndex = currentMap.getTileMap()[getTile(tileIt_x, tileIt_y, layer)];
 
             //make sure its visible
             if(currentTileIndex != 0)
             {
                 //get actual tile
-                Tile& currentTile = tileStorage.at(currentTileIndex);
+                Tile& currentTile = currentMap.getTileKey().at(currentTileIndex);
 
                 //change transparency if tile not yet changed
                 if(std::find(modifiedTiles.begin(), modifiedTiles.end(), currentTileIndex) == modifiedTiles.end())
@@ -164,20 +165,20 @@ void TileEngine_Editor::drawLayer(int layer, int transparency)
 
 void TileEngine_Editor::overrideMap()
 {
-    saveFile.saveMap(mapName, tileMap, mapWidth, mapHeight, mapLayers, tileStorage);
+    saveFile.saveMap(currentMap.getName(), currentMap.getTileMap(), currentMap.getWidth(), currentMap.getHeight(), currentMap.getLayers(), currentMap.getTileKey());
 }
 
 void TileEngine_Editor::replaceTile(int newTile, int x, int y, int layer)
 {
-    if((x >= 0 && x < (int)mapWidth) && (y >= 0 && y < (int)mapHeight) && (layer >= 0 && layer < (int)mapLayers))
+    if((x >= 0 && x < (int)currentMap.getWidth()) && (y >= 0 && y < (int)currentMap.getHeight()) && (layer >= 0 && layer < (int)currentMap.getLayers()))
     {
-        tileMap.at(getTile(x, y, layer)) = newTile;
+        currentMap.getTileMap().at(getTile(x, y, layer)) = newTile;
     }
 }
 
 void TileEngine_Editor::resetTileAlpha()
 {
-    for(auto& it : tileStorage)
+    for(auto& it : currentMap.getTileKey())
     {
         Tile& tile = it.second;
         tile.setTransparency(100);
@@ -238,7 +239,7 @@ void TileEngine_Editor::hoverSpan(int x, int y, int size_x, int size_y)
 
 Tile* TileEngine_Editor::getTile_tileState(int x, int y)
 {
-    for(auto& it : tileStorage)
+    for(auto& it : currentMap.getTileKey())
     {
         Tile& tile = it.second;
         if(tile.isInTile(x, y))
@@ -251,7 +252,7 @@ Tile* TileEngine_Editor::getTile_tileState(int x, int y)
 
 int TileEngine_Editor::getTileID(const std::string& source)
 {
-    for(auto& tile : tileStorage)
+    for(auto& tile : currentMap.getTileKey())
     {
         if(tile.second.source == source)
         {
@@ -264,17 +265,17 @@ int TileEngine_Editor::getTileID(const std::string& source)
 
 unsigned int TileEngine_Editor::getMapWidth()
 {
-    return mapWidth;
+    return currentMap.getWidth();
 }
 unsigned int TileEngine_Editor::getMapHeight()
 {
-    return mapHeight;
+    return currentMap.getHeight();
 }
 unsigned int TileEngine_Editor::getMapLayers()
 {
-    return mapLayers;
+    return currentMap.getLayers();
 }
 void TileEngine_Editor::changeMapName(std::string newName)
 {
-    mapName = newName;
+    currentMap.setName(newName);
 }

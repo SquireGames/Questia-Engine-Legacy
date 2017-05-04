@@ -64,6 +64,8 @@ public:
     void changeMapName(std::string newName);
 
 private:
+	SaveFile_TileEngine saveFile;
+
     //stores all tiles for drawing
     std::vector<std::pair<std::string, std::vector<Tile*> > > sortedTiles;
 

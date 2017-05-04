@@ -23,35 +23,36 @@ TileMap SaveFile_TileEngine::openMap(std::string mapName, sf::RenderWindow& wind
 		return mapData;
 	}
 
-	///mapInfo
-	//reads mapInfo
+	mapData.setName(mapName);
+	mapData.setTextureMode(textureMode);
+	mapData.setTileMode(tileMode);
+
+	//reads mapInfo file
 	SaveFile saveFile_mapInfo;
-	saveFile_mapInfo.setFilePath(utl::conjoinString( {"Maps/", mapName, "/mapInfo.txt"}));
+	saveFile_mapInfo.setFilePath("Maps/" + mapName + "/mapInfo.txt");
 	saveFile_mapInfo.readFile();
 	mapData.setWidth(utl::asInt(saveFile_mapInfo.getItem(name_width)));
 	mapData.setHeight(utl::asInt(saveFile_mapInfo.getItem(name_height)));
 	mapData.setLayers(utl::asInt(saveFile_mapInfo.getItem(name_layers)));
 	unsigned int totalTiles = mapData.getWidth() * mapData.getHeight() * mapData.getLayers();
 
-	//get all tile textures
-	std::vector <std::pair <int, std::string> > tileLocations = getTileLocations(utl::conjoinString( {"Maps/", mapName}), textureMode);
+	//get all tile textures locations
+	std::vector <std::pair <int, std::string> > tileLocations = getTileLocations("Maps/" + mapName, textureMode);
 
-	///load tile textures into resourceManager, tileData into mapData.tileStorage
-	loadTiles(tileLocations, mapData, tileMode, window);
+	///load tile textures and info into resourceManager, tileData into tileStorage
+	loadTiles(tileLocations, mapData, window);
 
 	///tileMap
 	mapData.getTileMap().resize(totalTiles);
-	//fill with nil
+	//fill as empty
 	std::fill(mapData.getTileMap().begin(), mapData.getTileMap().end(), 0);
 	//open map file
 	SaveFile saveFile_map;
-	saveFile_map.setFilePath(utl::conjoinString( {"Maps/", mapName, "/map.txt"}));
+	saveFile_map.setFilePath("Maps/" + mapName + "/map.txt");
 	saveFile_map.readFile();
-
-	//get tiles
+	//get tiles saved in map
 	std::vector <std::string> tileVector = saveFile_map.getItemList();
-	unsigned int tileNumberIterator = 0;
-
+	unsigned int tileNumberIterator = 0; // number of tiles in the map
 	for(const std::string& tileLine : tileVector)
 	{
 		std::vector <std::string> tiles = utl::separateString(tileLine, '|');
@@ -69,8 +70,230 @@ TileMap SaveFile_TileEngine::openMap(std::string mapName, sf::RenderWindow& wind
 		}
 	}
 
-	std::cout << "Tiles: " << tileNumberIterator << std::endl;
+	//loads chunks if in batch mode, validates all sprites in sprite mode
+	loadRenderData(mapData);
+
 	return mapData;
+}
+
+void SaveFile_TileEngine::loadRenderData(TileMap& mapData)
+{
+	//validate all sprites loaded into the map
+	if(mapData.getTileMode() == TileMap::TileMode::Sprite)
+	{
+		//for sprite renderer, make sure all tiles exist
+		for(unsigned int it = 0; it != mapData.getTileMap().size(); it++)
+		{
+			int tileID = mapData.getTileMap()[it];
+			//if does not exist, replace with -1 and give error message
+			if(tileID != 0 && !mapData.getTileKey().count(tileID))
+			{
+				mapData.getTileMap()[it] = -1;
+				std::cout << "SVF TILEENGINE - TILE NUMBER: " << tileID << " DOES NOT EXIST " << std::endl;
+			}
+		}
+	}
+	//load all chunks into TileMap
+	else if(mapData.getTileMode() == TileMap::TileMode::Batch)
+	{
+		//get max tile size
+		for(unsigned int it = 0; it != mapData.getTileMap().size(); it++)
+		{
+			int tileID = mapData.getTileMap()[it];
+			//if does not exist, replace with -1 and give error message
+			if(tileID != -1 && tileID != 0)
+			{
+				if(mapData.getTileKey().at(tileID).tileSize.x > (int)mapData.getMaxTileSize_x())
+				{
+					mapData.setMaxTileSize_x(mapData.getTileKey().at(tileID).tileSize.x);
+				}
+				if(mapData.getTileKey().at(tileID).tileSize.y > (int)mapData.getMaxTileSize_y())
+				{
+					mapData.setMaxTileSize_y(mapData.getTileKey().at(tileID).tileSize.y);
+				}
+			}
+		}
+
+
+		//get chunk size
+		int remainder_x = mapData.getWidth() % 8;
+		int remainder_y = mapData.getHeight() % 8;
+		//exact chunk tiles
+		if(remainder_x == 0)
+		{
+			mapData.setChunks_x(mapData.getWidth() / 8);
+		}
+		//incomplete chunk = new chunk
+		else
+		{
+			mapData.setChunks_x(((mapData.getWidth() - remainder_x) / 8) + 1);
+		}
+		if(remainder_y == 0)
+		{
+			mapData.setChunks_y(mapData.getHeight() / 8);
+		}
+		//incomplete chunk = new chunk
+		else
+		{
+			mapData.setChunks_y(((mapData.getHeight() - remainder_y) / 8) + 1);
+		}
+
+		//set size of chunk vector
+		std::vector<sf::VertexArray>& chunkVector = mapData.getChunks();
+		chunkVector.resize(mapData.getChunks_x() * mapData.getChunks_y() * mapData.getLayers());
+
+		sf::VertexArray emptyChunk;
+		//4 vertices per tile, 8 x 8 tiles
+		emptyChunk.setPrimitiveType(sf::PrimitiveType::Quads);
+
+		//fill chunk vector with chunks
+		for(unsigned int it = 0; it != chunkVector.size(); it++)
+		{
+			chunkVector[it] = emptyChunk;
+		}
+
+		//overriding the map fixes the need to clear it
+		mapData.getTileKey() = mapData.getTileKey();
+
+		//filling the chunks with tiles
+		//iterate through all chunks
+		for(unsigned int it_chunk_x = 0; it_chunk_x != mapData.getWidth(); it_chunk_x++)
+		{
+			for(unsigned int it_chunk_y = 0; it_chunk_y != mapData.getHeight(); it_chunk_y++)
+			{
+				for(unsigned int it_layer = 0; it_layer != mapData.getLayers(); it_layer++)
+				{
+					//chunk tile number
+					int chunkOrigin_x = 8 * it_chunk_x;
+					int chunkOrigin_y = 8 * it_chunk_y;
+
+					//iterate through tiles, 8x8
+					for(unsigned int it_tile_x = 0; it_tile_x != 8 && it_tile_x + chunkOrigin_x < mapData.getWidth(); it_tile_x++)
+					{
+						for(unsigned int it_tile_y = 0; it_tile_y != 8 && it_tile_y + chunkOrigin_y < mapData.getHeight(); it_tile_y++)
+						{
+							//get tile number
+							int currentTile_x = chunkOrigin_x + it_tile_x;
+							int currentTile_y = chunkOrigin_y + it_tile_y;
+
+							//get tile index and id
+							const int& tileID = mapData.getTileMap()[getTile(currentTile_x, currentTile_y, it_layer, mapData)];
+
+							if(tileID != 0)
+							{
+								const Tile& tileData = mapData.getTileKey().count(tileID) ? mapData.getTileKey().at(tileID) : mapData.getTileKey().at(-1);
+
+								//to prevent texture bleeding
+								float offset = 0.001;
+
+								//texture int rect
+								const utl::IntRect& texturePosition = tileData.texturePosition;
+								//size
+								const utl::Vector2i& tileSize = tileData.tileSize;
+								//rotation
+								const int& rotationDegrees = tileData.degrees;
+								//flips
+								const char& flip = tileData.flip;
+
+								//size vertices and texture coords for flips and rotations
+								utl::Vector2f posVerticies[4] = {utl::Vector2f(0                     + (currentTile_x * 64) - offset, 0                      + (currentTile_y * 64) - offset),
+								                                 utl::Vector2f(texturePosition.width + (currentTile_x * 64) + offset, 0                      + (currentTile_y * 64) - offset),
+								                                 utl::Vector2f(texturePosition.width + (currentTile_x * 64) + offset, texturePosition.height + (currentTile_y * 64) + offset),
+								                                 utl::Vector2f(0                     + (currentTile_x * 64) - offset, texturePosition.height + (currentTile_y * 64) + offset)
+								                                };
+								utl::Vector2f textureVerticies[4] = {utl::Vector2f(texturePosition.x                         + offset, texturePosition.y                          + offset),
+								                                     utl::Vector2f(texturePosition.x + texturePosition.width - offset, texturePosition.y                          + offset),
+								                                     utl::Vector2f(texturePosition.x + texturePosition.width - offset, texturePosition.y + texturePosition.height - offset),
+								                                     utl::Vector2f(texturePosition.x                         + offset, texturePosition.y + texturePosition.height - offset)
+								                                    };
+								//apply transformations
+								//size
+								if(tileSize.x != -1)
+								{
+									posVerticies[0] = utl::Vector2f(0                + (currentTile_x * 64) - offset, 0               + (currentTile_y * 64) - offset);
+									posVerticies[1] = utl::Vector2f(64 * tileSize.x  + (currentTile_x * 64) + offset, 0               + (currentTile_y * 64) - offset);
+									posVerticies[2] = utl::Vector2f(64 * tileSize.x  + (currentTile_x * 64) + offset, 64 * tileSize.y + (currentTile_y * 64) + offset);
+									posVerticies[3] = utl::Vector2f(0                + (currentTile_x * 64) - offset, 64 * tileSize.y + (currentTile_y * 64) + offset);
+								}
+								//flip
+								if(flip != 'n')
+								{
+									utl::Vector2f tempVec(0,0);
+									if(flip == 'x')
+									{
+										tempVec = textureVerticies[0];
+										textureVerticies[0] = textureVerticies[1];
+										textureVerticies[1] = tempVec;
+										tempVec = textureVerticies[2];
+										textureVerticies[2] = textureVerticies[3];
+										textureVerticies[3] = tempVec;
+									}
+									else if(flip == 'y')
+									{
+										tempVec = textureVerticies[0];
+										textureVerticies[0] = textureVerticies[3];
+										textureVerticies[3] = tempVec;
+										tempVec = textureVerticies[1];
+										textureVerticies[1] = textureVerticies[2];
+										textureVerticies[2] = tempVec;
+									}
+									else if(flip == 'b')
+									{
+										tempVec = textureVerticies[0];
+										textureVerticies[0] = textureVerticies[2];
+										textureVerticies[2] = tempVec;
+										tempVec = textureVerticies[1];
+										textureVerticies[1] = textureVerticies[3];
+										textureVerticies[3] = tempVec;
+									}
+								}
+								//rotate
+								if(rotationDegrees != 0)
+								{
+									utl::Vector2f tempVec(0,0);
+									if(rotationDegrees == 90)
+									{
+										tempVec = textureVerticies[0];
+										textureVerticies[0] = textureVerticies[3];
+										textureVerticies[3] = textureVerticies[2];
+										textureVerticies[2] = textureVerticies[1];
+										textureVerticies[1] = tempVec;
+									}
+									else if(rotationDegrees == 180)
+									{
+										tempVec = textureVerticies[0];
+										textureVerticies[0] = textureVerticies[2];
+										textureVerticies[2] = tempVec;
+										tempVec = textureVerticies[1];
+										textureVerticies[1] = textureVerticies[3];
+										textureVerticies[3] = tempVec;
+									}
+									else if(rotationDegrees == 270)
+									{
+										tempVec = textureVerticies[0];
+										textureVerticies[0] = textureVerticies[1];
+										textureVerticies[1] = textureVerticies[2];
+										textureVerticies[2] = textureVerticies[3];
+										textureVerticies[3] = tempVec;
+									}
+								}
+
+								//set the coords
+								//top left
+								chunkVector[getChunk(it_chunk_x, it_chunk_y, it_layer, mapData)].append(sf::Vertex(sf::Vector2f(posVerticies[0].x, posVerticies[0].y), sf::Vector2f(textureVerticies[0].x, textureVerticies[0].y)));
+								//top right
+								chunkVector[getChunk(it_chunk_x, it_chunk_y, it_layer, mapData)].append(sf::Vertex(sf::Vector2f(posVerticies[1].x, posVerticies[1].y), sf::Vector2f(textureVerticies[1].x, textureVerticies[1].y)));
+								//bottom right
+								chunkVector[getChunk(it_chunk_x, it_chunk_y, it_layer, mapData)].append(sf::Vertex(sf::Vector2f(posVerticies[2].x, posVerticies[2].y), sf::Vector2f(textureVerticies[2].x, textureVerticies[2].y)));
+								//bottom left
+								chunkVector[getChunk(it_chunk_x, it_chunk_y, it_layer, mapData)].append(sf::Vertex(sf::Vector2f(posVerticies[3].x, posVerticies[3].y), sf::Vector2f(textureVerticies[3].x, textureVerticies[3].y)));
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 }
 
 std::vector <std::pair <int, std::string> > SaveFile_TileEngine::getTileLocations(std::string filePath, TileMap::TextureMode textureMode)
@@ -109,9 +332,7 @@ std::vector <std::pair <int, std::string> > SaveFile_TileEngine::getTileLocation
 	switch(textureMode)
 	{
 	case TileMap::TextureMode::Map:
-		{
-
-		}
+		//tiles are already loaded in
 		break;
 	case TileMap::TextureMode::All:
 		{
@@ -129,7 +350,7 @@ std::vector <std::pair <int, std::string> > SaveFile_TileEngine::getTileLocation
 			}
 
 			//get all files
-			std::vector<std::string> tilesDirs = utl::getAllFiles("Media/Image/Game/Tiles/", true);
+			std::vector<std::string> tilesDirs = utl::getAllFiles("Media/Image/Game/Tiles", true);
 
 			for(std::string& tileDir : tilesDirs)
 			{
@@ -187,11 +408,11 @@ std::vector <std::pair <int, std::string> > SaveFile_TileEngine::getTileLocation
 	return returnTiles;
 }
 
-void SaveFile_TileEngine::loadTiles(std::vector <std::pair <int, std::string> >& tileLocations, TileMap& mapData, TileMap::TileMode tileMode, sf::RenderWindow& window)
+void SaveFile_TileEngine::loadTiles(std::vector <std::pair <int, std::string> >& tileLocations, TileMap& mapData, sf::RenderWindow& window)
 {
 	//used to hold transform data for each tile
 	std::map<int, TileTransform> tileTransform;
-	//only used for Batching
+	//holds IntRect for every texture in the texture atlas, only used if TileMode is Batch
 	TextureAtlasData compiledTexture = TextureAtlasData(nullptr);
 
 	//for getting txt file references to pngs
@@ -202,7 +423,7 @@ void SaveFile_TileEngine::loadTiles(std::vector <std::pair <int, std::string> >&
 	}
 
 	//loads textures into textureAtlas
-	if(tileMode == TileMap::TileMode::Batch)
+	if(mapData.getTileMode() == TileMap::TileMode::Batch)
 	{
 		for(auto& tileData : tileLocations)
 		{
@@ -220,7 +441,7 @@ void SaveFile_TileEngine::loadTiles(std::vector <std::pair <int, std::string> >&
 			{
 				std::string texturePath = filePath;
 				texturePath.resize(texturePath.length() - 4);
-				texturePath = utl::conjoinString( {texturePath,".png"});
+				texturePath = texturePath + ".png";
 
 				//will not do anything if not a valid filepath (not a reference)
 				if(textureAtlas.addTexture(utl::asString(tileData.first), texturePath))
@@ -230,7 +451,7 @@ void SaveFile_TileEngine::loadTiles(std::vector <std::pair <int, std::string> >&
 			}
 			else
 			{
-				std::cout << "TILEENGINE - Tile extension: '" << filePath << "' is not accepted <Utl/SaveFile/SaveFile_TileEngine.cpp>" << std::endl;
+				std::cout << "TILEENGINE - Tile extension of: '" << filePath << "' is not accepted <Utl/SaveFile/SaveFile_TileEngine.cpp>" << std::endl;
 				textureAtlas.addTexture(utl::asString(tileData.first), "Media/Image/Game/Tiles/Debug/Missing.png");
 			}
 		}
@@ -370,7 +591,11 @@ void SaveFile_TileEngine::loadTiles(std::vector <std::pair <int, std::string> >&
 
 
 	//now texture exists in resourceManager, compiledTexture only holds a pointer to the texture
-	compiledTexture = textureAtlas.compileTextures("TILESTORAGE");
+	if(mapData.getTileMode() == TileMap::TileMode::Batch)
+	{
+		compiledTexture = textureAtlas.compileTextures("TILESTORAGE");
+		mapData.setAtlasTexture("TILESTORAGE", &resourceManager.getTexture("TILESTORAGE"));
+	}
 
 	//load tileInfo into mapData
 	for(auto& tileData : tileLocations)
@@ -384,13 +609,12 @@ void SaveFile_TileEngine::loadTiles(std::vector <std::pair <int, std::string> >&
 
 		mapData.getTileKey().emplace(tileID, Tile(window, resourceManager));
 
-		switch(tileMode)
+		switch(mapData.getTileMode())
 		{
 		case TileMap::TileMode::Batch:
 			{
 				mapData.getTileKey().at(tileID).tileType = Tile::TileType::texture;
 				mapData.getTileKey().at(tileID).texturePosition = compiledTexture.textureCoords.at(utl::asString(pngIdDirectory[tileID]));
-
 			}
 			break;
 		case TileMap::TileMode::Sprite:
@@ -584,8 +808,11 @@ bool SaveFile_TileEngine::createMap(std::string mapName, unsigned int width, uns
 	return true;
 }
 
-///helper
-int SaveFile_TileEngine::getTile(unsigned int x, unsigned int y, unsigned int layer, unsigned int mapWidth, unsigned int mapHeight)
+int SaveFile_TileEngine::getTile(unsigned int x, unsigned int y, unsigned int layer, TileMap& tileMap)
 {
-	return x + (mapWidth * y) + (layer * mapWidth * mapHeight);
+	return x + (tileMap.getWidth() * y) + (layer * tileMap.getWidth() * tileMap.getHeight());
+}
+int SaveFile_TileEngine::getChunk(unsigned int x, unsigned int y, unsigned int layer, TileMap& tileMap)
+{
+	return x + (tileMap.getChunks_x() * y) + (layer * tileMap.getChunks_x() * tileMap.getChunks_y());
 }
