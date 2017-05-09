@@ -352,7 +352,7 @@ void GuiManager::setFont(sf::Font _buttonFont)
 
 void GuiManager::createList(std::string listName)
 {
-    listMap[listName] = std::make_pair(std::make_pair("NOTEMPLATE", std::make_pair(std::make_pair(0,0), std::make_pair(0,0))), std::vector<std::string>());
+    listMap[listName] = ListData();
     currentListEdit = listName;
 }
 
@@ -360,12 +360,12 @@ void GuiManager::setListSpacing(std::string listName, int spacing_x, int spacing
 {
     if(listMap.count(listName))
     {
-        listMap[listName].first.second.second = std::make_pair(spacing_x, spacing_y);
+        listMap[listName].listSpacing = std::make_pair(spacing_x, spacing_y);
     }
 }
 void GuiManager::setListSpacing(int spacing_x, int spacing_y)
 {
-    listMap[currentListEdit].first.second.second = std::make_pair(spacing_x, spacing_y);
+    listMap[currentListEdit].listSpacing = std::make_pair(spacing_x, spacing_y);
 }
 void GuiManager::setListTemplate(std::string listName, std::string groupTemplate)
 {
@@ -373,7 +373,7 @@ void GuiManager::setListTemplate(std::string listName, std::string groupTemplate
     {
         if(groupTemplateMap.count(groupTemplate))
         {
-            listMap[listName].first.first = groupTemplate;
+            listMap[listName].groupTemplate = groupTemplate;
         }
     }
 }
@@ -381,7 +381,7 @@ void GuiManager::setListTemplate(std::string groupTemplate)
 {
     if(groupTemplateMap.count(groupTemplate))
     {
-        listMap[currentListEdit].first.first = groupTemplate;
+        listMap[currentListEdit].groupTemplate = groupTemplate;
     }
 }
 
@@ -389,28 +389,28 @@ void GuiManager::setListPosition(std::string listName, std::pair<int, int> posit
 {
     if(listMap.count(listName))
     {
-        listMap[listName].first.second.first = position;
+        listMap[listName].position = position;
     }
 }
 void GuiManager::setListPosition(std::pair<int, int> position)
 {
-    listMap[currentListEdit].first.second.first = position;
+    listMap[currentListEdit].position = position;
 }
 
 std::string GuiManager::createListEntry(std::string listName)
 {
-    if(listMap[listName].first.first != "NOTEMPLATE")
+    if(listMap[listName].groupTemplate != "NOTEMPLATE")
     {
-        int entries = listMap[listName].second.size();
+        int entries = listMap[listName].elementGroups.size();
         std::stringstream ss;
         ss << entries;
         std::string entryName = listName + "_" + ss.str();
 
-        createGroupFromTemplate(entryName, listMap[listName].first.first);
+        createGroupFromTemplate(entryName, listMap[listName].groupTemplate);
         setGroupAtr(gui::ButtonCharacteristic::coords,
-                    std::make_pair(listMap[listName].first.second.first.first  + entries * listMap[listName].first.second.second.first,
-                                   listMap[listName].first.second.first.second + entries * listMap[listName].first.second.second.second));
-        listMap[listName].second.push_back(entryName);
+                    std::make_pair(listMap[listName].position.first  + entries * listMap[listName].listSpacing.first,
+                                   listMap[listName].position.second + entries * listMap[listName].listSpacing.second));
+        listMap[listName].elementGroups.push_back(entryName);
 
         return entryName;
     }
@@ -418,18 +418,18 @@ std::string GuiManager::createListEntry(std::string listName)
 }
 std::string GuiManager::createListEntry()
 {
-    if(listMap[currentListEdit].first.first != "NOTEMPLATE")
+    if(listMap[currentListEdit].groupTemplate != "NOTEMPLATE")
     {
-        int entries = listMap[currentListEdit].second.size();
+        int entries = listMap[currentListEdit].elementGroups.size();
         std::stringstream ss;
         ss << entries;
         std::string entryName = currentListEdit + "_" + ss.str();
 
-        createGroupFromTemplate(entryName, listMap[currentListEdit].first.first);
+        createGroupFromTemplate(entryName, listMap[currentListEdit].groupTemplate);
         setGroupAtr(gui::ButtonCharacteristic::coords,
-                    std::make_pair(listMap[currentListEdit].first.second.first.first  + entries * listMap[currentListEdit].first.second.second.first,
-                                   listMap[currentListEdit].first.second.first.second + entries * listMap[currentListEdit].first.second.second.second));
-        listMap[currentListEdit].second.push_back(entryName);
+                    std::make_pair(listMap[currentListEdit].position.first  + entries * listMap[currentListEdit].listSpacing.first,
+                                   listMap[currentListEdit].position.second + entries * listMap[currentListEdit].listSpacing.second));
+        listMap[currentListEdit].elementGroups.push_back(entryName);
 
         return entryName;
     }

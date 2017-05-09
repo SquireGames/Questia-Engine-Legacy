@@ -151,7 +151,7 @@ void TileEngine::setPosition(int x, int y)
 	cameraPosition.y = y;
 }
 
-//helper
+//helpers
 int TileEngine::getTile(unsigned int x, unsigned int y, unsigned int layer)
 {
 	return x + (currentMap.getWidth() * y) + (layer * currentMap.getWidth() * currentMap.getHeight());

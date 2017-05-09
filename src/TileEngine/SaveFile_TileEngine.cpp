@@ -72,7 +72,7 @@ TileMap SaveFile_TileEngine::openMap(std::string mapName, sf::RenderWindow& wind
 
 	//loads chunks if in batch mode, validates all sprites in sprite mode
 	loadRenderData(mapData);
-
+	mapData.setLoaded();
 	return mapData;
 }
 

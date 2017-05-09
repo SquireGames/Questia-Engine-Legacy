@@ -52,7 +52,6 @@ void QueryWindow::initQuery(std::string windowName)
 			guiManager.setButtonAtr(queryValues.at(it).second.buttonName, "buttonTextAnswer", gui::ButtonAtrCharacteristic::text, queryValues.at(it).second.queryQuestion);
 			guiManager.addToGroup(groupName, queryValues.at(it).second.buttonName);
 			break;
-			break;
 		}
 	}
 
