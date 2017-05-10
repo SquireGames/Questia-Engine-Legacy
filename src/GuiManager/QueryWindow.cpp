@@ -79,7 +79,7 @@ void QueryWindow::initQuery(std::string windowName)
 	guiManager.setGroupAtr(groupName, gui::ButtonCharacteristic::isVisible, false);
 }
 
-void QueryWindow::checkInput(bool isMouseClicked, char inputText)
+void QueryWindow::checkInput(bool isMouseClicked, char32_t inputText)
 {
 	if(isMouseClicked)
 	{
@@ -151,7 +151,7 @@ void QueryWindow::checkInput(bool isMouseClicked, char inputText)
 		}
 	}
 	//text input and deletion
-	if(querySelection != -1 && inputText != -1)
+	if(querySelection != -1)// && inputText != -1)
 	{
 		Query& selectedQuery = queryValues.at(querySelection).second;
 		if(selectedQuery.queryType == QueryType::Input_int || selectedQuery.queryType == QueryType::Input_string)
@@ -169,7 +169,7 @@ void QueryWindow::checkInput(bool isMouseClicked, char inputText)
 				{
 				case QueryType::Input_int:
 					{
-						if(utl::isNumber(utl::asString(inputText)) && inputText != '-')
+						if(utl::isNumber(std::to_string(inputText)) && inputText != '-')
 						{
 							selectedQuery.queryAnswer += inputText;
 						}

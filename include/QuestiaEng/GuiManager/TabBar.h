@@ -5,15 +5,17 @@
 #include "SFML/Graphics/Text.hpp"
 
 #include "QuestiaEng/GuiManager/GuiManager.h"
+#include "QuestiaEng/GuiManager/GuiElement.h"
 #include "QuestiaEng/GuiManager/GuiLoader.h"
 
-class TabBar
+class TabBar : public GuiElement
 {
 public:
 	TabBar(utl::Direction direction);
 	~TabBar();
 
 	int addTab(std::string text);
+	int addEntry(int tabID, std::string entryName);
 	void init(std::string tabName, GuiManager& pGuiManager, GuiLoader& guiLoader);
 	
 	void setActivity(bool isActive) {isTabBarActive = isActive;}

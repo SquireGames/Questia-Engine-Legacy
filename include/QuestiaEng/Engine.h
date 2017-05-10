@@ -1,11 +1,12 @@
 #ifndef ENGINE_H
 #define ENGINE_H
 
-#include <SFML/Graphics/RenderWindow.hpp>
-#include <SFML/Graphics/Font.hpp>
+#include "SFML/Graphics/RenderWindow.hpp"
+#include "SFML/Graphics/Font.hpp"
 
 #include "QuestiaEng/ResourceManager/ResourceManager.h"
 #include "QuestiaEng/GuiManager/GuiManager.h"
+#include "QuestiaEng/GuiManager/GuiHandler.h"
 #include "QuestiaEng/GuiManager/GuiLoader.h"
 #include "QuestiaEng/TileEngine/TileEngine.h"
 #include "QuestiaEng/StateManager/StateManager.h"
@@ -35,6 +36,7 @@ public:
 	sf::RenderWindow&   win()   {return window;}
 	ResourceManager& 	res() 	{return resourceManager;}
 	GuiManager&			gui() 	{return guiManager;}
+	GuiHandler& 		guiH()	{return guiHandler;}
 	GuiLoader& 			guiLd() {return guiLoader;}
 	TileEngine&	 		tile()	{return tileEngine;}
 	StateManager& 		state() {return stateManager;}
@@ -56,6 +58,7 @@ private:
 	//manager
 	ResourceManager resourceManager;
 	GuiManager guiManager;
+	GuiHandler guiHandler;
 	GuiLoader guiLoader;
 	TileEngine tileEngine;
 	StateManager stateManager;

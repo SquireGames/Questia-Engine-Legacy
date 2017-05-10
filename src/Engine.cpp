@@ -12,6 +12,7 @@ Engine::Engine(std::string windowName, int tickRate):
 	//managers
 	, resourceManager()
 	, guiManager(window, resourceManager)
+	, guiHandler()
 	, guiLoader()
 	, tileEngine(window, resourceManager)
 	, stateManager(*this)
