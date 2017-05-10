@@ -13,9 +13,16 @@ public:
 	~MenuStack();
 
 	int addEntry(std::string text);
-	void init(std::string tabName, GuiManager& pGuiManager, GuiLoader& guiLoader);
+	void init(std::string stackName, int x, int y, GuiManager& pGuiManager, GuiLoader& guiLoader);
+	
+	void handleInput(std::u32string& input);
+	//automatically called if MenuStack is registered into GuiHandler
+	void update(MouseListener& mouse);
 
 private:
+	GuiManager* guiManager;
+	bool isTabBarActive = true;
+
 	struct Entry
 	{
 		Entry(std::string pEntryText):entryText(pEntryText) {}
@@ -24,7 +31,7 @@ private:
 	};
 	std::vector<Entry> entries;
 
-	std::string groupName;
+	std::string listName;
 
 	utl::Direction dir = utl::Direction::down;
 };

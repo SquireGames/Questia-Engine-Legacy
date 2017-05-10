@@ -9,15 +9,15 @@ Engine::Engine(std::string windowName, int tickRate):
 	, size_scaled(window.getSize().x, window.getSize().y)
 	, scaleFactor(1920.f / static_cast<float>(size_scaled.x), 1080.f / static_cast<float>(size_scaled.y))
 	, mousePos(sf::Mouse::getPosition(window).x * scaleFactor.x, sf::Mouse::getPosition(window).y * scaleFactor.y)
+	//input
+	, mouseListener()
 	//managers
 	, resourceManager()
 	, guiManager(window, resourceManager)
-	, guiHandler()
+	, guiHandler(mouseListener)
 	, guiLoader()
 	, tileEngine(window, resourceManager)
 	, stateManager(*this)
-	//input
-	, mouseListener()
 	//variables
 	, font()
 	, inputBuffer()
@@ -82,6 +82,7 @@ bool Engine::tick()
 		mousePos = utl::Vector2f(sf::Mouse::getPosition(window).x * scaleFactor.x, sf::Mouse::getPosition(window).y * scaleFactor.y);
 		guiManager.setMousePosition(mousePos);
 		mouseListener.update();
+		guiHandler.update();
 		return true;
 	}
 	return false;

@@ -166,13 +166,9 @@ private:
 
 	struct ListData
 	{
-		//first first
 		std::string groupTemplate = "NOTEMPLATE";
-		//first second first
 		std::pair<int, int> position = std::make_pair(0,0);
-		//first second second
 		std::pair<int, int> listSpacing = std::make_pair(0,0);
-		//second
 		std::vector<std::string> elementGroups;
 	};
 

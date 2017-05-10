@@ -55,6 +55,9 @@ private:
 	utl::Vector2f scaleFactor;
 	utl::Vector2f mousePos;
 
+	//input
+	MouseListener mouseListener;
+
 	//manager
 	ResourceManager resourceManager;
 	GuiManager guiManager;
@@ -63,12 +66,9 @@ private:
 	TileEngine tileEngine;
 	StateManager stateManager;
 
-	//input
-	MouseListener mouseListener;
-
 	//text
 	sf::Font font;
-	
+
 	//input buffer
 	std::u32string inputBuffer;
 

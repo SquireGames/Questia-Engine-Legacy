@@ -3,18 +3,16 @@
 
 #include <string>
 
+#include "QuestiaEng/Utl/Controls/MouseListener.h"
+
 class GuiElement
 {
 public:
 	GuiElement() = default;
 	~GuiElement() = default;
 
-	virtual void onClick();
-	virtual void handleText(std::u32string input); 
-	
-	//TODO make pure virtual
-	virtual bool hasID(int ID);
-	virtual bool isClicked(int ID);
+	virtual void update(MouseListener& mouse);
+	virtual void handleInput(std::u32string& input); 
 };
 
 #endif // GUIELEMENT_H

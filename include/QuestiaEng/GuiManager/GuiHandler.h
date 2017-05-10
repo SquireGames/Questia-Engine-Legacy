@@ -1,7 +1,6 @@
 #ifndef GUIHANDLER_H
 #define GUIHANDLER_H
 
-#include <memory>
 #include <string>
 
 #include "QuestiaEng/GuiManager/GuiElement.h"
@@ -10,15 +9,17 @@
 class GuiHandler
 {
 public:
-	GuiHandler();
+	GuiHandler(MouseListener& mou);
 	~GuiHandler();
 
 	void reg(GuiElement* guiElement);
+	void update();
 	void clear();
 
 private:
-	std::vector<std::unique_ptr<GuiElement> > elements;
-	std::
+	MouseListener& mouse;
+
+	std::vector<GuiElement*> elements;
 };
 
 #endif // GUIHANDLER_H

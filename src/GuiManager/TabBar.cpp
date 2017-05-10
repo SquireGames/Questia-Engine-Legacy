@@ -30,7 +30,7 @@ int TabBar::addTab(std::string text)
 	return tabID;
 }
 
-void TabBar::init(std::string tabName, GuiManager& pGuiManager, GuiLoader& guiLoader)
+void TabBar::init(std::string tabBarName, GuiManager& pGuiManager, GuiLoader& guiLoader)
 {
 	guiManager = &pGuiManager;
 	guiLoader.loadGui(pGuiManager, "tabBar");
@@ -47,8 +47,8 @@ void TabBar::init(std::string tabName, GuiManager& pGuiManager, GuiLoader& guiLo
 		break;
 	}
 
-	guiManager->createGroupFromTemplate(tabName, "tabBarTemplate");
-	groupName = tabName;
+	guiManager->createGroupFromTemplate(tabBarName, "tabBarTemplate");
+	groupName = tabBarName;
 	button_bar = guiManager->getGroupEntry(groupName, "barTemplate");
 	
 	//tab positioning along x axis

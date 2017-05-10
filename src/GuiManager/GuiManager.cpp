@@ -33,6 +33,7 @@ void GuiManager::purgeButtons()
     groupTemplateMap.clear();
     listMap.clear();
 	loadedGuiPacks.clear();
+	buttonCount = 0;
 }
 
 void GuiManager::createButtonTemplate(std::string buttonName)

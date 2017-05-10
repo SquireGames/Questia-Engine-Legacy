@@ -1,21 +1,12 @@
 #include "QuestiaEng/GuiManager/GuiElement.h"
 
-void GuiElement::onClick()
+
+void GuiElement::update(MouseListener& mouse)
 {
 	
 }
 
-void GuiElement::handleText(std::u32string input)
-{
-	
-}
-
-bool GuiElement::hasID(int ID)
-{
-	
-}
-
-bool GuiElement::isClicked(int ID)
+void GuiElement::handleInput(std::u32string& input)
 {
 	
 }

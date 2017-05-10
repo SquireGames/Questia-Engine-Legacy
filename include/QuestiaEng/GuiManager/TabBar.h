@@ -16,7 +16,7 @@ public:
 
 	int addTab(std::string text);
 	int addEntry(int tabID, std::string entryName);
-	void init(std::string tabName, GuiManager& pGuiManager, GuiLoader& guiLoader);
+	void init(std::string tabBarName, GuiManager& pGuiManager, GuiLoader& guiLoader);
 	
 	void setActivity(bool isActive) {isTabBarActive = isActive;}
 	bool isActive() {return isTabBarActive;}
