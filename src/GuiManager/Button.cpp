@@ -355,7 +355,8 @@ void Button::setButtonAtr(std::string atrName, gui::ButtonAtrCharacteristic atrC
 		switch(atrChar)
 		{
 		case gui::ButtonAtrCharacteristic::charSize:
-			heldText[atrName]->text.setCharacterSize(value);
+			heldText[atrName]->text.setCharacterSize(value * 2);
+			heldText[atrName]->text.setScale(0.5, 0.5);
 			break;
 		default:
 			break;
@@ -510,7 +511,8 @@ void Button::setButtonAtr(std::string atrName, gui::ButtonAtrCharacteristic atrC
 		switch(atrChar)
 		{
 		case gui::ButtonAtrCharacteristic::charSize:
-			heldText[atrName]->text.setCharacterSize(value);
+			heldText[atrName]->text.setCharacterSize(value*2);
+			heldText[atrName]->text.setScale(0.5, 0.5);
 			break;
 		default:
 			break;

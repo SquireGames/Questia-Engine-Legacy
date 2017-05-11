@@ -25,9 +25,18 @@ TabBar::~TabBar()
 
 int TabBar::addTab(std::string text)
 {
-	int tabID = tabs.size();
-	tabs.push_back(Tab(text));
+	int tabID = mostRecentTab = tabs.size();
+	tabs.push_back(Tab(text, dir));
 	return tabID;
+}
+
+void TabBar::addEntry(int tabID, std::string entryText, std::string buttonName)
+{
+	tabs.at(tabID).menu.addEntry(entryText, buttonName);
+}
+void TabBar::addEntry(std::string entryText, std::string buttonName)
+{
+	tabs.at(mostRecentTab).menu.addEntry(entryText, buttonName);
 }
 
 void TabBar::init(std::string tabBarName, GuiManager& pGuiManager, GuiLoader& guiLoader)
@@ -35,22 +44,12 @@ void TabBar::init(std::string tabBarName, GuiManager& pGuiManager, GuiLoader& gu
 	guiManager = &pGuiManager;
 	guiLoader.loadGui(pGuiManager, "tabBar");
 
-	int pos_y;
-	switch(dir)
-	{
-	case utl::Direction::down:
-		pos_y = 1080-30;
-		break;
-	case utl::Direction::up:
-	default:
-		pos_y = 0;
-		break;
-	}
+	int pos_y = ((dir == utl::Direction::down) ? 1080-30 : 0);
 
 	guiManager->createGroupFromTemplate(tabBarName, "tabBarTemplate");
 	groupName = tabBarName;
 	button_bar = guiManager->getGroupEntry(groupName, "barTemplate");
-	
+
 	//tab positioning along x axis
 	unsigned int trav_x = 0;
 	//make all tabs
@@ -58,20 +57,47 @@ void TabBar::init(std::string tabBarName, GuiManager& pGuiManager, GuiLoader& gu
 	{
 		std::string tabName = groupName + "_" + std::to_string(i);
 		tabs[i].buttonName = tabName;
-		
+
 		guiManager->createButton(tabName, "tabTemplate");
-		
+
 		guiManager->setButton(tabName, gui::ButtonCharacteristic::coords, std::make_pair(trav_x, 0));
 		guiManager->setButtonAtr(tabName, "buttonText", gui::ButtonAtrCharacteristic::text, tabs[i].tabName);
-		
+
+		//make MenuStacks
+		tabs[i].menu.init("S_" + tabName, trav_x, ((dir == utl::Direction::down) ? 1080-30 : 30), pGuiManager, guiLoader);
+
 		//adjust to width of text
 		sf::Text t(tabs[i].tabName, *guiManager->getFont(), 20);
-		unsigned int tabWidth = t.getGlobalBounds().width + 14;
+		unsigned int tabWidth = t.getGlobalBounds().width + 21;
 		guiManager->setButtonAtr(tabName, "buttonSprite", gui::ButtonAtrCharacteristic::size, std::make_pair(tabWidth, 28));
-		trav_x += tabWidth + 4;
-		
+		guiManager->setButton(tabName, gui::ButtonCharacteristic::bounds, "buttonSprite");
+		trav_x += tabWidth;
+
 		guiManager->addToGroup(groupName, tabName);
 	}
+	guiManager->setGroupAtr(groupName, gui::ButtonCharacteristic::coords_group, std::make_pair(0, pos_y));
+}
 
-	guiManager->setGroupAtr(gui::ButtonCharacteristic::coords_group, std::make_pair(0, pos_y));
+void TabBar::update(MouseListener& mouse)
+{
+	if(mouse.isMouseReleased(ctr::Input::LMouse))
+	{
+		for(Tab& tab : tabs)
+		{
+			if(guiManager->isClicked(tab.buttonName))
+			{
+				tab.menu.setActivity(!tab.menu.isActive());
+				continue;
+			}
+			tab.menu.update(mouse);
+		}
+		return;
+	}
+	else
+	{
+		for(Tab& tab : tabs)
+		{
+			tab.menu.update(mouse);
+		}
+	}
 }
