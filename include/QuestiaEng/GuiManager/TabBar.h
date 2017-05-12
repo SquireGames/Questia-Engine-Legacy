@@ -23,7 +23,7 @@ public:
 	//automatically called if MenuStack is registered into GuiHandler
 	void update(MouseListener& mouse);
 
-	void setActivity(bool isActive) {isTabBarActive = isActive;}
+	void setActivity(bool isActive);
 	bool isActive() {return isTabBarActive;}
 
 private:

@@ -1,6 +1,7 @@
 #include "QuestiaEng/Utl/Controls/MouseListener.h"
 
-MouseListener::MouseListener()
+MouseListener::MouseListener():
+	mousePos(0,0)
 {
 	//ctor
 }

@@ -1,10 +1,10 @@
 #include "QuestiaEng/Utl/Controls/Input.h"
 
-std::string ctr::getInputName(const sf::Keyboard::Key& input)
+std::string ctr::getInputName(const sf::Keyboard::Key input)
 {
     return getInputName(static_cast<ctr::Input>(input));
 }
-std::string ctr::getInputName(const int& input)
+std::string ctr::getInputName(const int input)
 {
     if(input < static_cast<int>(ctr::Input::InputCount))
     {
@@ -12,7 +12,7 @@ std::string ctr::getInputName(const int& input)
     }
     return "INVALID";
 }
-std::string ctr::getInputName(const ctr::Input& input)
+std::string ctr::getInputName(const ctr::Input input)
 {
     switch (input)
     {
@@ -238,7 +238,7 @@ std::string ctr::getInputName(const ctr::Input& input)
     }
 }
 
-bool ctr::checkInput(const ctr::Input& input)
+bool ctr::checkInput(const ctr::Input input)
 {
     if(static_cast<int>(input) < static_cast<int>(sf::Keyboard::KeyCount))
     {

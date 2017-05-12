@@ -17,6 +17,7 @@ Engine::Engine(std::string windowName, int tickRate):
 	, guiHandler(mouseListener)
 	, guiLoader()
 	, tileEngine(window, resourceManager)
+	, tileEngineEditor(window, resourceManager, tileEngine)
 	, stateManager(*this)
 	//variables
 	, font()
@@ -82,6 +83,7 @@ bool Engine::tick()
 		mousePos = utl::Vector2f(sf::Mouse::getPosition(window).x * scaleFactor.x, sf::Mouse::getPosition(window).y * scaleFactor.y);
 		guiManager.setMousePosition(mousePos);
 		mouseListener.update();
+		mouseListener.setMousePos(mousePos);
 		guiHandler.update();
 		return true;
 	}
@@ -92,6 +94,7 @@ void Engine::processInput()
 {
 	sf::Event event;
 
+	mouseListener.setScroll(0);
 	while(window.pollEvent(event))
 	{
 		switch(event.type)
@@ -105,6 +108,7 @@ void Engine::processInput()
 		case sf::Event::KeyReleased:
 			break;
 		case sf::Event::MouseWheelMoved:
+			mouseListener.setScroll(event.mouseWheel.delta);
 			break;
 		case sf::Event::Resized:
 			size_scaled = utl::Vector2ui(window.getSize().x, window.getSize().y);
