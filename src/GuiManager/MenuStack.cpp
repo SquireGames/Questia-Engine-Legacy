@@ -40,8 +40,8 @@ void MenuStack::init(std::string stackName, int x, int y, GuiManager& pGuiManage
 
 	guiManager->createList(stackName);
 	guiManager->setListTemplate("stackTemplate");
-	guiManager->setListSpacing(0, ((dir == utl::Direction::down) ? 30 : -30));
-	guiManager->setListPosition(std::make_pair(x, (dir == utl::Direction::down) ? y : (y - 30)));
+	guiManager->setListSpacing(0, ((dir == utl::Direction::down) ? 24 : -24));
+	guiManager->setListPosition(std::make_pair(x, (dir == utl::Direction::down) ? y : (y - 24)));
 
 	//make all entries
 	for(unsigned int i = 0; i < entries.size(); i++)
@@ -67,7 +67,7 @@ void MenuStack::update(MouseListener& mouse)
 		toHide = false;
 		return;
 	}
-	
+
 	if(mouse.isMouseReleased(ctr::Input::LMouse))
 	{
 		toHide = true;

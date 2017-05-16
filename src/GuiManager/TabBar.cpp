@@ -1,6 +1,7 @@
 #include "QuestiaEng/GuiManager/TabBar.h"
 
-TabBar::TabBar(utl::Direction direction)
+TabBar::TabBar(utl::Direction direction, int offset):
+	offset_y(offset)
 {
 	switch(direction)
 	{
@@ -23,10 +24,10 @@ TabBar::~TabBar()
 	//dtor
 }
 
-int TabBar::addTab(std::string text)
+int TabBar::addTab(std::string text, std::string buttonName)
 {
 	int tabID = mostRecentTab = tabs.size();
-	tabs.push_back(Tab(text, dir));
+	tabs.push_back(Tab(text, buttonName, dir));
 	return tabID;
 }
 
@@ -44,7 +45,7 @@ void TabBar::init(std::string tabBarName, GuiManager& pGuiManager, GuiLoader& gu
 	guiManager = &pGuiManager;
 	guiLoader.loadGui(pGuiManager, "tabBar");
 
-	int pos_y = ((dir == utl::Direction::down) ? 1080-30 : 0);
+	int pos_y = ((dir == utl::Direction::down) ? 1080-22-offset_y : 0+offset_y);
 
 	guiManager->createGroupFromTemplate(tabBarName, "tabBarTemplate");
 	groupName = tabBarName;
@@ -55,7 +56,7 @@ void TabBar::init(std::string tabBarName, GuiManager& pGuiManager, GuiLoader& gu
 	//make all tabs
 	for(unsigned int i = 0; i < tabs.size(); i++)
 	{
-		std::string tabName = groupName + "_" + std::to_string(i);
+		std::string tabName = (tabs[i].buttonName.size() > 0) ? tabs[i].buttonName : (groupName + "_" + std::to_string(i));
 		tabs[i].buttonName = tabName;
 
 		guiManager->createButton(tabName, "tabTemplate");
@@ -64,14 +65,19 @@ void TabBar::init(std::string tabBarName, GuiManager& pGuiManager, GuiLoader& gu
 		guiManager->setButtonAtr(tabName, "buttonText", gui::ButtonAtrCharacteristic::text, tabs[i].tabName);
 
 		//make MenuStacks
-		tabs[i].menu.init("S_" + tabName, trav_x, ((dir == utl::Direction::down) ? 1080-30 : 30), pGuiManager, guiLoader);
+		tabs[i].menu.init("S_" + tabName, trav_x, ((dir == utl::Direction::down) ? 1080-22-offset_y : 22+offset_y), pGuiManager, guiLoader);
 
 		//adjust to width of text
-		sf::Text t(tabs[i].tabName, *guiManager->getFont(), 20);
-		unsigned int tabWidth = t.getGlobalBounds().width + 21;
-		guiManager->setButtonAtr(tabName, "buttonSprite", gui::ButtonAtrCharacteristic::size, std::make_pair(tabWidth, 28));
+		sf::Text t(tabs[i].tabName, *guiManager->getFont(), 15);
+		unsigned int tabWidth = t.getGlobalBounds().width + 14;
+		guiManager->setButtonAtr(tabName, "buttonSprite", gui::ButtonAtrCharacteristic::size, std::make_pair(tabWidth, 22));
 		guiManager->setButton(tabName, gui::ButtonCharacteristic::bounds, "buttonSprite");
+		guiManager->createButtonAtr(tabName, "hover", gui::ButtonAtr::Hover);
+		guiManager->setButtonAtr(tabName, "hover", gui::ButtonAtrCharacteristic::color, sf::Color(0,206,209));
+		guiManager->setButtonAtr(tabName, "hover", gui::ButtonAtrCharacteristic::transparency, 20);
+
 		trav_x += tabWidth;
+		trav_x += tabs[i].offset;
 
 		guiManager->addToGroup(groupName, tabName);
 	}
@@ -80,11 +86,38 @@ void TabBar::init(std::string tabBarName, GuiManager& pGuiManager, GuiLoader& gu
 
 void TabBar::update(MouseListener& mouse)
 {
-	if(mouse.isMouseReleased(ctr::Input::LMouse))
+	//update if tab is hovered
+	isTabBarHovered = false;
+	for(Tab& tab : tabs)
+	{
+		if(tab.menu.isActive())
+		{
+			isTabBarHovered = true;
+			break;
+		}
+	}
+	float mousePos = mouse.getMousePos().y;
+	if((dir == utl::Direction::up && mousePos > offset_y && mousePos < (22 + offset_y))
+	        ||(dir == utl::Direction::down && mousePos > (1080 - 22 - offset_y) && mousePos < (1080 - offset_y)))
+	{
+		isTabBarHovered = true;
+	}
+	if(otherBar != nullptr && otherBar->isHovered())
+	{
+		isTabBarHovered = false;
+		allowHover(false);
+	}
+	else
+	{
+		allowHover(true);
+	}
+
+	//update acticity of tab
+	if(mouse.isMouseReleased(ctr::Input::LMouse) && isTabBarHovered)
 	{
 		for(Tab& tab : tabs)
 		{
-			if(guiManager->isClicked(tab.buttonName))
+			if(guiManager->isClicked(tab.buttonName) && tab.menu.size())
 			{
 				tab.menu.setActivity(!tab.menu.isActive());
 				continue;
@@ -109,4 +142,22 @@ void TabBar::setActivity(bool isActive)
 		tab.menu.setActivity(false);
 	}
 	guiManager->setGroupAtr(groupName, gui::ButtonCharacteristic::isVisible, isActive);
+}
+
+void TabBar::addSpace(int tabID, int spacing)
+{
+	tabs.at(tabID).offset += spacing;
+}
+
+void TabBar::addSpace(int spacing)
+{
+	if(tabs.size())
+	{
+		tabs.at(tabs.size() - 1).offset += spacing;
+	}
+}
+
+void TabBar::setBelow(TabBar& other)
+{
+	otherBar = &other;
 }

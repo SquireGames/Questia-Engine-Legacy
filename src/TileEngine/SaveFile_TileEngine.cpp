@@ -748,7 +748,7 @@ void SaveFile_TileEngine::saveMap(std::string mapName, const std::vector <int>& 
 bool SaveFile_TileEngine::createMap(std::string mapName, unsigned int width, unsigned int height, unsigned int layers)
 {
 	//file paths
-	std::string filePath = utl::conjoinString( {"Maps/", mapName});
+	std::string filePath = "Maps/" + mapName;
 
 	//make sure not to override any other map
 	if(utl::doesExist(filePath))

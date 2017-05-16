@@ -84,7 +84,8 @@ bool Engine::tick()
 		guiManager.setMousePosition(mousePos);
 		mouseListener.update();
 		mouseListener.setMousePos(mousePos);
-		guiHandler.update();
+		guiHandler.update(inputBuffer);
+		inputBuffer.clear();
 		return true;
 	}
 	return false;
