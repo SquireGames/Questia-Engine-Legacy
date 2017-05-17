@@ -139,8 +139,7 @@ void GuiManager::placeInDrawList(Button* button)
 	{
 		if((*it)->buttonID == button->buttonID)
 		{
-			buttonDrawList.erase(it);
-			break;
+			return;
 		}
 	}
 
@@ -197,7 +196,7 @@ void GuiManager::createGroupFromTemplate(std::string groupName, std::string temp
 {
 	if(groupTemplateMap.count(templateName))
 	{
-		groupMap[groupName];
+		groupMap[groupName] = std::vector <std::string>();
 		for(std::string it : groupTemplateMap[templateName])
 		{
 			Button* newButton = new Button(*buttonMap[it], buttonCount);
@@ -209,23 +208,19 @@ void GuiManager::createGroupFromTemplate(std::string groupName, std::string temp
 
 			groupMap[groupName].push_back(buttonName);
 
-			currentGroupEdit = groupName;
-
 			placeInDrawList(newButton);
 		}
+		currentGroupEdit = groupName;
 	}
 }
 
 std::string GuiManager::getGroupEntry(std::string groupName, std::string buttonName)
 {
-	if(groupMap.count(groupName))
+	for(const std::string& it : groupMap[groupName])
 	{
-		for(const std::string& it : groupMap[groupName])
+		if(buttonMap[it]->buttonName == buttonName)
 		{
-			if(buttonMap[it]->buttonName == buttonName)
-			{
-				return it;
-			}
+			return it;
 		}
 	}
 	return "nil";
@@ -334,8 +329,31 @@ void GuiManager::setButtonLayer(int layer)
 
 void GuiManager::deleteButton(std::string buttonName)
 {
+	//remove from draw list
+	Button* btn = buttonMap[buttonName];
+	buttonDrawList.remove(btn);
+
 	delete buttonMap[buttonName];
 	buttonMap.erase(buttonName);
+}
+void GuiManager::deleteGroup(std::string groupName)
+{
+	std::vector<std::string>& buttonNames = groupMap[groupName];
+	for(auto& buttonName : buttonNames)
+	{
+		deleteButton(buttonName);
+	}
+	groupMap.erase(groupName);
+}
+void GuiManager::deleteList(std::string listName)
+{
+	ListData& list = listMap[listName];
+	std::vector<std::string>& groups = list.elementGroups;
+	for(auto& groupName : groups)
+	{
+		deleteGroup(groupName);
+	}
+	listMap.erase(listName);
 }
 
 void GuiManager::setMousePosition(utl::Vector2f _mouseCoords)
@@ -352,11 +370,6 @@ void GuiManager::setFont(sf::Font _buttonFont)
 {
 	buttonFont = _buttonFont;
 }
-
-
-
-
-
 
 
 void GuiManager::createList(std::string listName)
@@ -443,4 +456,14 @@ std::string GuiManager::createListEntry()
 		return entryName;
 	}
 	return "nil";
+}
+
+bool GuiManager::isLoadedGuiPack(std::string guiPack)
+{
+	if(std::find(loadedGuiPacks.begin(), loadedGuiPacks.end(), guiPack) == loadedGuiPacks.end())
+	{
+		loadedGuiPacks.push_back(guiPack);
+		return false;
+	}
+	return true;
 }

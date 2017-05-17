@@ -137,11 +137,15 @@ void TabBar::update(MouseListener& mouse)
 
 void TabBar::setActivity(bool isActive)
 {
-	for(Tab& tab : tabs)
+	if(isTabBarActive != isActive)
 	{
-		tab.menu.setActivity(false);
+		isTabBarActive = isActive;
+		for(Tab& tab : tabs)
+		{
+			tab.menu.setActivity(false);
+		}
+		guiManager->setGroupAtr(groupName, gui::ButtonCharacteristic::isVisible, isActive);
 	}
-	guiManager->setGroupAtr(groupName, gui::ButtonCharacteristic::isVisible, isActive);
 }
 
 void TabBar::addSpace(int tabID, int spacing)

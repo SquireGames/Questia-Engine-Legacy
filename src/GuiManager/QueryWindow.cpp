@@ -15,10 +15,13 @@ void QueryWindow::addQuery(std::string queryID, std::string queryQuestion, Query
 	queryValues.push_back(std::make_pair(queryID, Query(queryQuestion, queryType)));
 }
 
-void QueryWindow::init(std::string windowName,GuiManager& pGuiManager, GuiLoader& guiLoader, std::function<void()> handle)
+void QueryWindow::init(std::string windowName, GuiManager& pGuiManager, GuiLoader* guiLoader, std::function<void()> handle)
 {
 	guiManager = &pGuiManager;
-	guiLoader.loadGui(pGuiManager, "queryWindow");
+	if(guiLoader != nullptr)
+	{
+		guiLoader->loadGui(pGuiManager, "queryWindow");
+	}
 
 	handleRes = handle;
 
@@ -81,19 +84,21 @@ void QueryWindow::init(std::string windowName,GuiManager& pGuiManager, GuiLoader
 	pGuiManager.setGroupAtr(groupName, gui::ButtonCharacteristic::isVisible, false);
 }
 
-void QueryWindow::postAddChoice(std::string queryID, std::string choice)
+void QueryWindow::reInit()
 {
-	queryValues.push_back(std::make_pair(queryID, Query(choice, QueryType::Choice_string)));
+	isWindowActive = false;
+	isWindowDone = false;
+	scrollWindow = false;
+	scrollAmount = 0;
+	windowSize_x = 700;
+	windowSize_y = 100;
+	windowPos_x =  610;
+	windowPos_y =  500;
+	querySelection = -1;
+	
+	guiManager->deleteGroup(groupName);
 
-	int it = queryValues.size() - 1;
-	//make the button
-	queryValues.back().second.buttonName = groupName + "_" + std::to_string(it);
-	guiManager->createButton(queryValues.at(it).second.buttonName, "windowChoice");
-	guiManager->setButton(queryValues.at(it).second.buttonName, gui::ButtonCharacteristic::coords, std::make_pair(100, 60 + it*40));
-	guiManager->setButtonAtr(queryValues.at(it).second.buttonName, "buttonTextAnswer", gui::ButtonAtrCharacteristic::text, queryValues.at(it).second.queryQuestion);
-	guiManager->addToGroup(groupName, queryValues.at(it).second.buttonName);
-
-	guiManager->setGroupAtr(groupName, gui::ButtonCharacteristic::isVisible, false);
+	init(groupName, *guiManager, nullptr, handleRes);
 }
 
 int QueryWindow::getResult_int(std::string queryID)
@@ -177,7 +182,7 @@ void QueryWindow::resetQueries()
 void QueryWindow::handleInput(std::u32string& input)
 {
 	//text input and deletion
-	if(querySelection != -1 && input.size() > 0 && input[0] != ' ')
+	if(querySelection != -1 && input.size() > 0 && input[0] != ' ' && input[0] != 9)
 	{
 		Query& selectedQuery = queryValues.at(querySelection).second;
 		if(selectedQuery.queryType == QueryType::Input_int || selectedQuery.queryType == QueryType::Input_string)

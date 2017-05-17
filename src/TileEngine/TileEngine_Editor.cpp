@@ -49,6 +49,7 @@ void TileEngine_Editor::loadMap(std::string mapName)
 	}
 
 	//iterate through tiles, sort by folders
+	sortedTiles.clear();
 	for(auto& it : tileEngine.currentMap.getTileKey())
 	{
 		Tile& tile = it.second;
@@ -61,6 +62,7 @@ void TileEngine_Editor::loadMap(std::string mapName)
 void TileEngine_Editor::closeMap()
 {
 	tileEngine.closeMap();
+	sortedTiles.clear();
 }
 
 std::pair<std::string, std::vector<Tile*> >& TileEngine_Editor::getFolder(const std::string& dir)
@@ -86,7 +88,7 @@ void TileEngine_Editor::drawTiles(sf::Font& font)
 {
 	int previousTileHeightMax = 0;
 	int traversedHeight = 0;
-	for(unsigned int it_folder = 0; it_folder != sortedTiles.size(); it_folder++)
+	for(unsigned int it_folder = 0; it_folder < sortedTiles.size(); it_folder++)
 	{
 		traversedHeight += previousTileHeightMax;
 		previousTileHeightMax = 0;
@@ -184,7 +186,8 @@ void TileEngine_Editor::replaceTile(int newTile, int x, int y, int layer)
 {
 	if((x >= 0  && x < (int)tileEngine.currentMap.getWidth())
 	        && (y >= 0 && y < (int)tileEngine.currentMap.getHeight())
-	        && (layer >= 0 && layer < (int)tileEngine.currentMap.getLayers()))
+	        && (layer >= 0 && layer < (int)tileEngine.currentMap.getLayers())
+			&& newTile != -7)
 	{
 		tileEngine.currentMap.getTileMap().at(tileEngine.getTile(x, y, layer)) = newTile;
 	}
