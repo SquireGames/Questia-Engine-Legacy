@@ -38,20 +38,30 @@ std::vector<std::string> utl::getFiles(std::string directory, bool isWithDirecto
 std::vector<std::string> utl::getAllFiles(std::string directory, bool isWithDirectory)
 {
 	std::vector <std::string> fileNames;
-	
+
 	fs::path directoryFolder {directory};
 
 	if(fs::exists(directoryFolder) && fs::is_directory(directoryFolder))
 	{
-	    fs::recursive_directory_iterator dir(directoryFolder);
+		fs::recursive_directory_iterator dir(directoryFolder);
 
-	    for(auto& it : dir)
-	    {
-	        fileNames.push_back(it.path().string());
-	    }
+		for(auto& it : dir)
+		{
+			fileNames.push_back(it.path().string());
+			if(fs::is_directory(fs::path(it)))
+			{
+				std::vector<std::string> files = getAllFiles(it.path().string(), isWithDirectory);
+				for(auto& it_r : files)
+				{
+					fileNames.push_back(it_r);
+				}
+			}
+		}
 	}
 	return fileNames;
 }
+
+
 
 bool utl::createDirectory(const std::string& filePath)
 {
@@ -59,16 +69,16 @@ bool utl::createDirectory(const std::string& filePath)
 
 	if(!(fs::exists(directory)))
 	{
-	    if(fs::create_directory(directory))
-	    {
-	        std::cout << "Directory was made: " << filePath << std::endl;
-	        return true;
-	    }
-	    else
-	    {
-	        std::cout << "Directory failed to be made: " << filePath << std::endl;
-	        return false;
-	    }
+		if(fs::create_directory(directory))
+		{
+			std::cout << "Directory was made: " << filePath << std::endl;
+			return true;
+		}
+		else
+		{
+			std::cout << "Directory failed to be made: " << filePath << std::endl;
+			return false;
+		}
 	}
 	return true;
 }
@@ -76,14 +86,28 @@ bool utl::createDirectory(const std::string& filePath)
 std::vector<std::string> utl::filterFiles(const std::vector<std::string>& inputFiles, const std::string& extension)
 {
 	std::vector<std::string> newFiles = std::vector<std::string>();
-	
+
 	for(const std::string& file : inputFiles)
 	{
-	    if(file.find(extension)!= std::string::npos)
-	    {
-	        newFiles.push_back(file);
-	    }
+		if(file.find(extension)!= std::string::npos)
+		{
+			newFiles.push_back(file);
+		}
 	}
-	
+
 	return newFiles;
+}
+
+std::vector<std::string> utl::filterDirs(const std::vector<std::string>& inputFiles)
+{
+	std::vector<std::string> returnStrs;
+	for(const std::string& file : inputFiles)
+	{
+		std::size_t found = file.find(".");
+		if(found == std::string::npos)
+		{
+			returnStrs.push_back(file);
+		}
+	}
+	return returnStrs;
 }

@@ -1,4 +1,4 @@
-#include "QuestiaEng/GuiManager/TabBar.h"
+#include "QuestiaEng/GuiManager/GuiElement/TabBar.h"
 
 TabBar::TabBar(utl::Direction direction, int offset):
 	offset_y(offset)

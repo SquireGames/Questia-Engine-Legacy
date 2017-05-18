@@ -763,22 +763,6 @@ void Button::drawButton()
 				window.draw(it->second->normalSprite);
 			}
 		}
-		for(std::map<std::string, ButtonText*>::iterator it = heldText.begin(); it != heldText.end(); it++)
-		{
-			if(it->second->isChanged || isCoordsChanged)
-			{
-				it->second->text.setPosition(buttonPosition.first  + it->second->position.first  + scrollAmount_x,
-				                             buttonPosition.second + it->second->position.second + scrollAmount_y);
-				it->second->isChanged = false;
-
-				window.draw(it->second->text);
-			}
-			else
-			{
-				window.draw(it->second->text);
-			}
-		}
-
 		for(std::map<std::string, OverlaySprite*>::iterator it = heldOverlaySprites.begin(); it != heldOverlaySprites.end(); it++)
 		{
 			if(it->second->isChanged || isCoordsChanged)
@@ -831,6 +815,21 @@ void Button::drawButton()
 				{
 					window.draw(it->second->rectOverlay);
 				}
+			}
+		}
+		for(std::map<std::string, ButtonText*>::iterator it = heldText.begin(); it != heldText.end(); it++)
+		{
+			if(it->second->isChanged || isCoordsChanged)
+			{
+				it->second->text.setPosition(buttonPosition.first  + it->second->position.first  + scrollAmount_x,
+				                             buttonPosition.second + it->second->position.second + scrollAmount_y);
+				it->second->isChanged = false;
+
+				window.draw(it->second->text);
+			}
+			else
+			{
+				window.draw(it->second->text);
 			}
 		}
 		isCoordsChanged = false;

@@ -352,8 +352,12 @@ std::vector <std::pair <int, std::string> > SaveFile_TileEngine::getTileLocation
 			//get all files
 			std::vector<std::string> tilesDirs = utl::getAllFiles("Media/Image/Game/Tiles", true);
 
+			tilesDirs = utl::filterDirs(tilesDirs);
+
 			for(std::string& tileDir : tilesDirs)
 			{
+				std::cout << "Dir: " << tileDir << std::endl;
+
 				//filter out all .png and .txt
 				std::vector<std::string> tilesStrs = utl::filterFiles(utl::getFiles(tileDir, true), ".png");
 				std::vector<std::string> tilesStrs_txt = utl::filterFiles(utl::getFiles(tileDir, true), ".txt");

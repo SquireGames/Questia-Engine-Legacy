@@ -1,4 +1,4 @@
-#include "QuestiaEng/GuiManager/QueryWindow.h"
+#include "QuestiaEng/GuiManager/GuiElement/QueryWindow.h"
 
 QueryWindow::QueryWindow()
 {
