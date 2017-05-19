@@ -51,7 +51,7 @@ Engine::Engine(std::string windowName, int tickRate):
 		font.loadFromFile("Media/Fonts/acidstructure.ttf");
 	}
 	guiManager.setFont(font);
-	
+
 	//allocate space for inputBuffer
 	inputBuffer.reserve(4);
 

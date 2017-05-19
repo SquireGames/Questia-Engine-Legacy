@@ -1,6 +1,7 @@
 #include "QuestiaEng/StateManager/StateManager.h"
 
 #include "QuestiaEng/StateManager/State.h"
+#include "QuestiaEng/Engine.h"
 
 StateManager::StateManager(Engine& eng):
 	eng(eng)
@@ -80,6 +81,7 @@ void StateManager::makeTransition(std::string newState, std::string loadingState
 	thrFuture = thrPromise.get_future();
 	loadingThread = std::thread([=]()
 	{
+		sf::Context context;
 		State* state = stateMap[newState]();
 		state->eng = &eng;
 		state->init();
@@ -89,7 +91,7 @@ void StateManager::makeTransition(std::string newState, std::string loadingState
 }
 
 void StateManager::checkQueues()
-{	
+{
 	if(isDelQueued)
 	{
 		deleteState(delIndex);
@@ -181,4 +183,3 @@ void StateManager::sDisplay(unsigned int offset)
 		stateStack.at(stackIndex - offset)->displayTextures();
 	}
 }
-
