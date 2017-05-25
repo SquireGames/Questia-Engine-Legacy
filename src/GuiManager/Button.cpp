@@ -1,66 +1,47 @@
 #include "QuestiaEng/GuiManager/Button.h"
 
-//{ Button() + copy constructors
 Button::Button(sf::RenderWindow& _window, ResourceManager &_resourceManager, sf::Font& _buttonFont, bool _isTemplate, int _buttonID):
 	window(_window)
 	, resourceManager(_resourceManager)
 	, buttonFont(_buttonFont)
-	, buttonPosition(std::make_pair(0,0))
 	, buttonBounds(std::make_pair(0,0))
-	, isCoordsChanged(true)
-	, scrollAmount_x(0)
-	, scrollAmount_y(0)
-	, isVisible(true)
-	, isTemplate(_isTemplate)
-	, isActive(true)
 	, buttonID(_buttonID)
+	, isTemplate(_isTemplate)
+	, isVisible(true)
 {}
 
-// copy constructor
-Button::Button(const Button& oldButton, int _buttonID): // const to make sure there are no changes to the original
+Button::Button(const Button& oldButton, int _buttonID):
 	window(oldButton.window)
 	, resourceManager(oldButton.resourceManager)
 	, buttonFont(oldButton.buttonFont)
-	, buttonPosition(std::make_pair(0,0))
 	, buttonBounds(oldButton.buttonBounds)
-	, isCoordsChanged(true)
-	, scrollAmount_x(0)
-	, scrollAmount_y(0)
-	, isVisible(oldButton.isVisible)
-	, isTemplate(false)
-	, isActive(true)
-	, layer(oldButton.layer)
 	, buttonID(_buttonID)
+	, layer(oldButton.layer)
+	, isTemplate(false)
+	, isVisible(oldButton.isVisible || oldButton.isTemplate)
+	, sprites(oldButton.sprites)
+	, texts(oldButton.texts)
+	, hovers(oldButton.hovers)
+	, percents(oldButton.percents)
 {
+	//TODO remove
 	copyToThisButton(*this, oldButton);
-
-	if(oldButton.isTemplate)
-	{
-		isVisible = true;
-		isActive = true;
-	}
 }
 
 // copies attributes
+//TODO remove
 void Button::copyToThisButton(Button& newButton, const Button& oldButton)
 {
-	for(std::map<std::string, RegularSprite*>::const_iterator it = oldButton.heldSprites.begin(); it != oldButton.heldSprites.end(); ++it)
-	{
-		newButton.addButtonAtr(it->first, gui::ButtonAtr::Sprite);
-		newButton.heldSprites[it->first]->normalSprite = oldButton.heldSprites.at(it->first)->normalSprite;
-		newButton.heldSprites[it->first]->position     = oldButton.heldSprites.at(it->first)->position;
-		newButton.heldSprites[it->first]->isChanged    = oldButton.heldSprites.at(it->first)->isChanged;
-	}
 	for(std::map<std::string, ButtonText*>::const_iterator it = oldButton.heldText.begin(); it != oldButton.heldText.end(); ++it)
 	{
-		newButton.addButtonAtr(it->first, gui::ButtonAtr::Text);
+		newButton.addBtnAtr(it->first, gui::BtnAtr::Text);
 		newButton.heldText[it->first]->text      = oldButton.heldText.at(it->first)->text;
 		newButton.heldText[it->first]->position  = oldButton.heldText.at(it->first)->position;
 		newButton.heldText[it->first]->isChanged = oldButton.heldText.at(it->first)->isChanged;
 	}
 	for(std::map<std::string, OverlaySprite*>::const_iterator it = oldButton.heldOverlaySprites.begin(); it != oldButton.heldOverlaySprites.end(); ++it)
 	{
-		newButton.addButtonAtr(it->first, gui::ButtonAtr::Hover);
+		newButton.addBtnAtr(it->first, gui::BtnAtr::Hover);
 		newButton.heldOverlaySprites[it->first]->rectOverlay   = oldButton.heldOverlaySprites.at(it->first)->rectOverlay;
 		newButton.heldOverlaySprites[it->first]->isChanged     = oldButton.heldOverlaySprites.at(it->first)->isChanged;
 		newButton.heldOverlaySprites[it->first]->position      = oldButton.heldOverlaySprites.at(it->first)->position;
@@ -68,9 +49,9 @@ void Button::copyToThisButton(Button& newButton, const Button& oldButton)
 	}
 	for(std::map<std::string, PercentSprite*>::const_iterator it = oldButton.heldPercentSprites.begin(); it != oldButton.heldPercentSprites.end(); ++it)
 	{
-		newButton.addButtonAtr(it->first, gui::ButtonAtr::Percent);
+		newButton.addBtnAtr(it->first, gui::BtnAtr::Percent);
 		newButton.heldPercentSprites[it->first]->spritePercentage = oldButton.heldPercentSprites.at(it->first)->spritePercentage;
-		newButton.heldPercentSprites[it->first]->normalSprite     = oldButton.heldPercentSprites.at(it->first)->normalSprite;
+		newButton.heldPercentSprites[it->first]->sprite     = oldButton.heldPercentSprites.at(it->first)->sprite;
 		newButton.heldPercentSprites[it->first]->directionOfGap   = oldButton.heldPercentSprites.at(it->first)->directionOfGap;
 		newButton.heldPercentSprites[it->first]->isChanged        = oldButton.heldPercentSprites.at(it->first)->isChanged;
 		newButton.heldPercentSprites[it->first]->position         = oldButton.heldPercentSprites.at(it->first)->position;
@@ -78,15 +59,10 @@ void Button::copyToThisButton(Button& newButton, const Button& oldButton)
 		newButton.heldPercentSprites[it->first]->originalTextureRect = oldButton.heldPercentSprites.at(it->first)->originalTextureRect;
 	}
 }
-//}
 
-// deletes attributes
 Button::~Button()
 {
-	for(std::map<std::string, RegularSprite*>::iterator it = heldSprites.begin(); it != heldSprites.end(); ++it)
-	{
-		delete it->second;
-	}
+	//TODO remove
 	for(std::map<std::string, ButtonText*>::iterator it = heldText.begin(); it != heldText.end(); ++it)
 	{
 		delete it->second;
@@ -101,90 +77,83 @@ Button::~Button()
 	}
 }
 
-//////////////////////////////
-
-void Button::setButton(gui::ButtonCharacteristic buttonChar, std::string value)
+void Button::setButton(gui::BtnChar buttonChar, std::string value)
 {
 	switch(buttonChar)
 	{
-	case gui::ButtonCharacteristic::bounds:
+	case gui::BtnChar::bounds:
 		{
-			if(heldSprites.count(value))
+			int spriteID = count(value, sprites);
+			if(spriteID != -1)
 			{
-				buttonBounds = std::make_pair(heldSprites[value]->normalSprite.getGlobalBounds().width, heldSprites[value]->normalSprite.getGlobalBounds().height);
+				buttonBounds = std::make_pair(sprites.at(spriteID).sprite.getGlobalBounds().width, sprites.at(spriteID).sprite.getGlobalBounds().height);
 			}
+#ifdef DEBUGMODE
+			else
+			{
+				std::cout << "BUTTON: Warning - there is no button atr with the name: " << value << " in the button " << buttonName << std::endl;
+			}
+#endif
 		}
 		break;
 	default:
 		break;
 	}
 }
-void Button::setButton(gui::ButtonCharacteristic buttonChar, const char* value)
+void Button::setButton(gui::BtnChar buttonChar, const char* value)
 {
-	std::string atrName = static_cast <std::string>(value);
-	switch(buttonChar)
-	{
-	case gui::ButtonCharacteristic::bounds:
-		{
-			if(heldSprites.count(value))
-			{
-				buttonBounds = std::make_pair(heldSprites[value]->normalSprite.getGlobalBounds().width, heldSprites[value]->normalSprite.getGlobalBounds().height);
-			}
-		}
-		break;
-	default:
-		break;
-	}
+	setButton(buttonChar, std::string(value));
 }
-void Button::setButton(gui::ButtonCharacteristic buttonChar, bool value)
+void Button::setButton(gui::BtnChar buttonChar, bool value)
 {
 	switch(buttonChar)
 	{
-	case gui::ButtonCharacteristic::isVisible:
+	case gui::BtnChar::isVisible:
 		isVisible = value;
 		break;
-	case gui::ButtonCharacteristic::isActive:
+	case gui::BtnChar::isActive:
 		isActive = value;
 		break;
-	case gui::ButtonCharacteristic::isTemplate:
+	case gui::BtnChar::isTemplate:
 		isTemplate = value;
 	default:
 		break;
 	}
 }
-void Button::setButton(gui::ButtonCharacteristic buttonChar, int value)
+void Button::setButton(gui::BtnChar buttonChar, int value)
 {
 	switch(buttonChar)
 	{
-	case gui::ButtonCharacteristic::addToScroll_x:
-		scrollAmount_x += value;
+	case gui::BtnChar::addToScroll_x:
+		scroll_x += value;
 		break;
-	case gui::ButtonCharacteristic::addToScroll_y:
-		scrollAmount_y += value;
+	case gui::BtnChar::addToScroll_y:
+		scroll_y += value;
 		break;
-	case gui::ButtonCharacteristic::scroll_x:
-		scrollAmount_x = value;
+	case gui::BtnChar::scroll_x:
+		scroll_x = value;
 		break;
-	case gui::ButtonCharacteristic::scroll_y:
-		scrollAmount_y = value;
+	case gui::BtnChar::scroll_y:
+		scroll_y = value;
 		break;
 	default:
 		break;
 	}
 	isCoordsChanged = true;
 }
-void Button::setButton(gui::ButtonCharacteristic buttonChar, std::pair <int, int> value)
+void Button::setButton(gui::BtnChar buttonChar, std::pair <int, int> value)
 {
 	switch(buttonChar)
 	{
-	case gui::ButtonCharacteristic::coords:
+	case gui::BtnChar::coords:
 		isCoordsChanged = true;
 		buttonPosition = value;
 		break;
-	case gui::ButtonCharacteristic::bounds:
+	case gui::BtnChar::bounds:
 		buttonBounds = value;
 		break;
-	case gui::ButtonCharacteristic::coords_group:
+	case gui::BtnChar::coords_group:
+		isCoordsChanged = true;
 		buttonPosition = std::make_pair(buttonPosition.first + value.first, buttonPosition.second + value.second);
 		break;
 	default:
@@ -192,32 +161,100 @@ void Button::setButton(gui::ButtonCharacteristic buttonChar, std::pair <int, int
 	}
 }
 
-
-void Button::setButtonAtr(std::string atrName, gui::ButtonAtrCharacteristic atrChar, std::string value)
+void Button::addBtnAtr(std::string atrName, gui::BtnAtr buttonAtr)
 {
+	switch(buttonAtr)
+	{
+	case gui::BtnAtr::Sprite:
+		{
+			sprites.emplace_back(RegularSprite(atrName));
+		}
+		break;
+	case gui::BtnAtr::Text:
+		{
+			ButtonText* newText = new ButtonText;
+			newText->isChanged = true;
+			newText->position = std::make_pair(0,0);
+			newText->text.setFont(buttonFont);
+			newText->text.setString(std::string());
+			newText->text.setFillColor(sf::Color::Black);
+			newText->text.setOutlineColor(sf::Color::Black);
+			newText->text.setPosition(newText->position.first  + buttonPosition.first,
+			                          newText->position.second + buttonPosition.second);
+			heldText[atrName] = newText;
+		}
+		break;
+	case gui::BtnAtr::Hover:
+		{
+			OverlaySprite* newHover = new OverlaySprite;
+			newHover->isChanged = true;
+			newHover->position = std::make_pair(0,0);
+
+			newHover->rectOverlay.setFillColor(sf::Color(0,0,0, 100));
+
+			newHover->rectOverlay.setPosition(buttonPosition.first, buttonPosition.second);
+			newHover->rectOverlay.setSize(sf::Vector2f(buttonBounds.first,buttonBounds.second));
+			heldOverlaySprites[atrName] = newHover;
+		}
+		break;
+	case gui::BtnAtr::Percent:
+		{
+			PercentSprite* newPercent = new PercentSprite;
+			newPercent->isChanged = true;
+			newPercent->position = std::make_pair(0,0);
+			newPercent->spritePercentage = 1.f;
+			newPercent->directionOfGap = utl::Direction::right;
+			newPercent->sprite.setPosition(newPercent->position.first  + buttonPosition.first,
+			                               newPercent->position.second + buttonPosition.second);
+			newPercent->rectOverlay.setPosition(newPercent->position.first  + buttonPosition.first,
+			                                    newPercent->position.second + buttonPosition.second);
+			newPercent->originalTextureRect = sf::IntRect(0,0,0,0);
+			heldPercentSprites[atrName] = newPercent;
+		}
+		break;
+	default:
+		{
+
+		}
+		break;
+	}
+}
+
+void Button::setBtnAtr(std::string atrName, gui::BtnAtrChar atrChar, std::string value)
+{
+	int spriteID = count(atrName, sprites);
+	if(spriteID != -1)
+	{
+		switch(atrChar)
+		{
+		case gui::BtnAtrChar::texture:
+			sprites.at(spriteID).sprite.setTexture(resourceManager.getTexture(value));
+			break;
+		case gui::BtnAtrChar::flip:
+			setBtnAtr(atrName, atrChar, value.size() ? value.at(0) : 0);
+			break;
+		default:
+			//TODO print warning if invalid
+			break;
+		}
+
+		//TODO uncomment
+		//return;
+	}
+
+
+	//TODO remove
 	if(heldText.count(atrName))
 	{
 		switch(atrChar)
 		{
-		case gui::ButtonAtrCharacteristic::text:
+		case gui::BtnAtrChar::text:
 			heldText[atrName]->text.setString(value);
 			break;
 		default:
 			break;
 		}
 	}
-	else if(heldSprites.count(atrName))
-	{
-		switch(atrChar)
-		{
-		case gui::ButtonAtrCharacteristic::texture:
-			heldSprites[atrName]->normalSprite.setTexture(resourceManager.getTexture(value));
-			break;
-		default:
-			break;
-		}
-
-	}
 	else if(heldOverlaySprites.count(atrName))
 	{
 		switch(atrChar)
@@ -231,38 +268,45 @@ void Button::setButtonAtr(std::string atrName, gui::ButtonAtrCharacteristic atrC
 	{
 		switch(atrChar)
 		{
-		case gui::ButtonAtrCharacteristic::texture:
-			heldPercentSprites[atrName]->normalSprite.setTexture(resourceManager.getTexture(value));
+		case gui::BtnAtrChar::texture:
+			heldPercentSprites[atrName]->sprite.setTexture(resourceManager.getTexture(value));
 			break;
 		default:
 			break;
 		}
 	}
 }
-void Button::setButtonAtr(std::string atrName, gui::ButtonAtrCharacteristic atrChar, std::pair<int, int> value)
+void Button::setBtnAtr(std::string atrName, gui::BtnAtrChar atrChar, std::pair<int, int> value)
 {
+	int spriteID = count(atrName, sprites);
+	if(spriteID != -1)
+	{
+		switch(atrChar)
+		{
+		case gui::BtnAtrChar::coords:
+			sprites.at(spriteID).position = value;
+			break;
+		case gui::BtnAtrChar::size:
+			sprites.at(spriteID).sprite.setScale(
+			    sf::Vector2f(value.first/sprites.at(spriteID).sprite.getLocalBounds().width,
+			                 value.second/sprites.at(spriteID).sprite.getLocalBounds().height));
+		default:
+			//TODO print warning if invalid
+			break;
+		}
+
+		//TODO uncomment
+		//return;
+	}
+
+	//TODO remove
 	if(heldText.count(atrName))
 	{
 		switch(atrChar)
 		{
-		case gui::ButtonAtrCharacteristic::coords:
+		case gui::BtnAtrChar::coords:
 			heldText[atrName]->position = value;
 			break;
-		default:
-			break;
-		}
-	}
-	else if(heldSprites.count(atrName))
-	{
-		switch(atrChar)
-		{
-		case gui::ButtonAtrCharacteristic::coords:
-			heldSprites[atrName]->position = value;
-			break;
-		case gui::ButtonAtrCharacteristic::size:
-			heldSprites[atrName]->normalSprite.setScale(
-			    sf::Vector2f(value.first/heldSprites[atrName]->normalSprite.getLocalBounds().width,
-			                 value.second/heldSprites[atrName]->normalSprite.getLocalBounds().height));
 		default:
 			break;
 		}
@@ -279,15 +323,15 @@ void Button::setButtonAtr(std::string atrName, gui::ButtonAtrCharacteristic atrC
 	{
 		switch(atrChar)
 		{
-		case gui::ButtonAtrCharacteristic::coords:
+		case gui::BtnAtrChar::coords:
 			heldPercentSprites[atrName]->position = value;
 			break;
-		case gui::ButtonAtrCharacteristic::size:
-			if(heldPercentSprites[atrName]->normalSprite.getTexture() != nullptr)
+		case gui::BtnAtrChar::size:
+			if(heldPercentSprites[atrName]->sprite.getTexture() != nullptr)
 			{
-				heldPercentSprites[atrName]->normalSprite.setScale(
-				    sf::Vector2f((float)value.first/heldPercentSprites[atrName]->normalSprite.getLocalBounds().width,
-				                 (float)value.second/heldPercentSprites[atrName]->normalSprite.getLocalBounds().height));
+				heldPercentSprites[atrName]->sprite.setScale(
+				    sf::Vector2f((float)value.first/heldPercentSprites[atrName]->sprite.getLocalBounds().width,
+				                 (float)value.second/heldPercentSprites[atrName]->sprite.getLocalBounds().height));
 			}
 			else
 			{
@@ -301,13 +345,22 @@ void Button::setButtonAtr(std::string atrName, gui::ButtonAtrCharacteristic atrC
 		}
 	}
 }
-void Button::setButtonAtr(std::string atrName, gui::ButtonAtrCharacteristic atrChar, sf::Color color)
+void Button::setBtnAtr(std::string atrName, gui::BtnAtrChar atrChar, sf::Color color)
 {
+	int spriteID = count(atrName, sprites);
+	if(spriteID != -1)
+	{
+		sprites.at(spriteID).sprite.setColor(color);
+		//TODO uncomment
+		//return;
+	}
+
+	//TODO remove
 	if(heldText.count(atrName))
 	{
 		switch(atrChar)
 		{
-		case gui::ButtonAtrCharacteristic::color:
+		case gui::BtnAtrChar::color:
 			heldText[atrName]->text.setFillColor(color);
 			heldText[atrName]->text.setOutlineColor(color);
 			break;
@@ -315,20 +368,11 @@ void Button::setButtonAtr(std::string atrName, gui::ButtonAtrCharacteristic atrC
 			break;
 		}
 	}
-	else if(heldSprites.count(atrName))
-	{
-		switch(atrChar)
-		{
-		default:
-			heldSprites[atrName]->normalSprite.setColor(color);
-			break;
-		}
-	}
 	else if(heldOverlaySprites.count(atrName))
 	{
 		switch(atrChar)
 		{
-		case gui::ButtonAtrCharacteristic::color:
+		case gui::BtnAtrChar::color:
 			heldOverlaySprites[atrName]->rectOverlay.setFillColor(color);
 			break;
 		default:
@@ -340,7 +384,7 @@ void Button::setButtonAtr(std::string atrName, gui::ButtonAtrCharacteristic atrC
 	{
 		switch(atrChar)
 		{
-		case gui::ButtonAtrCharacteristic::color:
+		case gui::BtnAtrChar::color:
 			heldPercentSprites[atrName]->rectOverlay.setFillColor(color);
 			break;
 		default:
@@ -348,13 +392,37 @@ void Button::setButtonAtr(std::string atrName, gui::ButtonAtrCharacteristic atrC
 		}
 	}
 }
-void Button::setButtonAtr(std::string atrName, gui::ButtonAtrCharacteristic atrChar, int value)
+void Button::setBtnAtr(std::string atrName, gui::BtnAtrChar atrChar, int value)
 {
+	int spriteID = count(atrName, sprites);
+	if(spriteID != -1)
+	{
+		switch(atrChar)
+		{
+		case gui::BtnAtrChar::transparency:
+			{
+				sf::Color newColor = sprites.at(spriteID).sprite.getColor();
+				float trans = static_cast <float>(value);
+				trans = trans * 255 / 100;
+				newColor.a = trans;
+				sprites.at(spriteID).sprite.setColor(newColor);
+			}
+			break;
+		default:
+			//TODO print warning if invalid
+			break;
+		}
+
+		//TODO uncomment
+		//return;
+
+	}
+
 	if(heldText.count(atrName))
 	{
 		switch(atrChar)
 		{
-		case gui::ButtonAtrCharacteristic::charSize:
+		case gui::BtnAtrChar::charSize:
 			heldText[atrName]->text.setCharacterSize(value * 2);
 			heldText[atrName]->text.setScale(0.5, 0.5);
 			break;
@@ -362,29 +430,11 @@ void Button::setButtonAtr(std::string atrName, gui::ButtonAtrCharacteristic atrC
 			break;
 		}
 	}
-	else if(heldSprites.count(atrName))
-	{
-		switch(atrChar)
-		{
-		case gui::ButtonAtrCharacteristic::transparency:
-			{
-				sf::Color newColor = heldSprites[atrName]->normalSprite.getColor();
-				float trans = static_cast <float>(value);
-				trans = trans * 255 / 100;
-				newColor.a = trans;
-				heldSprites[atrName]->normalSprite.setColor(newColor);
-			}
-			break;
-		default:
-			break;
-		}
-
-	}
 	else if(heldOverlaySprites.count(atrName))
 	{
 		switch(atrChar)
 		{
-		case gui::ButtonAtrCharacteristic::transparency:
+		case gui::BtnAtrChar::transparency:
 			{
 				sf::Color newColor = heldOverlaySprites[atrName]->rectOverlay.getFillColor();
 				float trans = static_cast <float>(value);
@@ -402,40 +452,40 @@ void Button::setButtonAtr(std::string atrName, gui::ButtonAtrCharacteristic atrC
 	{
 		switch(atrChar)
 		{
-		case gui::ButtonAtrCharacteristic::percentage:
+		case gui::BtnAtrChar::percentage:
 			{
 				float percent = (float)value / 100;
 				heldPercentSprites[atrName]->spritePercentage = percent;
-				if(heldPercentSprites[atrName]->normalSprite.getTexture() != nullptr)
+				if(heldPercentSprites[atrName]->sprite.getTexture() != nullptr)
 				{
 					switch(heldPercentSprites[atrName]->directionOfGap)
 					{
-					case gui::Direction::up:
+					case utl::Direction::up:
 						{
 							sf::IntRect spriteRect = heldPercentSprites[atrName]->originalTextureRect;
 							spriteRect.height *= percent;
-							heldPercentSprites[atrName]->normalSprite.setTextureRect(spriteRect);
+							heldPercentSprites[atrName]->sprite.setTextureRect(spriteRect);
 						}
 						break;
-					case gui::Direction::down:
+					case utl::Direction::down:
 						{
 							sf::IntRect spriteRect = heldPercentSprites[atrName]->originalTextureRect;
 							spriteRect.height *= percent;
-							heldPercentSprites[atrName]->normalSprite.setTextureRect(spriteRect);
+							heldPercentSprites[atrName]->sprite.setTextureRect(spriteRect);
 						}
 						break;
-					case gui::Direction::left:
+					case utl::Direction::left:
 						{
 							sf::IntRect spriteRect = heldPercentSprites[atrName]->originalTextureRect;
 							spriteRect.width *= percent;
-							heldPercentSprites[atrName]->normalSprite.setTextureRect(spriteRect);
+							heldPercentSprites[atrName]->sprite.setTextureRect(spriteRect);
 						}
 						break;
-					case gui::Direction::right:
+					case utl::Direction::right:
 						{
 							sf::IntRect spriteRect = heldPercentSprites[atrName]->originalTextureRect;
 							spriteRect.width *= percent;
-							heldPercentSprites[atrName]->normalSprite.setTextureRect(spriteRect);
+							heldPercentSprites[atrName]->sprite.setTextureRect(spriteRect);
 						}
 						break;
 					default:
@@ -447,25 +497,25 @@ void Button::setButtonAtr(std::string atrName, gui::ButtonAtrCharacteristic atrC
 				{
 					switch(heldPercentSprites[atrName]->directionOfGap)
 					{
-					case gui::Direction::up:
+					case utl::Direction::up:
 						heldPercentSprites[atrName]->rectOverlay.setOrigin(0, -1 * heldPercentSprites[atrName]->originalTextureRect.height * (1-percent));
 						heldPercentSprites[atrName]->rectOverlay.setSize(sf::Vector2f(
 						            heldPercentSprites[atrName]->originalTextureRect.width,
 						            heldPercentSprites[atrName]->originalTextureRect.height * percent));
 						break;
-					case gui::Direction::down:
+					case utl::Direction::down:
 
 						heldPercentSprites[atrName]->rectOverlay.setSize(sf::Vector2f(
 						            heldPercentSprites[atrName]->originalTextureRect.width,
 						            heldPercentSprites[atrName]->originalTextureRect.height * percent));
 						break;
-					case gui::Direction::left:
+					case utl::Direction::left:
 						heldPercentSprites[atrName]->rectOverlay.setOrigin(-1 * heldPercentSprites[atrName]->originalTextureRect.width * (1-percent), 0);
 						heldPercentSprites[atrName]->rectOverlay.setSize(sf::Vector2f(
 						            heldPercentSprites[atrName]->originalTextureRect.width * percent,
 						            heldPercentSprites[atrName]->originalTextureRect.height));
 						break;
-					case gui::Direction::right:
+					case utl::Direction::right:
 						heldPercentSprites[atrName]->rectOverlay.setSize(sf::Vector2f(
 						            heldPercentSprites[atrName]->originalTextureRect.width * percent,
 						            heldPercentSprites[atrName]->originalTextureRect.height));
@@ -478,15 +528,15 @@ void Button::setButtonAtr(std::string atrName, gui::ButtonAtrCharacteristic atrC
 			}
 			break;
 
-		case gui::ButtonAtrCharacteristic::transparency:
+		case gui::BtnAtrChar::transparency:
 			{
-				if(heldPercentSprites[atrName]->normalSprite.getTexture() != nullptr)
+				if(heldPercentSprites[atrName]->sprite.getTexture() != nullptr)
 				{
-					sf::Color newColor = heldPercentSprites[atrName]->normalSprite.getColor();
+					sf::Color newColor = heldPercentSprites[atrName]->sprite.getColor();
 					float trans = static_cast <float>(value);
 					trans = trans * 255 / 100;
 					newColor.a = trans;
-					heldPercentSprites[atrName]->normalSprite.setColor(newColor);
+					heldPercentSprites[atrName]->sprite.setColor(newColor);
 				}
 				else
 				{
@@ -503,14 +553,62 @@ void Button::setButtonAtr(std::string atrName, gui::ButtonAtrCharacteristic atrC
 		}
 	}
 }
-
-void Button::setButtonAtr(std::string atrName, gui::ButtonAtrCharacteristic atrChar, char value)
+void Button::setBtnAtr(std::string atrName, gui::BtnAtrChar atrChar, char value)
 {
+	int spriteID = count(atrName, sprites);
+	if(spriteID != -1)
+	{
+		switch(atrChar)
+		{
+		case gui::BtnAtrChar::flip:
+			{
+				switch(value)
+				{
+				case 'x':
+					sprites.at(spriteID).sprite.setTextureRect(sf::IntRect(sprites.at(spriteID).sprite.getLocalBounds().width,
+					        0,
+					        -1 * sprites.at(spriteID).sprite.getLocalBounds().width,
+					        sprites.at(spriteID).sprite.getLocalBounds().height));
+					break;
+				case 'y':
+					sprites.at(spriteID).sprite.setTextureRect(sf::IntRect(0,
+					        sprites.at(spriteID).sprite.getLocalBounds().height,
+					        sprites.at(spriteID).sprite.getLocalBounds().width,
+					        -1 * sprites.at(spriteID).sprite.getLocalBounds().height));
+					break;
+				case 'b':
+					sprites.at(spriteID).sprite.setTextureRect(sf::IntRect(sprites.at(spriteID).sprite.getLocalBounds().width,
+					        sprites.at(spriteID).sprite.getLocalBounds().height,
+					        -1 * sprites.at(spriteID).sprite.getLocalBounds().width,
+					        -1 * sprites.at(spriteID).sprite.getLocalBounds().height));
+					break;
+				case '0':
+				case 'n':
+					sprites.at(spriteID).sprite.setTextureRect(sf::IntRect(0,
+					        0,
+					        sprites.at(spriteID).sprite.getLocalBounds().width,
+					        sprites.at(spriteID).sprite.getLocalBounds().height));
+					break;
+				default:
+					//TODO print warning if invalid
+					break;
+				}
+			}
+			break;
+		default:
+			//TODO print warning if invalid
+			break;
+		}
+
+		//TODO uncomment
+		//return;
+	}
+
 	if(heldText.count(atrName))
 	{
 		switch(atrChar)
 		{
-		case gui::ButtonAtrCharacteristic::charSize:
+		case gui::BtnAtrChar::charSize:
 			heldText[atrName]->text.setCharacterSize(value*2);
 			heldText[atrName]->text.setScale(0.5, 0.5);
 			break;
@@ -518,53 +616,11 @@ void Button::setButtonAtr(std::string atrName, gui::ButtonAtrCharacteristic atrC
 			break;
 		}
 	}
-	else if(heldSprites.count(atrName))
-	{
-		switch(atrChar)
-		{
-		case gui::ButtonAtrCharacteristic::flip:
-			{
-				if(value == 'x')
-				{
-					heldSprites[atrName]->normalSprite.setTextureRect(sf::IntRect(heldSprites[atrName]->normalSprite.getLocalBounds().width,
-					        0,
-					        -1 * heldSprites[atrName]->normalSprite.getLocalBounds().width,
-					        heldSprites[atrName]->normalSprite.getLocalBounds().height));
-				}
-				else if(value == 'y')
-				{
-					heldSprites[atrName]->normalSprite.setTextureRect(sf::IntRect(0,
-					        heldSprites[atrName]->normalSprite.getLocalBounds().height,
-					        heldSprites[atrName]->normalSprite.getLocalBounds().width,
-					        -1 * heldSprites[atrName]->normalSprite.getLocalBounds().height));
-				}
-				else if(value == 'b')
-				{
-					heldSprites[atrName]->normalSprite.setTextureRect(sf::IntRect(heldSprites[atrName]->normalSprite.getLocalBounds().width,
-					        heldSprites[atrName]->normalSprite.getLocalBounds().height,
-					        -1 * heldSprites[atrName]->normalSprite.getLocalBounds().width,
-					        -1 * heldSprites[atrName]->normalSprite.getLocalBounds().height));
-				}
-				else if(value == 0 || value == 'n')
-				{
-					heldSprites[atrName]->normalSprite.setTextureRect(sf::IntRect(0,
-					        0,
-					        heldSprites[atrName]->normalSprite.getLocalBounds().width,
-					        heldSprites[atrName]->normalSprite.getLocalBounds().height));
-				}
-			}
-
-			break;
-		default:
-			break;
-		}
-
-	}
 	else if(heldOverlaySprites.count(atrName))
 	{
 		switch(atrChar)
 		{
-		case gui::ButtonAtrCharacteristic::transparency:
+		case gui::BtnAtrChar::transparency:
 			{
 				sf::Color newColor = heldOverlaySprites[atrName]->rectOverlay.getFillColor();
 				newColor.a = value;
@@ -580,56 +636,56 @@ void Button::setButtonAtr(std::string atrName, gui::ButtonAtrCharacteristic atrC
 	{
 		switch(atrChar)
 		{
-		case gui::ButtonAtrCharacteristic::direction:
+		case gui::BtnAtrChar::direction:
 			{
-				if(heldPercentSprites[atrName]->normalSprite.getTexture() != nullptr)
+				if(heldPercentSprites[atrName]->sprite.getTexture() != nullptr)
 				{
 					if(value == 'u')
 					{
-						heldPercentSprites[atrName]->directionOfGap = gui::Direction::up;
+						heldPercentSprites[atrName]->directionOfGap = utl::Direction::up;
 
-						heldPercentSprites[atrName]->normalSprite.setOrigin(0, heldPercentSprites[atrName]->normalSprite.getLocalBounds().height);
-						heldPercentSprites[atrName]->normalSprite.setScale(heldPercentSprites[atrName]->normalSprite.getScale().x,heldPercentSprites[atrName]->normalSprite.getScale().y * -1);
+						heldPercentSprites[atrName]->sprite.setOrigin(0, heldPercentSprites[atrName]->sprite.getLocalBounds().height);
+						heldPercentSprites[atrName]->sprite.setScale(heldPercentSprites[atrName]->sprite.getScale().x,heldPercentSprites[atrName]->sprite.getScale().y * -1);
 
 						heldPercentSprites[atrName]->originalTextureRect = sf::IntRect(
 						            0,
-						            heldPercentSprites[atrName]->normalSprite.getLocalBounds().height,
-						            heldPercentSprites[atrName]->normalSprite.getLocalBounds().width,
-						            -1 * heldPercentSprites[atrName]->normalSprite.getLocalBounds().height);
+						            heldPercentSprites[atrName]->sprite.getLocalBounds().height,
+						            heldPercentSprites[atrName]->sprite.getLocalBounds().width,
+						            -1 * heldPercentSprites[atrName]->sprite.getLocalBounds().height);
 					}
 					else if(value == 'd')
 					{
-						heldPercentSprites[atrName]->directionOfGap = gui::Direction::down;
+						heldPercentSprites[atrName]->directionOfGap = utl::Direction::down;
 
 						heldPercentSprites[atrName]->originalTextureRect = sf::IntRect(
 						            0,
 						            0,
-						            heldPercentSprites[atrName]->normalSprite.getLocalBounds().width,
-						            heldPercentSprites[atrName]->normalSprite.getLocalBounds().height);
+						            heldPercentSprites[atrName]->sprite.getLocalBounds().width,
+						            heldPercentSprites[atrName]->sprite.getLocalBounds().height);
 
 					}
 					else if(value == 'l')
 					{
-						heldPercentSprites[atrName]->directionOfGap = gui::Direction::left;
+						heldPercentSprites[atrName]->directionOfGap = utl::Direction::left;
 
-						heldPercentSprites[atrName]->normalSprite.setOrigin(heldPercentSprites[atrName]->normalSprite.getLocalBounds().width, 0);
-						heldPercentSprites[atrName]->normalSprite.setScale(heldPercentSprites[atrName]->normalSprite.getScale().x * -1,heldPercentSprites[atrName]->normalSprite.getScale().y);
+						heldPercentSprites[atrName]->sprite.setOrigin(heldPercentSprites[atrName]->sprite.getLocalBounds().width, 0);
+						heldPercentSprites[atrName]->sprite.setScale(heldPercentSprites[atrName]->sprite.getScale().x * -1,heldPercentSprites[atrName]->sprite.getScale().y);
 
 						heldPercentSprites[atrName]->originalTextureRect = sf::IntRect(
-						            heldPercentSprites[atrName]->normalSprite.getLocalBounds().width,
+						            heldPercentSprites[atrName]->sprite.getLocalBounds().width,
 						            0,
-						            -1 * heldPercentSprites[atrName]->normalSprite.getLocalBounds().width,
-						            heldPercentSprites[atrName]->normalSprite.getLocalBounds().height);
+						            -1 * heldPercentSprites[atrName]->sprite.getLocalBounds().width,
+						            heldPercentSprites[atrName]->sprite.getLocalBounds().height);
 					}
 					else if(value == 'r')
 					{
-						heldPercentSprites[atrName]->directionOfGap = gui::Direction::right;
+						heldPercentSprites[atrName]->directionOfGap = utl::Direction::right;
 
 						heldPercentSprites[atrName]->originalTextureRect = sf::IntRect(
 						            0,
 						            0,
-						            heldPercentSprites[atrName]->normalSprite.getLocalBounds().width,
-						            heldPercentSprites[atrName]->normalSprite.getLocalBounds().height);
+						            heldPercentSprites[atrName]->sprite.getLocalBounds().width,
+						            heldPercentSprites[atrName]->sprite.getLocalBounds().height);
 					}
 				}
 				else
@@ -640,19 +696,19 @@ void Button::setButtonAtr(std::string atrName, gui::ButtonAtrCharacteristic atrC
 					            heldPercentSprites[atrName]->originalTextureRect.height));
 					if(value == 'u')
 					{
-						heldPercentSprites[atrName]->directionOfGap = gui::Direction::up;
+						heldPercentSprites[atrName]->directionOfGap = utl::Direction::up;
 					}
 					else if(value == 'd')
 					{
-						heldPercentSprites[atrName]->directionOfGap = gui::Direction::down;
+						heldPercentSprites[atrName]->directionOfGap = utl::Direction::down;
 					}
 					else if(value == 'l')
 					{
-						heldPercentSprites[atrName]->directionOfGap = gui::Direction::left;
+						heldPercentSprites[atrName]->directionOfGap = utl::Direction::left;
 					}
 					else if(value == 'r')
 					{
-						heldPercentSprites[atrName]->directionOfGap = gui::Direction::right;
+						heldPercentSprites[atrName]->directionOfGap = utl::Direction::right;
 					}
 				}
 			}
@@ -662,77 +718,12 @@ void Button::setButtonAtr(std::string atrName, gui::ButtonAtrCharacteristic atrC
 	}
 }
 
-void Button::addButtonAtr(std::string atrName, gui::ButtonAtr buttonAtr)
-{
-	switch(buttonAtr)
-	{
-	case gui::ButtonAtr::Sprite:
-		{
-			RegularSprite* newSprite = new RegularSprite;
-			newSprite->isChanged = true;
-			newSprite->position = std::make_pair(0,0);
-			newSprite->normalSprite.setPosition(newSprite->position.first  + buttonPosition.first,
-			                                    newSprite->position.second + buttonPosition.second);
-
-			heldSprites[atrName] = newSprite;
-		}
-		break;
-	case gui::ButtonAtr::Text:
-		{
-			ButtonText* newText = new ButtonText;
-			newText->isChanged = true;
-			newText->position = std::make_pair(0,0);
-			newText->text.setFont(buttonFont);
-			newText->text.setString(std::string());
-			newText->text.setFillColor(sf::Color::Black);
-			newText->text.setOutlineColor(sf::Color::Black);
-			newText->text.setPosition(newText->position.first  + buttonPosition.first,
-			                          newText->position.second + buttonPosition.second);
-			heldText[atrName] = newText;
-		}
-		break;
-	case gui::ButtonAtr::Hover:
-		{
-			OverlaySprite* newHover = new OverlaySprite;
-			newHover->isChanged = true;
-			newHover->position = std::make_pair(0,0);
-
-			newHover->rectOverlay.setFillColor(sf::Color(0,0,0, 100));
-
-			newHover->rectOverlay.setPosition(buttonPosition.first, buttonPosition.second);
-			newHover->rectOverlay.setSize(sf::Vector2f(buttonBounds.first,buttonBounds.second));
-			heldOverlaySprites[atrName] = newHover;
-		}
-		break;
-	case gui::ButtonAtr::Percent:
-		{
-			PercentSprite* newPercent = new PercentSprite;
-			newPercent->isChanged = true;
-			newPercent->position = std::make_pair(0,0);
-			newPercent->spritePercentage = 1.f;
-			newPercent->directionOfGap = gui::Direction::right;
-			newPercent->normalSprite.setPosition(newPercent->position.first  + buttonPosition.first,
-			                                     newPercent->position.second + buttonPosition.second);
-			newPercent->rectOverlay.setPosition(newPercent->position.first  + buttonPosition.first,
-			                                    newPercent->position.second + buttonPosition.second);
-			newPercent->originalTextureRect = sf::IntRect(0,0,0,0);
-			heldPercentSprites[atrName] = newPercent;
-		}
-		break;
-	default:
-		{
-
-		}
-		break;
-	}
-}
-
 void Button::update(std::pair <int, int> mouseCoords)
 {
 	for(std::map<std::string, OverlaySprite*>::iterator it = heldOverlaySprites.begin(); it != heldOverlaySprites.end(); it++)
 	{
-		if(mouseCoords.first >  buttonPosition.first + scrollAmount_x && mouseCoords.first  < buttonPosition.first + scrollAmount_x  + buttonBounds.first &&
-		        mouseCoords.second > buttonPosition.second + scrollAmount_y && mouseCoords.second < buttonPosition.second + scrollAmount_y + buttonBounds.second)
+		if(mouseCoords.first >  buttonPosition.first + scroll_x && mouseCoords.first  < buttonPosition.first + scroll_x  + buttonBounds.first &&
+		        mouseCoords.second > buttonPosition.second + scroll_y && mouseCoords.second < buttonPosition.second + scroll_y + buttonBounds.second)
 		{
 			it->second->isChanged = true;
 			it->second->isHoveredOver = true;
@@ -745,30 +736,33 @@ void Button::update(std::pair <int, int> mouseCoords)
 	}
 }
 
-void Button::drawButton()
+void Button::draw()
 {
 	if(isVisible)
 	{
-		for(std::map<std::string, RegularSprite*>::iterator it = heldSprites.begin(); it != heldSprites.end(); it++)
+		for(unsigned int i = 0; i < sprites.size(); i++)
 		{
-			if(it->second->isChanged || isCoordsChanged)
+			RegularSprite& spr = sprites.at(i);
+			if(!(spr.isChanged || isCoordsChanged))
 			{
-				it->second->normalSprite.setPosition(buttonPosition.first  + it->second->position.first  + scrollAmount_x,
-				                                     buttonPosition.second + it->second->position.second + scrollAmount_y);
-				it->second->isChanged = false;
-				window.draw(it->second->normalSprite);
+				window.draw(spr.sprite);
 			}
 			else
 			{
-				window.draw(it->second->normalSprite);
+				spr.sprite.setPosition(buttonPosition.first  + spr.position.first  + scroll_x,
+				                       buttonPosition.second + spr.position.second + scroll_y);
+				spr.isChanged = false;
+				window.draw(spr.sprite);
 			}
 		}
+
+		//TODO remove
 		for(std::map<std::string, OverlaySprite*>::iterator it = heldOverlaySprites.begin(); it != heldOverlaySprites.end(); it++)
 		{
 			if(it->second->isChanged || isCoordsChanged)
 			{
-				it->second->rectOverlay.setPosition(buttonPosition.first  + it->second->position.first  + scrollAmount_x,
-				                                    buttonPosition.second + it->second->position.second + scrollAmount_y);
+				it->second->rectOverlay.setPosition(buttonPosition.first  + it->second->position.first  + scroll_x,
+				                                    buttonPosition.second + it->second->position.second + scroll_y);
 				it->second->isChanged = false;
 				if(it->second->isHoveredOver)
 				{
@@ -791,25 +785,25 @@ void Button::drawButton()
 		{
 			if(it->second->isChanged || isCoordsChanged)
 			{
-				if(it->second->normalSprite.getTexture() != nullptr)
+				if(it->second->sprite.getTexture() != nullptr)
 				{
-					it->second->normalSprite.setPosition(buttonPosition.first  + it->second->position.first  + scrollAmount_x,
-					                                     buttonPosition.second + it->second->position.second + scrollAmount_y);
-					window.draw(it->second->normalSprite);
+					it->second->sprite.setPosition(buttonPosition.first  + it->second->position.first  + scroll_x,
+					                               buttonPosition.second + it->second->position.second + scroll_y);
+					window.draw(it->second->sprite);
 				}
 				else
 				{
-					it->second->rectOverlay.setPosition(buttonPosition.first  + it->second->position.first  + scrollAmount_x,
-					                                    buttonPosition.second + it->second->position.second + scrollAmount_y);
+					it->second->rectOverlay.setPosition(buttonPosition.first  + it->second->position.first  + scroll_x,
+					                                    buttonPosition.second + it->second->position.second + scroll_y);
 					window.draw(it->second->rectOverlay);
 				}
 				it->second->isChanged = false;
 			}
 			else
 			{
-				if(it->second->normalSprite.getTexture() != nullptr)
+				if(it->second->sprite.getTexture() != nullptr)
 				{
-					window.draw(it->second->normalSprite);
+					window.draw(it->second->sprite);
 				}
 				else
 				{
@@ -821,8 +815,8 @@ void Button::drawButton()
 		{
 			if(it->second->isChanged || isCoordsChanged)
 			{
-				it->second->text.setPosition(buttonPosition.first  + it->second->position.first  + scrollAmount_x,
-				                             buttonPosition.second + it->second->position.second + scrollAmount_y);
+				it->second->text.setPosition(buttonPosition.first  + it->second->position.first  + scroll_x,
+				                             buttonPosition.second + it->second->position.second + scroll_y);
 				it->second->isChanged = false;
 
 				window.draw(it->second->text);

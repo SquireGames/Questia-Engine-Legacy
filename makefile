@@ -4,15 +4,15 @@
 CC          := g++ 
 CFLAGS      := -std=c++11 -Wall -MP -MD -fPIC
 DEBUGFLAGS  := -g -DDEBUGMODE=1
-LDFLAGS	    := -shared 
+LDFLAGS	    := -shared
 LIB_win     := -L lib/SFML-2.4.2-win/lib -lsfml-audio -lsfml-network -lsfml-graphics -lsfml-window -lsfml-system -lstdc++fs -lktmw32
-LIB_lin     := -L lib/SFML-2.4.2-lin/lib -lsfml-audio -lsfml-network -lsfml-graphics -lsfml-window -lsfml-system -lstdc++fs
+LIB_lin     := -lsfml-audio -lsfml-network -lsfml-graphics -lsfml-window -lsfml-system -lstdc++fs
 SRCEXT      := cpp
 
 SRCDIR      := src
 INC         := -I include
 TARGET_R    := bin/libquestia-eng
-TARGET_D    := bin/libquestia_eng-d
+TARGET_D    := bin/libquestia-eng-d
 BUILDDIR_R  := build
 BUILDDIR_D  := build_debug
 

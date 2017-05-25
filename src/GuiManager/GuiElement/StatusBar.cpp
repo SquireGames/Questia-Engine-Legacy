@@ -23,7 +23,7 @@ void StatusBar::init(std::string barName, GuiManager& pGuiManager, GuiLoader& gu
 
 	guiManager->createButton(buttonName, "statusBarTemplate");
 
-	guiManager->setButton(buttonName, gui::ButtonCharacteristic::coords_group, std::make_pair(0, pos_y));
+	guiManager->setButton(buttonName, gui::BtnChar::coords_group, std::make_pair(0, pos_y));
 
 	//tab positioning along x axis
 	unsigned int trav_x = 0;
@@ -41,20 +41,20 @@ void StatusBar::init(std::string barName, GuiManager& pGuiManager, GuiLoader& gu
 		std::string atrName_key = buttonName + "k" + std::to_string(i);
 		std::string atrName_val = buttonName + "v" + std::to_string(i);
 
-		guiManager->createButtonAtr(buttonName, atrName_key, gui::ButtonAtr::Text);
-		guiManager->setButtonAtr(gui::ButtonAtrCharacteristic::charSize, 18);
-		guiManager->setButtonAtr(gui::ButtonAtrCharacteristic::color, sf::Color::Black);
-		guiManager->setButtonAtr(gui::ButtonAtrCharacteristic::text, entries[i].atrName_key);
-		guiManager->setButtonAtr(gui::ButtonAtrCharacteristic::coords, std::make_pair(trav_x, 0));
+		guiManager->createBtnAtr(buttonName, atrName_key, gui::BtnAtr::Text);
+		guiManager->setBtnAtr(gui::BtnAtrChar::charSize, 18);
+		guiManager->setBtnAtr(gui::BtnAtrChar::color, sf::Color::Black);
+		guiManager->setBtnAtr(gui::BtnAtrChar::text, entries[i].atrName_key);
+		guiManager->setBtnAtr(gui::BtnAtrChar::coords, std::make_pair(trav_x, 0));
 		int textSpace = sf::Text(entries[i].atrName_key, *guiManager->getFont(), 18).getGlobalBounds().width;
 		trav_x += textSpace;
 		entries[i].atrName_key = atrName_key;
 
-		guiManager->createButtonAtr(buttonName, atrName_val, gui::ButtonAtr::Text);
-		guiManager->setButtonAtr(gui::ButtonAtrCharacteristic::charSize, 18);
-		guiManager->setButtonAtr(gui::ButtonAtrCharacteristic::color, sf::Color::Black);
-		guiManager->setButtonAtr(gui::ButtonAtrCharacteristic::text, entries[i].atrName_val);
-		guiManager->setButtonAtr(gui::ButtonAtrCharacteristic::coords, std::make_pair(trav_x, 0));
+		guiManager->createBtnAtr(buttonName, atrName_val, gui::BtnAtr::Text);
+		guiManager->setBtnAtr(gui::BtnAtrChar::charSize, 18);
+		guiManager->setBtnAtr(gui::BtnAtrChar::color, sf::Color::Black);
+		guiManager->setBtnAtr(gui::BtnAtrChar::text, entries[i].atrName_val);
+		guiManager->setBtnAtr(gui::BtnAtrChar::coords, std::make_pair(trav_x, 0));
 		entries[i].atrName_val = atrName_val;
 
 		trav_x += entries[i].spacing;
@@ -94,7 +94,7 @@ void StatusBar::updateVal(std::string key, std::string val)
 	{
 		if(entry.key == key)
 		{
-			guiManager->setButtonAtr(buttonName, entry.atrName_val, gui::ButtonAtrCharacteristic::text, val);
+			guiManager->setBtnAtr(buttonName, entry.atrName_val, gui::BtnAtrChar::text, val);
 			return;
 		}
 	}
@@ -105,7 +105,7 @@ void StatusBar::setActivity(bool isActive)
 	if(isActive != isBarActive)
 	{
 		isBarActive = isActive;
-		guiManager->setButton(buttonName, gui::ButtonCharacteristic::isVisible, isActive);
+		guiManager->setButton(buttonName, gui::BtnChar::isVisible, isActive);
 	}
 }
 

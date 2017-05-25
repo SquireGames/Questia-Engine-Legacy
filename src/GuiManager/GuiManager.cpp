@@ -4,7 +4,7 @@ GuiManager::GuiManager(sf::RenderWindow &_window, ResourceManager &_resourceMana
 	window(_window)
 	, resourceManager(_resourceManager)
 	, currentButtonEdit("NOBUTTON")
-	, currentButtonAtrEdit("NOBUTTONATR")
+	, currentBtnAtrEdit("NOBUTTONATR")
 	, currentGroupEdit("NOGROUP")
 	, currentListEdit("NOLIST")
 	, mouseCoords(0,0)
@@ -44,7 +44,7 @@ void GuiManager::createButtonTemplate(std::string buttonName)
 		Button* newButton = new Button(window, resourceManager, buttonFont, true, -1);
 		newButton->buttonName = buttonName;
 		buttonMap[buttonName] = newButton;
-		buttonMap[buttonName]->setButton(gui::ButtonCharacteristic::isVisible, false);
+		buttonMap[buttonName]->setButton(gui::BtnChar::isVisible, false);
 
 		currentButtonEdit = buttonName;
 	}
@@ -57,7 +57,7 @@ void GuiManager::createButtonTemplate(std::string buttonName, int layer)
 		Button* newButton = new Button(window, resourceManager, buttonFont, true, -1);
 		newButton->buttonName = buttonName;
 		buttonMap[buttonName] = newButton;
-		buttonMap[buttonName]->setButton(gui::ButtonCharacteristic::isVisible, false);
+		buttonMap[buttonName]->setButton(gui::BtnChar::isVisible, false);
 
 		newButton->layer = layer;
 
@@ -74,8 +74,8 @@ void GuiManager::createButtonTemplate(std::string copyName, std::string original
 			Button* newButton = new Button(*buttonMap[originalName], -1);
 			newButton->buttonName = copyName;
 			buttonMap[copyName] = newButton;
-			buttonMap[copyName]->setButton(gui::ButtonCharacteristic::isVisible, false);
-			buttonMap[copyName]->setButton(gui::ButtonCharacteristic::isTemplate, true);
+			buttonMap[copyName]->setButton(gui::BtnChar::isVisible, false);
+			buttonMap[copyName]->setButton(gui::BtnChar::isTemplate, true);
 
 			currentButtonEdit = copyName;
 		}
@@ -164,20 +164,20 @@ void GuiManager::placeInDrawList(Button* button)
 	}
 }
 
-void GuiManager::createButtonAtr(std::string buttonName, std::string atrName, gui::ButtonAtr buttonAtr)
+void GuiManager::createBtnAtr(std::string buttonName, std::string atrName, gui::BtnAtr buttonAtr)
 {
 	if(buttonMap.count(buttonName))
 	{
-		buttonMap[buttonName]->addButtonAtr(atrName, buttonAtr);
+		buttonMap[buttonName]->addBtnAtr(atrName, buttonAtr);
 		currentButtonEdit = buttonName;
-		currentButtonAtrEdit = atrName;
+		currentBtnAtrEdit = atrName;
 	}
 }
 
-void GuiManager::createButtonAtr(std::string atrName, gui::ButtonAtr buttonAtr)
+void GuiManager::createBtnAtr(std::string atrName, gui::BtnAtr buttonAtr)
 {
-	buttonMap[currentButtonEdit]->addButtonAtr(atrName, buttonAtr);
-	currentButtonAtrEdit = atrName;
+	buttonMap[currentButtonEdit]->addBtnAtr(atrName, buttonAtr);
+	currentBtnAtrEdit = atrName;
 }
 
 void GuiManager::createGroup(std::string groupName)
@@ -204,7 +204,7 @@ void GuiManager::createGroupFromTemplate(std::string groupName, std::string temp
 			buttonCount++;
 			std::string buttonName = it + "_" + groupName;
 			buttonMap[buttonName] = newButton;
-			buttonMap[buttonName]->setButton(gui::ButtonCharacteristic::coords, buttonMap[it]->buttonPosition);
+			buttonMap[buttonName]->setButton(gui::BtnChar::coords, buttonMap[it]->buttonPosition);
 
 			groupMap[groupName].push_back(buttonName);
 
@@ -275,8 +275,8 @@ bool GuiManager::isClicked(std::string buttonName)
 		{
 			std::pair <int, int> buttonCoords = buttonMap[buttonName]->buttonPosition;
 			std::pair <int, int> buttonBounds = buttonMap[buttonName]->buttonBounds;
-			buttonCoords.first  += buttonMap[buttonName]->scrollAmount_x;
-			buttonCoords.second += buttonMap[buttonName]->scrollAmount_y;
+			buttonCoords.first  += buttonMap[buttonName]->scroll_x;
+			buttonCoords.second += buttonMap[buttonName]->scroll_y;
 
 			if(mouseCoords.x  > buttonCoords.first  && mouseCoords.x  < buttonCoords.first  + buttonBounds.first &&
 			        mouseCoords.y > buttonCoords.second && mouseCoords.y < buttonCoords.second + buttonBounds.second)
@@ -297,11 +297,11 @@ void GuiManager::createAlias(std::string alias, std::string buttonName)
 	aliasMap[alias] = buttonName;
 }
 
-void GuiManager::drawButtons()
+void GuiManager::draw()
 {
 	for(auto it = buttonDrawList.begin(); it != buttonDrawList.end(); it++)
 	{
-		(*it)->drawButton();
+		(*it)->draw();
 	}
 }
 
@@ -429,7 +429,7 @@ std::string GuiManager::createListEntry(std::string listName)
 		std::string entryName = listName + "_" + ss.str();
 
 		createGroupFromTemplate(entryName, listMap[listName].groupTemplate);
-		setGroupAtr(gui::ButtonCharacteristic::coords,
+		setGroupAtr(gui::BtnChar::coords,
 		            std::make_pair(listMap[listName].position.first  + entries * listMap[listName].listSpacing.first,
 		                           listMap[listName].position.second + entries * listMap[listName].listSpacing.second));
 		listMap[listName].elementGroups.push_back(entryName);
@@ -448,7 +448,7 @@ std::string GuiManager::createListEntry()
 		std::string entryName = currentListEdit + "_" + ss.str();
 
 		createGroupFromTemplate(entryName, listMap[currentListEdit].groupTemplate);
-		setGroupAtr(gui::ButtonCharacteristic::coords,
+		setGroupAtr(gui::BtnChar::coords,
 		            std::make_pair(listMap[currentListEdit].position.first  + entries * listMap[currentListEdit].listSpacing.first,
 		                           listMap[currentListEdit].position.second + entries * listMap[currentListEdit].listSpacing.second));
 		listMap[currentListEdit].elementGroups.push_back(entryName);

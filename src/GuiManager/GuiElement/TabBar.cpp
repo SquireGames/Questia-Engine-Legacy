@@ -61,8 +61,8 @@ void TabBar::init(std::string tabBarName, GuiManager& pGuiManager, GuiLoader& gu
 
 		guiManager->createButton(tabName, "tabTemplate");
 
-		guiManager->setButton(tabName, gui::ButtonCharacteristic::coords, std::make_pair(trav_x, 0));
-		guiManager->setButtonAtr(tabName, "buttonText", gui::ButtonAtrCharacteristic::text, tabs[i].tabName);
+		guiManager->setButton(tabName, gui::BtnChar::coords, std::make_pair(trav_x, 0));
+		guiManager->setBtnAtr(tabName, "buttonText", gui::BtnAtrChar::text, tabs[i].tabName);
 
 		//make MenuStacks
 		tabs[i].menu.init("S_" + tabName, trav_x, ((dir == utl::Direction::down) ? 1080-22-offset_y : 22+offset_y), pGuiManager, guiLoader);
@@ -70,18 +70,18 @@ void TabBar::init(std::string tabBarName, GuiManager& pGuiManager, GuiLoader& gu
 		//adjust to width of text
 		sf::Text t(tabs[i].tabName, *guiManager->getFont(), 15);
 		unsigned int tabWidth = t.getGlobalBounds().width + 14;
-		guiManager->setButtonAtr(tabName, "buttonSprite", gui::ButtonAtrCharacteristic::size, std::make_pair(tabWidth, 22));
-		guiManager->setButton(tabName, gui::ButtonCharacteristic::bounds, "buttonSprite");
-		guiManager->createButtonAtr(tabName, "hover", gui::ButtonAtr::Hover);
-		guiManager->setButtonAtr(tabName, "hover", gui::ButtonAtrCharacteristic::color, sf::Color(0,206,209));
-		guiManager->setButtonAtr(tabName, "hover", gui::ButtonAtrCharacteristic::transparency, 20);
+		guiManager->setBtnAtr(tabName, "buttonSprite", gui::BtnAtrChar::size, std::make_pair(tabWidth, 22));
+		guiManager->setButton(tabName, gui::BtnChar::bounds, "buttonSprite");
+		guiManager->createBtnAtr(tabName, "hover", gui::BtnAtr::Hover);
+		guiManager->setBtnAtr(tabName, "hover", gui::BtnAtrChar::color, sf::Color(0,206,209));
+		guiManager->setBtnAtr(tabName, "hover", gui::BtnAtrChar::transparency, 20);
 
 		trav_x += tabWidth;
 		trav_x += tabs[i].offset;
 
 		guiManager->addToGroup(groupName, tabName);
 	}
-	guiManager->setGroupAtr(groupName, gui::ButtonCharacteristic::coords_group, std::make_pair(0, pos_y));
+	guiManager->setGroupAtr(groupName, gui::BtnChar::coords_group, std::make_pair(0, pos_y));
 }
 
 void TabBar::update(MouseListener& mouse)
@@ -144,7 +144,7 @@ void TabBar::setActivity(bool isActive)
 		{
 			tab.menu.setActivity(false);
 		}
-		guiManager->setGroupAtr(groupName, gui::ButtonCharacteristic::isVisible, isActive);
+		guiManager->setGroupAtr(groupName, gui::BtnChar::isVisible, isActive);
 	}
 }
 

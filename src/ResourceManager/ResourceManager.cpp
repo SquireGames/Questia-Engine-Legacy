@@ -17,12 +17,9 @@ sf::Texture& ResourceManager::getTexture(std::string filename)
 		firstTime = false;
 		textureMap.clear();
 	}
-	for(auto it = textureMap.begin(); it != textureMap.end(); it++)
+	if(textureMap.count(filename))
 	{
-		if(filename == it->first)
-		{
-			return it->second;
-		}
+		return textureMap[filename];
 	}
 
 	sf::Texture tex;

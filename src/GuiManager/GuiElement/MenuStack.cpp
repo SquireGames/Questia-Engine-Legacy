@@ -49,9 +49,9 @@ void MenuStack::init(std::string stackName, int x, int y, GuiManager& pGuiManage
 		std::string alias = entries[i].buttonName;
 		entries[i].buttonName = guiManager->getGroupEntry(guiManager->createListEntry(), "stackButtonTemplate");
 		guiManager->createAlias(alias, entries[i].buttonName);
-		guiManager->setButtonAtr(entries[i].buttonName, "buttonText", gui::ButtonAtrCharacteristic::text, entries[i].entryText);
+		guiManager->setBtnAtr(entries[i].buttonName, "buttonText", gui::BtnAtrChar::text, entries[i].entryText);
 	}
-	guiManager->setListAtr(listName, gui::ButtonCharacteristic::isVisible, false);
+	guiManager->setListAtr(listName, gui::BtnChar::isVisible, false);
 }
 
 void MenuStack::handleInput(std::u32string& input)
@@ -79,7 +79,7 @@ void MenuStack::setActivity(bool active)
 	if(isStackActive != active)
 	{
 		isStackActive = active;
-		guiManager->setListAtr(listName, gui::ButtonCharacteristic::isVisible, active);
+		guiManager->setListAtr(listName, gui::BtnChar::isVisible, active);
 	}
 }
 
