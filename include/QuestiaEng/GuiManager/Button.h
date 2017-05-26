@@ -58,8 +58,8 @@ public:
 	//ctor + dtor
 	Button(sf::RenderWindow& _window, ResourceManager &_resourceManager, sf::Font& _buttonFont, bool _isTemplate, int _buttonID);
 	Button(const Button& oldButton, int _buttonID);
-	~Button();
-	
+	~Button() = default;
+
 	void addBtnAtr(std::string atrName, gui::BtnAtr buttonAtr);
 
 	void setButton(gui::BtnChar buttonChar, std::string value);
@@ -76,9 +76,6 @@ public:
 
 	void update(std::pair <int, int> mouseCoords);
 	void draw();
-
-	//TODO REMOVE
-	void copyToThisButton(Button& newButton, const Button& oldButton);
 
 	//refs
 	sf::RenderWindow& window;
@@ -110,31 +107,46 @@ public:
 	};
 	struct ButtonText
 	{
+		ButtonText(std::string name, sf::Font& font):atrName(name)
+		{
+			text.setFont(font);
+			text.setFillColor(sf::Color::Black); text.setOutlineColor(sf::Color::Black);
+		}
+		ButtonText(const ButtonText& old):atrName(old.atrName), text(old.text), position(old.position) {}
 		std::string atrName;
 		sf::Text text;
-		std::pair <int, int> position;
-		bool isChanged;
+		std::pair <int, int> position = std::make_pair(0,0);
+		bool isChanged = true;
 	};
 	struct OverlaySprite
 	{
+		OverlaySprite(std::string name, sf::Vector2f bounds):atrName(name)
+		{
+			rectOverlay.setFillColor(sf::Color(0,0,0, 100));
+			rectOverlay.setSize(bounds);
+		}
+		OverlaySprite(const OverlaySprite& old):atrName(old.atrName), rectOverlay(old.rectOverlay), position(old.position) {}
 		std::string atrName;
 		sf::RectangleShape rectOverlay;
-		std::pair <int, int> position;
-		bool isChanged;
-		bool isHoveredOver;
+		std::pair <int, int> position = std::make_pair(0,0);
+		bool isChanged = true;
+		bool isHoveredOver = false;
 	};
 	struct PercentSprite
 	{
+		PercentSprite(std::string name):atrName(name) {}
+		PercentSprite(const PercentSprite& old):atrName(old.atrName), sprite(old.sprite), rectOverlay(old.rectOverlay),
+			spritePercentage(old.spritePercentage), directionOfGap(old.directionOfGap),
+			originalTextureRect(old.originalTextureRect), position(old.position) {}
 		std::string atrName;
 		sf::Sprite sprite;
 		sf::RectangleShape rectOverlay;
-		float spritePercentage;
-		utl::Direction directionOfGap;
-		sf::IntRect originalTextureRect;
-		std::pair <int, int> position;
-		bool isChanged;
+		float spritePercentage = 1.f;
+		utl::Direction directionOfGap = utl::Direction::right;
+		sf::IntRect originalTextureRect = sf::IntRect(0,0,0,0);
+		std::pair <int, int> position = std::make_pair(0,0);
+		bool isChanged = true;
 	};
-
 
 	//holds attributes
 	std::vector<RegularSprite> sprites;
@@ -142,12 +154,6 @@ public:
 	std::vector<OverlaySprite> hovers;
 	std::vector<PercentSprite> percents;
 
-	std::map<std::string, ButtonText*> heldText;
-	std::map<std::string, OverlaySprite*> heldOverlaySprites;
-	std::map<std::string, PercentSprite*> heldPercentSprites;
-
-	
-	
 private:
 	inline int count(const std::string& name, const std::vector<RegularSprite>& vec)
 	{

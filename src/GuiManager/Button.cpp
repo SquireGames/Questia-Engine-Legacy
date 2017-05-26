@@ -1,5 +1,7 @@
 #include "QuestiaEng/GuiManager/Button.h"
 
+//TODO log errors with __LINE__ and __FILE__
+
 Button::Button(sf::RenderWindow& _window, ResourceManager &_resourceManager, sf::Font& _buttonFont, bool _isTemplate, int _buttonID):
 	window(_window)
 	, resourceManager(_resourceManager)
@@ -9,7 +11,6 @@ Button::Button(sf::RenderWindow& _window, ResourceManager &_resourceManager, sf:
 	, isTemplate(_isTemplate)
 	, isVisible(true)
 {}
-
 Button::Button(const Button& oldButton, int _buttonID):
 	window(oldButton.window)
 	, resourceManager(oldButton.resourceManager)
@@ -23,75 +24,27 @@ Button::Button(const Button& oldButton, int _buttonID):
 	, texts(oldButton.texts)
 	, hovers(oldButton.hovers)
 	, percents(oldButton.percents)
-{
-	//TODO remove
-	copyToThisButton(*this, oldButton);
-}
+{}
 
-// copies attributes
-//TODO remove
-void Button::copyToThisButton(Button& newButton, const Button& oldButton)
+void Button::setButton(gui::BtnChar buttonChar, const char* value)
 {
-	for(std::map<std::string, ButtonText*>::const_iterator it = oldButton.heldText.begin(); it != oldButton.heldText.end(); ++it)
-	{
-		newButton.addBtnAtr(it->first, gui::BtnAtr::Text);
-		newButton.heldText[it->first]->text      = oldButton.heldText.at(it->first)->text;
-		newButton.heldText[it->first]->position  = oldButton.heldText.at(it->first)->position;
-		newButton.heldText[it->first]->isChanged = oldButton.heldText.at(it->first)->isChanged;
-	}
-	for(std::map<std::string, OverlaySprite*>::const_iterator it = oldButton.heldOverlaySprites.begin(); it != oldButton.heldOverlaySprites.end(); ++it)
-	{
-		newButton.addBtnAtr(it->first, gui::BtnAtr::Hover);
-		newButton.heldOverlaySprites[it->first]->rectOverlay   = oldButton.heldOverlaySprites.at(it->first)->rectOverlay;
-		newButton.heldOverlaySprites[it->first]->isChanged     = oldButton.heldOverlaySprites.at(it->first)->isChanged;
-		newButton.heldOverlaySprites[it->first]->position      = oldButton.heldOverlaySprites.at(it->first)->position;
-		newButton.heldOverlaySprites[it->first]->isHoveredOver = oldButton.heldOverlaySprites.at(it->first)->isHoveredOver;
-	}
-	for(std::map<std::string, PercentSprite*>::const_iterator it = oldButton.heldPercentSprites.begin(); it != oldButton.heldPercentSprites.end(); ++it)
-	{
-		newButton.addBtnAtr(it->first, gui::BtnAtr::Percent);
-		newButton.heldPercentSprites[it->first]->spritePercentage = oldButton.heldPercentSprites.at(it->first)->spritePercentage;
-		newButton.heldPercentSprites[it->first]->sprite     = oldButton.heldPercentSprites.at(it->first)->sprite;
-		newButton.heldPercentSprites[it->first]->directionOfGap   = oldButton.heldPercentSprites.at(it->first)->directionOfGap;
-		newButton.heldPercentSprites[it->first]->isChanged        = oldButton.heldPercentSprites.at(it->first)->isChanged;
-		newButton.heldPercentSprites[it->first]->position         = oldButton.heldPercentSprites.at(it->first)->position;
-		newButton.heldPercentSprites[it->first]->rectOverlay      = oldButton.heldPercentSprites.at(it->first)->rectOverlay;
-		newButton.heldPercentSprites[it->first]->originalTextureRect = oldButton.heldPercentSprites.at(it->first)->originalTextureRect;
-	}
+	setButton(buttonChar, std::string(value));
 }
-
-Button::~Button()
-{
-	//TODO remove
-	for(std::map<std::string, ButtonText*>::iterator it = heldText.begin(); it != heldText.end(); ++it)
-	{
-		delete it->second;
-	}
-	for(std::map<std::string, OverlaySprite*>::iterator it = heldOverlaySprites.begin(); it != heldOverlaySprites.end(); ++it)
-	{
-		delete it->second;
-	}
-	for(std::map<std::string, PercentSprite*>::iterator it = heldPercentSprites.begin(); it != heldPercentSprites.end(); ++it)
-	{
-		delete it->second;
-	}
-}
-
 void Button::setButton(gui::BtnChar buttonChar, std::string value)
 {
 	switch(buttonChar)
 	{
 	case gui::BtnChar::bounds:
 		{
-			int spriteID = count(value, sprites);
-			if(spriteID != -1)
+			int elementID = count(value, sprites);
+			if(elementID != -1)
 			{
-				buttonBounds = std::make_pair(sprites.at(spriteID).sprite.getGlobalBounds().width, sprites.at(spriteID).sprite.getGlobalBounds().height);
+				buttonBounds = std::make_pair(sprites.at(elementID).sprite.getGlobalBounds().width, sprites.at(elementID).sprite.getGlobalBounds().height);
 			}
 #ifdef DEBUGMODE
 			else
 			{
-				std::cout << "BUTTON: Warning - there is no button atr with the name: " << value << " in the button " << buttonName << std::endl;
+				//TODO add warning
 			}
 #endif
 		}
@@ -99,10 +52,6 @@ void Button::setButton(gui::BtnChar buttonChar, std::string value)
 	default:
 		break;
 	}
-}
-void Button::setButton(gui::BtnChar buttonChar, const char* value)
-{
-	setButton(buttonChar, std::string(value));
 }
 void Button::setButton(gui::BtnChar buttonChar, bool value)
 {
@@ -166,69 +115,31 @@ void Button::addBtnAtr(std::string atrName, gui::BtnAtr buttonAtr)
 	switch(buttonAtr)
 	{
 	case gui::BtnAtr::Sprite:
-		{
-			sprites.emplace_back(RegularSprite(atrName));
-		}
+		sprites.emplace_back(RegularSprite(atrName));
 		break;
 	case gui::BtnAtr::Text:
-		{
-			ButtonText* newText = new ButtonText;
-			newText->isChanged = true;
-			newText->position = std::make_pair(0,0);
-			newText->text.setFont(buttonFont);
-			newText->text.setString(std::string());
-			newText->text.setFillColor(sf::Color::Black);
-			newText->text.setOutlineColor(sf::Color::Black);
-			newText->text.setPosition(newText->position.first  + buttonPosition.first,
-			                          newText->position.second + buttonPosition.second);
-			heldText[atrName] = newText;
-		}
+		texts.emplace_back(ButtonText(atrName, buttonFont));
 		break;
 	case gui::BtnAtr::Hover:
-		{
-			OverlaySprite* newHover = new OverlaySprite;
-			newHover->isChanged = true;
-			newHover->position = std::make_pair(0,0);
-
-			newHover->rectOverlay.setFillColor(sf::Color(0,0,0, 100));
-
-			newHover->rectOverlay.setPosition(buttonPosition.first, buttonPosition.second);
-			newHover->rectOverlay.setSize(sf::Vector2f(buttonBounds.first,buttonBounds.second));
-			heldOverlaySprites[atrName] = newHover;
-		}
+		hovers.emplace_back(OverlaySprite(atrName, sf::Vector2f(buttonBounds.first,buttonBounds.second)));
 		break;
 	case gui::BtnAtr::Percent:
-		{
-			PercentSprite* newPercent = new PercentSprite;
-			newPercent->isChanged = true;
-			newPercent->position = std::make_pair(0,0);
-			newPercent->spritePercentage = 1.f;
-			newPercent->directionOfGap = utl::Direction::right;
-			newPercent->sprite.setPosition(newPercent->position.first  + buttonPosition.first,
-			                               newPercent->position.second + buttonPosition.second);
-			newPercent->rectOverlay.setPosition(newPercent->position.first  + buttonPosition.first,
-			                                    newPercent->position.second + buttonPosition.second);
-			newPercent->originalTextureRect = sf::IntRect(0,0,0,0);
-			heldPercentSprites[atrName] = newPercent;
-		}
+		percents.emplace_back(PercentSprite(atrName));
 		break;
 	default:
-		{
-
-		}
 		break;
 	}
 }
 
 void Button::setBtnAtr(std::string atrName, gui::BtnAtrChar atrChar, std::string value)
 {
-	int spriteID = count(atrName, sprites);
-	if(spriteID != -1)
+	int elementID = count(atrName, sprites);
+	if(elementID != -1)
 	{
 		switch(atrChar)
 		{
 		case gui::BtnAtrChar::texture:
-			sprites.at(spriteID).sprite.setTexture(resourceManager.getTexture(value));
+			sprites.at(elementID).sprite.setTexture(resourceManager.getTexture(value));
 			break;
 		case gui::BtnAtrChar::flip:
 			setBtnAtr(atrName, atrChar, value.size() ? value.at(0) : 0);
@@ -237,39 +148,29 @@ void Button::setBtnAtr(std::string atrName, gui::BtnAtrChar atrChar, std::string
 			//TODO print warning if invalid
 			break;
 		}
-
-		//TODO uncomment
-		//return;
+		return;
 	}
-
-
-	//TODO remove
-	if(heldText.count(atrName))
+	elementID = count(atrName, texts);
+	if(elementID != -1)
 	{
 		switch(atrChar)
 		{
 		case gui::BtnAtrChar::text:
-			heldText[atrName]->text.setString(value);
+			texts.at(elementID).text.setString(value);
 			break;
 		default:
+			//TODO print warning if invalid
 			break;
 		}
+		return;
 	}
-	else if(heldOverlaySprites.count(atrName))
-	{
-		switch(atrChar)
-		{
-		default:
-			break;
-		}
-
-	}
-	else if(heldPercentSprites.count(atrName))
+	elementID = count(atrName, percents);
+	if(elementID != -1)
 	{
 		switch(atrChar)
 		{
 		case gui::BtnAtrChar::texture:
-			heldPercentSprites[atrName]->sprite.setTexture(resourceManager.getTexture(value));
+			percents.at(elementID).sprite.setTexture(resourceManager.getTexture(value));
 			break;
 		default:
 			break;
@@ -278,286 +179,251 @@ void Button::setBtnAtr(std::string atrName, gui::BtnAtrChar atrChar, std::string
 }
 void Button::setBtnAtr(std::string atrName, gui::BtnAtrChar atrChar, std::pair<int, int> value)
 {
-	int spriteID = count(atrName, sprites);
-	if(spriteID != -1)
+	int elementID = count(atrName, sprites);
+	if(elementID != -1)
 	{
+		RegularSprite& spr = sprites.at(elementID);
 		switch(atrChar)
 		{
 		case gui::BtnAtrChar::coords:
-			sprites.at(spriteID).position = value;
+			spr.position = value;
 			break;
 		case gui::BtnAtrChar::size:
-			sprites.at(spriteID).sprite.setScale(
-			    sf::Vector2f(value.first/sprites.at(spriteID).sprite.getLocalBounds().width,
-			                 value.second/sprites.at(spriteID).sprite.getLocalBounds().height));
+			spr.sprite.setScale(sf::Vector2f(value.first/spr.sprite.getLocalBounds().width,
+			                                 value.second/spr.sprite.getLocalBounds().height));
 		default:
 			//TODO print warning if invalid
 			break;
 		}
-
-		//TODO uncomment
-		//return;
+		return;
 	}
-
-	//TODO remove
-	if(heldText.count(atrName))
+	elementID = count(atrName, texts);
+	if(elementID != -1)
 	{
 		switch(atrChar)
 		{
 		case gui::BtnAtrChar::coords:
-			heldText[atrName]->position = value;
+			texts.at(elementID).position = value;
 			break;
 		default:
+			//TODO print warning if invalid
 			break;
 		}
+		return;
 	}
-	else if(heldOverlaySprites.count(atrName))
+	elementID = count(atrName, percents);
+	if(elementID != -1)
 	{
-		switch(atrChar)
-		{
-		default:
-			break;
-		}
-	}
-	else if(heldPercentSprites.count(atrName))
-	{
+		PercentSprite& per = percents.at(elementID);
 		switch(atrChar)
 		{
 		case gui::BtnAtrChar::coords:
-			heldPercentSprites[atrName]->position = value;
+			per.position = value;
 			break;
 		case gui::BtnAtrChar::size:
-			if(heldPercentSprites[atrName]->sprite.getTexture() != nullptr)
+			if(per.sprite.getTexture() != nullptr)
 			{
-				heldPercentSprites[atrName]->sprite.setScale(
-				    sf::Vector2f((float)value.first/heldPercentSprites[atrName]->sprite.getLocalBounds().width,
-				                 (float)value.second/heldPercentSprites[atrName]->sprite.getLocalBounds().height));
+				per.sprite.setScale(sf::Vector2f((float)value.first/per.sprite.getLocalBounds().width,
+				                                 (float)value.second/per.sprite.getLocalBounds().height));
 			}
 			else
 			{
-				heldPercentSprites[atrName]->rectOverlay.setSize(sf::Vector2f(value.first, value.second));
-				heldPercentSprites[atrName]->originalTextureRect.width = value.first;
-				heldPercentSprites[atrName]->originalTextureRect.height = value.second;
+				per.rectOverlay.setSize(sf::Vector2f(value.first, value.second));
+				per.originalTextureRect.width = value.first;
+				per.originalTextureRect.height = value.second;
 			}
 			break;
 		default:
+			//TODO print warning if invalid
 			break;
 		}
+		return;
 	}
 }
 void Button::setBtnAtr(std::string atrName, gui::BtnAtrChar atrChar, sf::Color color)
 {
-	int spriteID = count(atrName, sprites);
-	if(spriteID != -1)
+	int elementID = count(atrName, sprites);
+	if(elementID != -1)
 	{
-		sprites.at(spriteID).sprite.setColor(color);
-		//TODO uncomment
-		//return;
+		sprites.at(elementID).sprite.setColor(color);
+		return;
 	}
-
-	//TODO remove
-	if(heldText.count(atrName))
+	elementID = count(atrName, texts);
+	if(elementID != -1)
 	{
-		switch(atrChar)
-		{
-		case gui::BtnAtrChar::color:
-			heldText[atrName]->text.setFillColor(color);
-			heldText[atrName]->text.setOutlineColor(color);
-			break;
-		default:
-			break;
-		}
+		texts.at(elementID).text.setFillColor(color);
+		texts.at(elementID).text.setOutlineColor(color);
+		return;
 	}
-	else if(heldOverlaySprites.count(atrName))
+	elementID = count(atrName, hovers);
+	if(elementID != -1)
 	{
-		switch(atrChar)
-		{
-		case gui::BtnAtrChar::color:
-			heldOverlaySprites[atrName]->rectOverlay.setFillColor(color);
-			break;
-		default:
-			break;
-		}
-
+		hovers.at(elementID).rectOverlay.setFillColor(color);
+		return;
 	}
-	else if(heldPercentSprites.count(atrName))
+	elementID = count(atrName, percents);
+	if(elementID != -1)
 	{
-		switch(atrChar)
-		{
-		case gui::BtnAtrChar::color:
-			heldPercentSprites[atrName]->rectOverlay.setFillColor(color);
-			break;
-		default:
-			break;
-		}
+		percents.at(elementID).rectOverlay.setFillColor(color);
+		return;
 	}
 }
 void Button::setBtnAtr(std::string atrName, gui::BtnAtrChar atrChar, int value)
 {
-	int spriteID = count(atrName, sprites);
-	if(spriteID != -1)
+	int elementID = count(atrName, sprites);
+	if(elementID != -1)
 	{
 		switch(atrChar)
 		{
 		case gui::BtnAtrChar::transparency:
 			{
-				sf::Color newColor = sprites.at(spriteID).sprite.getColor();
-				float trans = static_cast <float>(value);
-				trans = trans * 255 / 100;
-				newColor.a = trans;
-				sprites.at(spriteID).sprite.setColor(newColor);
+				sf::Color newColor = sprites.at(elementID).sprite.getColor();
+				newColor.a =  static_cast <float>(value) * 255 / 100;
+				sprites.at(elementID).sprite.setColor(newColor);
 			}
 			break;
 		default:
 			//TODO print warning if invalid
 			break;
 		}
-
-		//TODO uncomment
-		//return;
-
+		return;
 	}
-
-	if(heldText.count(atrName))
+	elementID = count(atrName, texts);
+	if(elementID != -1)
 	{
 		switch(atrChar)
 		{
 		case gui::BtnAtrChar::charSize:
-			heldText[atrName]->text.setCharacterSize(value * 2);
-			heldText[atrName]->text.setScale(0.5, 0.5);
+			texts.at(elementID).text.setCharacterSize(value * 2);
+			texts.at(elementID).text.setScale(0.5, 0.5);
 			break;
 		default:
+			//TODO print warning if invalid
 			break;
 		}
+		return;
 	}
-	else if(heldOverlaySprites.count(atrName))
+	elementID = count(atrName, hovers);
+	if(elementID != -1)
 	{
 		switch(atrChar)
 		{
 		case gui::BtnAtrChar::transparency:
 			{
-				sf::Color newColor = heldOverlaySprites[atrName]->rectOverlay.getFillColor();
-				float trans = static_cast <float>(value);
-				trans = trans * 255 / 100;
-				newColor.a = trans;
-				heldOverlaySprites[atrName]->rectOverlay.setFillColor(newColor);
+				sf::Color newColor = hovers.at(elementID).rectOverlay.getFillColor();
+				newColor.a = static_cast <float>(value) * 255 / 100;
+				hovers.at(elementID).rectOverlay.setFillColor(newColor);
 			}
 			break;
 		default:
+			//TODO print warning if invalid
 			break;
 		}
-
+		return;
 	}
-	else if(heldPercentSprites.count(atrName))
+	elementID = count(atrName, percents);
+	if(elementID != -1)
 	{
+		PercentSprite& per = percents.at(elementID);
 		switch(atrChar)
 		{
 		case gui::BtnAtrChar::percentage:
 			{
-				float percent = (float)value / 100;
-				heldPercentSprites[atrName]->spritePercentage = percent;
-				if(heldPercentSprites[atrName]->sprite.getTexture() != nullptr)
+				float percent = (float) value / 100;
+				per.spritePercentage = percent;
+				if(per.sprite.getTexture() != nullptr)
 				{
-					switch(heldPercentSprites[atrName]->directionOfGap)
+					switch(per.directionOfGap)
 					{
 					case utl::Direction::up:
 						{
-							sf::IntRect spriteRect = heldPercentSprites[atrName]->originalTextureRect;
+							sf::IntRect spriteRect = per.originalTextureRect;
 							spriteRect.height *= percent;
-							heldPercentSprites[atrName]->sprite.setTextureRect(spriteRect);
+							per.sprite.setTextureRect(spriteRect);
 						}
 						break;
 					case utl::Direction::down:
 						{
-							sf::IntRect spriteRect = heldPercentSprites[atrName]->originalTextureRect;
+							sf::IntRect spriteRect = per.originalTextureRect;
 							spriteRect.height *= percent;
-							heldPercentSprites[atrName]->sprite.setTextureRect(spriteRect);
+							per.sprite.setTextureRect(spriteRect);
 						}
 						break;
 					case utl::Direction::left:
 						{
-							sf::IntRect spriteRect = heldPercentSprites[atrName]->originalTextureRect;
+							sf::IntRect spriteRect = per.originalTextureRect;
 							spriteRect.width *= percent;
-							heldPercentSprites[atrName]->sprite.setTextureRect(spriteRect);
+							per.sprite.setTextureRect(spriteRect);
 						}
 						break;
 					case utl::Direction::right:
 						{
-							sf::IntRect spriteRect = heldPercentSprites[atrName]->originalTextureRect;
+							sf::IntRect spriteRect = per.originalTextureRect;
 							spriteRect.width *= percent;
-							heldPercentSprites[atrName]->sprite.setTextureRect(spriteRect);
+							per.sprite.setTextureRect(spriteRect);
 						}
 						break;
 					default:
 						break;
 					}
-
 				}
 				else
 				{
-					switch(heldPercentSprites[atrName]->directionOfGap)
+					switch(per.directionOfGap)
 					{
 					case utl::Direction::up:
-						heldPercentSprites[atrName]->rectOverlay.setOrigin(0, -1 * heldPercentSprites[atrName]->originalTextureRect.height * (1-percent));
-						heldPercentSprites[atrName]->rectOverlay.setSize(sf::Vector2f(
-						            heldPercentSprites[atrName]->originalTextureRect.width,
-						            heldPercentSprites[atrName]->originalTextureRect.height * percent));
+						per.rectOverlay.setOrigin(0, -1 * per.originalTextureRect.height * (1-percent));
+						per.rectOverlay.setSize(sf::Vector2f(per.originalTextureRect.width,
+						                                     per.originalTextureRect.height * percent));
 						break;
 					case utl::Direction::down:
-
-						heldPercentSprites[atrName]->rectOverlay.setSize(sf::Vector2f(
-						            heldPercentSprites[atrName]->originalTextureRect.width,
-						            heldPercentSprites[atrName]->originalTextureRect.height * percent));
+						per.rectOverlay.setSize(sf::Vector2f(per.originalTextureRect.width,
+						                                     per.originalTextureRect.height * percent));
 						break;
 					case utl::Direction::left:
-						heldPercentSprites[atrName]->rectOverlay.setOrigin(-1 * heldPercentSprites[atrName]->originalTextureRect.width * (1-percent), 0);
-						heldPercentSprites[atrName]->rectOverlay.setSize(sf::Vector2f(
-						            heldPercentSprites[atrName]->originalTextureRect.width * percent,
-						            heldPercentSprites[atrName]->originalTextureRect.height));
+						per.rectOverlay.setOrigin(-1 * per.originalTextureRect.width * (1-percent), 0);
+						per.rectOverlay.setSize(sf::Vector2f(per.originalTextureRect.width * percent,
+						                                     per.originalTextureRect.height));
 						break;
 					case utl::Direction::right:
-						heldPercentSprites[atrName]->rectOverlay.setSize(sf::Vector2f(
-						            heldPercentSprites[atrName]->originalTextureRect.width * percent,
-						            heldPercentSprites[atrName]->originalTextureRect.height));
+						per.rectOverlay.setSize(sf::Vector2f(per.originalTextureRect.width * percent,
+						                                     per.originalTextureRect.height));
 						break;
 					default:
 						break;
 					}
-
 				}
 			}
 			break;
-
 		case gui::BtnAtrChar::transparency:
 			{
-				if(heldPercentSprites[atrName]->sprite.getTexture() != nullptr)
+				if(per.sprite.getTexture() != nullptr)
 				{
-					sf::Color newColor = heldPercentSprites[atrName]->sprite.getColor();
-					float trans = static_cast <float>(value);
-					trans = trans * 255 / 100;
-					newColor.a = trans;
-					heldPercentSprites[atrName]->sprite.setColor(newColor);
+					sf::Color newColor = per.sprite.getColor();
+					newColor.a = static_cast <float>(value) * 255 / 100;
+					per.sprite.setColor(newColor);
 				}
 				else
 				{
-					sf::Color newColor = heldPercentSprites[atrName]->rectOverlay.getFillColor();
-					float trans = static_cast <float>(value);
-					trans = trans * 255 / 100;
-					newColor.a = trans;
-					heldPercentSprites[atrName]->rectOverlay.setFillColor(newColor);
+					sf::Color newColor = per.rectOverlay.getFillColor();
+					newColor.a = static_cast <float>(value) * 255 / 100;
+					per.rectOverlay.setFillColor(newColor);
 				}
 			}
 			break;
 		default:
+			//TODO print warning if invalid
 			break;
 		}
+		return;
 	}
 }
 void Button::setBtnAtr(std::string atrName, gui::BtnAtrChar atrChar, char value)
 {
-	int spriteID = count(atrName, sprites);
-	if(spriteID != -1)
+	int elementID = count(atrName, sprites);
+	if(elementID != -1)
 	{
+		RegularSprite& spr = sprites.at(elementID);
 		switch(atrChar)
 		{
 		case gui::BtnAtrChar::flip:
@@ -565,29 +431,29 @@ void Button::setBtnAtr(std::string atrName, gui::BtnAtrChar atrChar, char value)
 				switch(value)
 				{
 				case 'x':
-					sprites.at(spriteID).sprite.setTextureRect(sf::IntRect(sprites.at(spriteID).sprite.getLocalBounds().width,
-					        0,
-					        -1 * sprites.at(spriteID).sprite.getLocalBounds().width,
-					        sprites.at(spriteID).sprite.getLocalBounds().height));
+					spr.sprite.setTextureRect(sf::IntRect(spr.sprite.getLocalBounds().width,
+					                                      0,
+					                                      -1 * spr.sprite.getLocalBounds().width,
+					                                      spr.sprite.getLocalBounds().height));
 					break;
 				case 'y':
-					sprites.at(spriteID).sprite.setTextureRect(sf::IntRect(0,
-					        sprites.at(spriteID).sprite.getLocalBounds().height,
-					        sprites.at(spriteID).sprite.getLocalBounds().width,
-					        -1 * sprites.at(spriteID).sprite.getLocalBounds().height));
+					spr.sprite.setTextureRect(sf::IntRect(0,
+					                                      spr.sprite.getLocalBounds().height,
+					                                      spr.sprite.getLocalBounds().width,
+					                                      -1 * spr.sprite.getLocalBounds().height));
 					break;
 				case 'b':
-					sprites.at(spriteID).sprite.setTextureRect(sf::IntRect(sprites.at(spriteID).sprite.getLocalBounds().width,
-					        sprites.at(spriteID).sprite.getLocalBounds().height,
-					        -1 * sprites.at(spriteID).sprite.getLocalBounds().width,
-					        -1 * sprites.at(spriteID).sprite.getLocalBounds().height));
+					spr.sprite.setTextureRect(sf::IntRect(spr.sprite.getLocalBounds().width,
+					                                      spr.sprite.getLocalBounds().height,
+					                                      -1 * spr.sprite.getLocalBounds().width,
+					                                      -1 * spr.sprite.getLocalBounds().height));
 					break;
 				case '0':
 				case 'n':
-					sprites.at(spriteID).sprite.setTextureRect(sf::IntRect(0,
-					        0,
-					        sprites.at(spriteID).sprite.getLocalBounds().width,
-					        sprites.at(spriteID).sprite.getLocalBounds().height));
+					spr.sprite.setTextureRect(sf::IntRect(0,
+					                                      0,
+					                                      spr.sprite.getLocalBounds().width,
+					                                      spr.sprite.getLocalBounds().height));
 					break;
 				default:
 					//TODO print warning if invalid
@@ -599,139 +465,137 @@ void Button::setBtnAtr(std::string atrName, gui::BtnAtrChar atrChar, char value)
 			//TODO print warning if invalid
 			break;
 		}
-
-		//TODO uncomment
-		//return;
+		return;
 	}
-
-	if(heldText.count(atrName))
+	elementID = count(atrName, texts);
+	if(elementID != -1)
 	{
 		switch(atrChar)
 		{
 		case gui::BtnAtrChar::charSize:
-			heldText[atrName]->text.setCharacterSize(value*2);
-			heldText[atrName]->text.setScale(0.5, 0.5);
+			texts.at(elementID).text.setCharacterSize(value*2);
+			texts.at(elementID).text.setScale(0.5, 0.5);
 			break;
 		default:
+			//TODO print warning if invalid
 			break;
 		}
+		return;
 	}
-	else if(heldOverlaySprites.count(atrName))
+	elementID = count(atrName, hovers);
+	if(elementID != -1)
 	{
 		switch(atrChar)
 		{
 		case gui::BtnAtrChar::transparency:
 			{
-				sf::Color newColor = heldOverlaySprites[atrName]->rectOverlay.getFillColor();
+				sf::Color newColor = hovers.at(elementID).rectOverlay.getFillColor();
 				newColor.a = value;
-				heldOverlaySprites[atrName]->rectOverlay.setFillColor(newColor);
+				hovers.at(elementID).rectOverlay.setFillColor(newColor);
 			}
 			break;
 		default:
+			//TODO print warning if invalid
 			break;
 		}
-
+		return;
 	}
-	else if(heldPercentSprites.count(atrName))
+	elementID = count(atrName, percents);
+	if(elementID != -1)
 	{
+		PercentSprite& per = percents.at(elementID);
 		switch(atrChar)
 		{
 		case gui::BtnAtrChar::direction:
 			{
-				if(heldPercentSprites[atrName]->sprite.getTexture() != nullptr)
+				if(per.sprite.getTexture() != nullptr)
 				{
-					if(value == 'u')
+					switch(value)
 					{
-						heldPercentSprites[atrName]->directionOfGap = utl::Direction::up;
-
-						heldPercentSprites[atrName]->sprite.setOrigin(0, heldPercentSprites[atrName]->sprite.getLocalBounds().height);
-						heldPercentSprites[atrName]->sprite.setScale(heldPercentSprites[atrName]->sprite.getScale().x,heldPercentSprites[atrName]->sprite.getScale().y * -1);
-
-						heldPercentSprites[atrName]->originalTextureRect = sf::IntRect(
-						            0,
-						            heldPercentSprites[atrName]->sprite.getLocalBounds().height,
-						            heldPercentSprites[atrName]->sprite.getLocalBounds().width,
-						            -1 * heldPercentSprites[atrName]->sprite.getLocalBounds().height);
-					}
-					else if(value == 'd')
-					{
-						heldPercentSprites[atrName]->directionOfGap = utl::Direction::down;
-
-						heldPercentSprites[atrName]->originalTextureRect = sf::IntRect(
-						            0,
-						            0,
-						            heldPercentSprites[atrName]->sprite.getLocalBounds().width,
-						            heldPercentSprites[atrName]->sprite.getLocalBounds().height);
-
-					}
-					else if(value == 'l')
-					{
-						heldPercentSprites[atrName]->directionOfGap = utl::Direction::left;
-
-						heldPercentSprites[atrName]->sprite.setOrigin(heldPercentSprites[atrName]->sprite.getLocalBounds().width, 0);
-						heldPercentSprites[atrName]->sprite.setScale(heldPercentSprites[atrName]->sprite.getScale().x * -1,heldPercentSprites[atrName]->sprite.getScale().y);
-
-						heldPercentSprites[atrName]->originalTextureRect = sf::IntRect(
-						            heldPercentSprites[atrName]->sprite.getLocalBounds().width,
-						            0,
-						            -1 * heldPercentSprites[atrName]->sprite.getLocalBounds().width,
-						            heldPercentSprites[atrName]->sprite.getLocalBounds().height);
-					}
-					else if(value == 'r')
-					{
-						heldPercentSprites[atrName]->directionOfGap = utl::Direction::right;
-
-						heldPercentSprites[atrName]->originalTextureRect = sf::IntRect(
-						            0,
-						            0,
-						            heldPercentSprites[atrName]->sprite.getLocalBounds().width,
-						            heldPercentSprites[atrName]->sprite.getLocalBounds().height);
+					case 'u':
+						per.directionOfGap = utl::Direction::up;
+						per.sprite.setOrigin(0, per.sprite.getLocalBounds().height);
+						per.sprite.setScale(per.sprite.getScale().x,per.sprite.getScale().y * -1);
+						per.originalTextureRect = sf::IntRect(0,
+						                                      per.sprite.getLocalBounds().height,
+						                                      per.sprite.getLocalBounds().width,
+						                                      -1 * per.sprite.getLocalBounds().height);
+						break;
+					case 'd':
+						per.directionOfGap = utl::Direction::down;
+						per.originalTextureRect = sf::IntRect(0,
+						                                      0,
+						                                      per.sprite.getLocalBounds().width,
+						                                      per.sprite.getLocalBounds().height);
+						break;
+					case 'l':
+						per.directionOfGap = utl::Direction::left;
+						per.sprite.setOrigin(per.sprite.getLocalBounds().width, 0);
+						per.sprite.setScale(per.sprite.getScale().x * -1,per.sprite.getScale().y);
+						per.originalTextureRect = sf::IntRect(per.sprite.getLocalBounds().width,
+						                                      0,
+						                                      -1 * per.sprite.getLocalBounds().width,
+						                                      per.sprite.getLocalBounds().height);
+						break;
+					case 'r':
+						per.directionOfGap = utl::Direction::right;
+						per.originalTextureRect = sf::IntRect(0,
+						                                      0,
+						                                      per.sprite.getLocalBounds().width,
+						                                      per.sprite.getLocalBounds().height);
+						break;
+					default:
+						//TODO add warning
+						break;
 					}
 				}
 				else
 				{
-					heldPercentSprites[atrName]->rectOverlay.setOrigin(0,0);
-					heldPercentSprites[atrName]->rectOverlay.setSize(sf::Vector2f(
-					            heldPercentSprites[atrName]->originalTextureRect.width,
-					            heldPercentSprites[atrName]->originalTextureRect.height));
-					if(value == 'u')
+					per.rectOverlay.setOrigin(0,0);
+					per.rectOverlay.setSize(sf::Vector2f(per.originalTextureRect.width,
+					                                     per.originalTextureRect.height));
+					switch(value)
 					{
-						heldPercentSprites[atrName]->directionOfGap = utl::Direction::up;
-					}
-					else if(value == 'd')
-					{
-						heldPercentSprites[atrName]->directionOfGap = utl::Direction::down;
-					}
-					else if(value == 'l')
-					{
-						heldPercentSprites[atrName]->directionOfGap = utl::Direction::left;
-					}
-					else if(value == 'r')
-					{
-						heldPercentSprites[atrName]->directionOfGap = utl::Direction::right;
+					case 'u':
+						per.directionOfGap = utl::Direction::up;
+						break;
+					case 'd':
+						per.directionOfGap = utl::Direction::down;
+						break;
+					case 'l':
+						per.directionOfGap = utl::Direction::left;
+						break;
+					case 'r':
+						per.directionOfGap = utl::Direction::right;
+						break;
+					default:
+						//TODO add warning
+						break;
 					}
 				}
 			}
 		default:
+			//TODO print warning if invalid
 			break;
 		}
+		return;
 	}
 }
 
 void Button::update(std::pair <int, int> mouseCoords)
 {
-	for(std::map<std::string, OverlaySprite*>::iterator it = heldOverlaySprites.begin(); it != heldOverlaySprites.end(); it++)
+	for(unsigned int i = 0; i < hovers.size(); i++)
 	{
 		if(mouseCoords.first >  buttonPosition.first + scroll_x && mouseCoords.first  < buttonPosition.first + scroll_x  + buttonBounds.first &&
 		        mouseCoords.second > buttonPosition.second + scroll_y && mouseCoords.second < buttonPosition.second + scroll_y + buttonBounds.second)
 		{
-			it->second->isChanged = true;
-			it->second->isHoveredOver = true;
+			hovers.at(i).isChanged = true;
+			hovers.at(i).isHoveredOver = true;
 		}
 		else
 		{
-			it->second->isChanged = true;
-			it->second->isHoveredOver = false;
+			hovers.at(i).isChanged = true;
+			hovers.at(i).isHoveredOver = false;
 		}
 	}
 }
@@ -755,75 +619,71 @@ void Button::draw()
 				window.draw(spr.sprite);
 			}
 		}
-
-		//TODO remove
-		for(std::map<std::string, OverlaySprite*>::iterator it = heldOverlaySprites.begin(); it != heldOverlaySprites.end(); it++)
+		for(unsigned int i = 0; i < percents.size(); i++)
 		{
-			if(it->second->isChanged || isCoordsChanged)
+			PercentSprite& per = percents.at(i);
+			if(!(per.isChanged || isCoordsChanged))
 			{
-				it->second->rectOverlay.setPosition(buttonPosition.first  + it->second->position.first  + scroll_x,
-				                                    buttonPosition.second + it->second->position.second + scroll_y);
-				it->second->isChanged = false;
-				if(it->second->isHoveredOver)
+				if(per.sprite.getTexture() != nullptr)
 				{
-					if(isActive)
-					{
-						window.draw(it->second->rectOverlay);
-					}
-				}
-			}
-			else
-			{
-				if(it->second->isHoveredOver && isActive)
-				{
-					window.draw(it->second->rectOverlay);
-				}
-			}
-		}
-
-		for(std::map<std::string, PercentSprite*>::iterator it = heldPercentSprites.begin(); it != heldPercentSprites.end(); it++)
-		{
-			if(it->second->isChanged || isCoordsChanged)
-			{
-				if(it->second->sprite.getTexture() != nullptr)
-				{
-					it->second->sprite.setPosition(buttonPosition.first  + it->second->position.first  + scroll_x,
-					                               buttonPosition.second + it->second->position.second + scroll_y);
-					window.draw(it->second->sprite);
+					window.draw(per.sprite);
 				}
 				else
 				{
-					it->second->rectOverlay.setPosition(buttonPosition.first  + it->second->position.first  + scroll_x,
-					                                    buttonPosition.second + it->second->position.second + scroll_y);
-					window.draw(it->second->rectOverlay);
+					window.draw(per.rectOverlay);
 				}
-				it->second->isChanged = false;
 			}
 			else
 			{
-				if(it->second->sprite.getTexture() != nullptr)
+				if(per.sprite.getTexture() != nullptr)
 				{
-					window.draw(it->second->sprite);
+					per.sprite.setPosition(buttonPosition.first  + per.position.first  + scroll_x,
+					                       buttonPosition.second + per.position.second + scroll_y);
+					window.draw(per.sprite);
 				}
 				else
 				{
-					window.draw(it->second->rectOverlay);
+					per.rectOverlay.setPosition(buttonPosition.first  + per.position.first  + scroll_x,
+					                            buttonPosition.second + per.position.second + scroll_y);
+					window.draw(per.rectOverlay);
 				}
+				per.isChanged = false;
 			}
 		}
-		for(std::map<std::string, ButtonText*>::iterator it = heldText.begin(); it != heldText.end(); it++)
+		for(unsigned int i = 0; i < hovers.size(); i++)
 		{
-			if(it->second->isChanged || isCoordsChanged)
+			OverlaySprite& ovr = hovers.at(i);
+			if(!(ovr.isChanged || isCoordsChanged))
 			{
-				it->second->text.setPosition(buttonPosition.first  + it->second->position.first  + scroll_x,
-				                             buttonPosition.second + it->second->position.second + scroll_y);
-				it->second->isChanged = false;
-
-				window.draw(it->second->text);
+				if(ovr.isHoveredOver && isActive)
+				{
+					window.draw(ovr.rectOverlay);
+				}
 			}
 			else
 			{
-				window.draw(it->second->text);
+				ovr.rectOverlay.setPosition(buttonPosition.first  + ovr.position.first  + scroll_x,
+				                            buttonPosition.second +ovr.position.second + scroll_y);
+				ovr.isChanged = false;
+				if(ovr.isHoveredOver && isActive)
+				{
+					window.draw(ovr.rectOverlay);
+				}
+			}
+		}
+		for(unsigned int i = 0; i < texts.size(); i++)
+		{
+			ButtonText& txt = texts.at(i);
+			if(!(txt.isChanged || isCoordsChanged))
+			{
+				window.draw(txt.text);
+			}
+			else
+			{
+				txt.text.setPosition(buttonPosition.first  + txt.position.first  + scroll_x,
+				                     buttonPosition.second + txt.position.second + scroll_y);
+				txt.isChanged = false;
+				window.draw(txt.text);
 			}
 		}
 		isCoordsChanged = false;
