@@ -44,14 +44,14 @@ void QueryWindow::init(std::string windowName, GuiManager& pGuiManager, GuiLoade
 		{
 		case QueryType::Input_int:
 		case QueryType::Input_string:
-			queryValues.at(it).second.buttonName = groupName + "_" + utl::asString(it);
+			queryValues.at(it).second.buttonName = groupName + "-" + utl::asString(it);
 			pGuiManager.createButton(queryValues.at(it).second.buttonName, "textInputBox");
 			pGuiManager.setButton(queryValues.at(it).second.buttonName, gui::BtnChar::coords, std::make_pair(250, 60 + it*40));
 			pGuiManager.setBtnAtr(queryValues.at(it).second.buttonName, "buttonText", gui::BtnAtrChar::text, queryValues.at(it).second.queryQuestion);
 			pGuiManager.addToGroup(groupName, queryValues.at(it).second.buttonName);
 			break;
 		case QueryType::Choice_string:
-			queryValues.at(it).second.buttonName = groupName + "_" + utl::asString(it);
+			queryValues.at(it).second.buttonName = groupName + "-" + utl::asString(it);
 			pGuiManager.createButton(queryValues.at(it).second.buttonName, "windowChoice");
 			pGuiManager.setButton(queryValues.at(it).second.buttonName, gui::BtnChar::coords, std::make_pair(100, 60 + it*40));
 			pGuiManager.setBtnAtr(queryValues.at(it).second.buttonName, "buttonTextAnswer", gui::BtnAtrChar::text, queryValues.at(it).second.queryQuestion);

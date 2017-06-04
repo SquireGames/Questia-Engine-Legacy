@@ -56,7 +56,7 @@ void TabBar::init(std::string tabBarName, GuiManager& pGuiManager, GuiLoader& gu
 	//make all tabs
 	for(unsigned int i = 0; i < tabs.size(); i++)
 	{
-		std::string tabName = (tabs[i].buttonName.size() > 0) ? tabs[i].buttonName : (groupName + "_" + std::to_string(i));
+		std::string tabName = (tabs[i].buttonName.size() > 0) ? tabs[i].buttonName : (groupName + "-" + std::to_string(i));
 		tabs[i].buttonName = tabName;
 
 		guiManager->createButton(tabName, "tabTemplate");
@@ -65,7 +65,7 @@ void TabBar::init(std::string tabBarName, GuiManager& pGuiManager, GuiLoader& gu
 		guiManager->setBtnAtr(tabName, "buttonText", gui::BtnAtrChar::text, tabs[i].tabName);
 
 		//make MenuStacks
-		tabs[i].menu.init("S_" + tabName, trav_x, ((dir == utl::Direction::down) ? 1080-22-offset_y : 22+offset_y), pGuiManager, guiLoader);
+		tabs[i].menu.init("S_" + tabName, trav_x, ((dir == utl::Direction::down) ? 1080-22-offset_y : 22 + offset_y), pGuiManager, guiLoader);
 
 		//adjust to width of text
 		sf::Text t(tabs[i].tabName, *guiManager->getFont(), 15);

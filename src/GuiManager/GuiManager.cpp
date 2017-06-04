@@ -1,464 +1,678 @@
 #include "QuestiaEng/GuiManager/GuiManager.h"
 
-GuiManager::GuiManager(sf::RenderWindow &_window, ResourceManager &_resourceManager):
-	window(_window)
-	, resourceManager(_resourceManager)
-	, currentButtonEdit("NOBUTTON")
-	, currentBtnAtrEdit("NOBUTTONATR")
-	, currentGroupEdit("NOGROUP")
-	, currentListEdit("NOLIST")
+//TODO reorder
+//TODO check and give warnings if last~ is default
+
+GuiManager::GuiManager(sf::RenderWindow& window, ResourceManager& resourceManager):
+	window(window)
+	, resourceManager(resourceManager)
 	, mouseCoords(0,0)
 {
-
+	buttons.reserve(30);
+	visibleButtons.reserve(20);
+	buttonIDs.clear();
 }
 
 GuiManager::~GuiManager()
 {
-	for(std::map<std::string, Button*>::iterator it = buttonMap.begin(); it != buttonMap.end(); ++it)
+
+}
+
+void GuiManager::createButton(const std::string& buttonName)
+{
+	createButton(buttonName, 1);
+}
+
+void GuiManager::createButton(const std::string& buttonName, int layer)
+{
+#ifdef DEBUGMODE
+	if(getPos(buttonName) != -1)
 	{
-		delete it->second;
+		//TODO print warning
+		return;
 	}
+#endif
+	Button& btn = emplaceButton(false, buttonName);
+	btn.layer = layer;
+	lastButton = btn.buttonID;
+	
+	placeInDrawList(&btn);
+}
+
+void GuiManager::createButton(const std::string& copyName, const std::string& originalName)
+{
+#ifdef DEBUGMODE
+	if(getPos(originalName) == -1)
+	{
+		//TODO print warning
+		return;
+	}
+	if(getPos(copyName) != -1)
+	{
+		//TODO print warning
+		return;
+	}
+#endif
+	Button& btn = copyButton(buttons.at(getPos(originalName)), copyName);
+	
+	placeInDrawList(&btn);
+	lastButton = btn.buttonID;
+}
+
+void GuiManager::createAlias(const std::string& alias, const std::string& buttonName)
+{
+#ifdef DEBUGMODE
+	if(getPos(buttonName) == -1)
+	{
+		//TODO print warning
+		return;
+	}
+	if(getPos(alias) != -1)
+	{
+		//TODO print warning
+		return;
+	}
+	if(buttonIDs.count(alias))
+	{
+		//TODO print warning
+		return;
+	}
+#endif
+	int buttonID = buttons.at(getPos(buttonName)).buttonID;
+	buttonIDs.emplace(std::make_pair(alias, buttonID));
+}
+
+
+void GuiManager::createButtonTemplate(const std::string& buttonName)
+{
+	createButtonTemplate(buttonName, 1);
+}
+
+void GuiManager::createButtonTemplate(const std::string& buttonName, int layer)
+{
+#ifdef DEBUGMODE
+	if(getPos(buttonName) != -1)
+	{
+		//TODO print warning
+		return;
+	}
+#endif
+	Button& btn = emplaceButton(true, buttonName);
+	btn.layer = layer;
+	lastButton = btn.buttonID;
+}
+
+void GuiManager::createButtonTemplate(const std::string& copyName, const std::string& originalName)
+{
+#ifdef DEBUGMODE
+	if(getPos(originalName) == -1)
+	{
+		//TODO print warning
+		return;
+	}
+	if(getPos(copyName) != -1)
+	{
+		//TODO print warning
+		return;
+	}
+#endif
+	Button& newBtn = copyButton(buttons.at(getPos(originalName)), copyName);
+	newBtn.setButton(gui::BtnChar::isVisible, false);
+	newBtn.setButton(gui::BtnChar::isTemplate, true);
+	lastButton = newBtn.buttonID;
+}
+
+void GuiManager::createBtnAtr(const std::string& atrName, gui::BtnAtr buttonAtr)
+{
+	createBtnAtr(lastButton, atrName, buttonAtr);
+}
+
+void GuiManager::createBtnAtr(const std::string& buttonName, const std::string& atrName, gui::BtnAtr buttonAtr)
+{
+#ifdef DEBUGMODE
+	if(getPos(buttonName) == -1)
+	{
+		//TODO print warning
+		return;
+	}
+#endif
+	createBtnAtr(buttonIDs.at(buttonName), atrName, buttonAtr);
+}
+
+void GuiManager::createBtnAtr(int buttonID, const std::string& atrName, gui::BtnAtr buttonAtr)
+{
+#ifdef DEBUGMODE
+	int pos = getPos(buttonID);
+	if(pos == -1)
+	{
+		//TODO print warning
+		return;
+	}
+#endif
+	Button& btn = buttons.at(getPos(buttonID));
+	btn.addBtnAtr(atrName, buttonAtr);
+	lastButton = buttonID;
+	lastBtnAtr = atrName;
+}
+
+void GuiManager::setButtonLayer(int layer)
+{
+	setButtonLayer(lastButton, layer);
+}
+
+void GuiManager::setButtonLayer(const std::string& buttonName, int layer)
+{
+#ifdef DEBUGMODE
+	if(getPos(buttonName) == -1)
+	{
+		//TODO print warning
+		return;
+	}
+#endif
+	setButtonLayer(buttonIDs.at(buttonName), layer);
+}
+
+void GuiManager::setButtonLayer(int buttonID, int layer)
+{
+#ifdef DEBUGMODE
+	int pos = getPos(buttonID);
+	if(pos == -1)
+	{
+		//TODO print warning
+		return;
+	}
+#endif
+	Button& btn = buttons.at(getPos(buttonID));
+	btn.layer = layer;
+	if(btn.isTemplate)
+	{
+		return;
+	}
+	//remove if it exists in the vector
+	auto it = std::find_if(visibleButtons.begin(), visibleButtons.end(), [&](const Button* b)
+	{
+		return b->buttonID == buttonID;
+	});
+	if(it != visibleButtons.end())
+	{
+		visibleButtons.erase(it);
+	}
+	//re-add it
+	placeInDrawList(&btn);
+}
+
+void GuiManager::createGroup(const std::string& groupName)
+{
+#ifdef DEBUGMODE
+	if(groupExists(groupName))
+	{
+		//TODO print warning
+		return;
+	}
+#endif
+	groups.push_back(std::make_pair(groupName, std::vector<int>()));
+	lastGroup = groupName;
+}
+
+void GuiManager::createGroupTemplate(const std::string& groupName)
+{
+#ifdef DEBUGMODE
+	if(groupTemplateExists(groupName))
+	{
+		//TODO print warning
+		return;
+	}
+#endif
+	createGroup(groupName);
+}
+
+void GuiManager::createGroupFromTemplate(const std::string& groupName, const std::string& templateName)
+{
+#ifdef DEBUGMODE
+	if(!groupTemplateExists(templateName))
+	{
+		//TODO print warning
+		return;
+	}
+#endif
+	createGroup(groupName);
+	std::vector<int>& templateIDs = getGroupIDs(templateName);
+	std::vector<int>& groupIDs = getGroupIDs(groupName);
+	for(int it : templateIDs)
+	{
+		Button& btnTemplate = buttons.at(getPos(it));
+		std::string btnName =  groupName + "__" + std::to_string(btnTemplate.buttonID);
+		Button& newBtn = copyButton(btnTemplate, btnName, btnTemplate.buttonID);
+		groupIDs.push_back(newBtn.buttonID);
+		
+		placeInDrawList(&newBtn);
+	}
+	lastGroup = groupName;
+}
+
+void GuiManager::addToGroup(const std::string& entryName)
+{
+	addToGroup(lastGroup, entryName);
+}
+
+void GuiManager::addToGroup(const std::string& groupName, const std::string& entryName)
+{
+#ifdef DEBUGMODE
+	if(getPos(entryName) == -1)
+	{
+		//TODO print warning
+		return;
+	}
+	if(!groupExists(groupName))
+	{
+		//TODO print warning
+		return;
+	}
+	if(groupTemplateExists(groupName) && !(buttons.at(getPos(entryName)).isTemplate))
+	{
+		//TODO print warning
+		return;
+	}
+	std::vector<int>& ids = getGroupIDs(groupName);
+	int buttonID = buttons.at(getPos(entryName)).buttonID;
+	for(int id : ids)
+	{
+		if(buttonID == id)
+		{
+			//TODO print warning
+			return;
+		}
+	}
+#endif
+	getGroupIDs(groupName).push_back(buttons.at(getPos(entryName)).buttonID);
+}
+
+std::string GuiManager::getGroupEntry(const std::string& groupName, const std::string& buttonName)
+{
+	//get button ID
+	int realButtonID = getGroupEntryID(groupName, buttonName);
+
+	//get the buttonName from the ID
+	for(const auto& it : buttonIDs)
+	{
+		const std::string& buttonName = it.first;
+		int buttonID = it.second;
+
+		if(buttonID == realButtonID)
+		{
+			return buttonName;
+		}
+	}
+	return std::string();
+}
+int GuiManager::getGroupEntryID(const std::string& groupName, const std::string& buttonName)
+{
+#ifdef DEBUGMODE
+	if(getPos(buttonName) == -1)
+	{
+		//TODO print warning
+		return -1;
+	}
+	if(!groupExists(groupName))
+	{
+		//TODO print warning
+		return -1;
+	}
+	if(groupTemplateExists(groupName))
+	{
+		//TODO print warning
+		return -1;
+	}
+	if(buttons.at(getPos(buttonName)).isTemplate)
+	{
+		//TODO print warning
+		return -1;
+	}
+	//checks if template exists in group
+	std::vector<int>& ids = getGroupIDs(groupName);
+	int templateID = buttons.at(getPos(buttonName)).buttonID;
+	bool templateExists = false;
+	for(int id : ids)
+	{
+		if(templateID == buttons.at(getPos(id)).buttonGroupID)
+		{
+			templateExists = true;
+		}
+	}
+	if(!templateExists)
+	{
+		//TODO print warning
+		return -1;
+	}
+#endif
+	//ID of the given template
+	int buttonTemplateID = buttons.at(getPos(buttonName)).buttonID;
+
+	//find the real button ID
+	std::vector<int>& groupIDs = getGroupIDs(groupName);
+	for(int id : groupIDs)
+	{
+		Button& btn = buttons.at(getPos(id));
+		if(btn.buttonGroupID == buttonTemplateID)
+		{
+			return btn.buttonID;
+		}
+	}
+	//should never reach here
+	return -1;
+}
+
+void GuiManager::createList(const std::string& listName)
+{
+#ifdef DEBUGMODE
+	if(listExists(listName))
+	{
+		//TODO print warning
+		return;
+	}
+#endif
+	lists.emplace_back(ListData(listName));
+	lastList = listName;
+}
+
+void GuiManager::setListTemplate(const std::string& groupTemplate)
+{
+	setListTemplate(lastList, groupTemplate);
+}
+
+void GuiManager::setListTemplate(const std::string& listName, const std::string& groupTemplate)
+{
+#ifdef DEBUGMODE
+	if(!listExists(listName))
+	{
+		//TODO print warning
+		return;
+	}
+	if(!groupExists(groupTemplate))
+	{
+		//TODO print warning
+		return;
+	}
+	if(!groupTemplateExists(groupTemplate))
+	{
+		//TODO print warning
+		return;
+	}
+#endif
+	getList(listName).groupTemplate = groupTemplate;
+}
+
+void GuiManager::setListSpacing(int spacing_x, int spacing_y)
+{
+	setListSpacing(lastList, spacing_x, spacing_y);
+}
+
+void GuiManager::setListSpacing(const std::string& listName, int spacing_x, int spacing_y)
+{
+#ifdef DEBUGMODE
+	if(!listExists(listName))
+	{
+		//TODO print warning
+		return;
+	}
+#endif
+	getList(listName).listSpacing = std::make_pair(spacing_x, spacing_y);
+}
+
+void GuiManager::setListPosition(std::pair<int, int> position)
+{
+	setListPosition(lastList, position);
+}
+
+void GuiManager::setListPosition(const std::string& listName, std::pair<int, int> position)
+{
+#ifdef DEBUGMODE
+	if(!listExists(listName))
+	{
+		//TODO print warning
+		return;
+	}
+#endif
+	getList(listName).position = position;
+}
+
+std::string GuiManager::createListEntry()
+{
+	return createListEntry(lastList);
+}
+
+std::string GuiManager::createListEntry(const std::string& listName)
+{
+#ifdef DEBUGMODE
+	if(!listExists(listName))
+	{
+		//TODO print warning
+		return std::string();
+	}
+	ListData& l = getList(listName);
+	if(l.groupTemplate.size() == 0)
+	{
+		//TODO print warning
+		return std::string();
+	}
+	if(!groupTemplateExists(l.groupTemplate))
+	{
+		//TODO print warning
+		return std::string();
+	}
+#endif
+	ListData& list = getList(listName);
+	int entries = list.groups.size();
+	std::string entryName = listName + "_" + std::to_string(entries);
+	list.groups.push_back(entryName);
+
+	createGroupFromTemplate(entryName, list.groupTemplate);
+	setGroupAtr(gui::BtnChar::coords,
+	            std::make_pair(list.position.first  + entries * list.listSpacing.first,
+	                           list.position.second + entries * list.listSpacing.second));
+	return entryName;
 }
 
 void GuiManager::purgeButtons()
 {
-	for(std::map<std::string, Button*>::iterator it = buttonMap.begin(); it != buttonMap.end(); ++it)
-	{
-		delete it->second;
-	}
-
-	buttonMap.clear();
-	aliasMap.clear();
-	buttonDrawList.clear();
-	groupMap.clear();
-	groupTemplateMap.clear();
-	listMap.clear();
+	buttons.clear();
+	unusedPos.clear();
+	groups.clear();
+#ifdef DEBUGMODE
+	groupTemplates.clear();
+#endif
+	lists.clear();
+	visibleButtons.clear();
+	visibleButtonIDs.clear();
 	loadedGuiPacks.clear();
+	buttonIDs.clear();
+	
 	buttonCount = 0;
+	lastButton = -1;
+	lastBtnAtr = std::string();
+	lastGroup = std::string();
+	lastList = std::string();
 }
 
-void GuiManager::createButtonTemplate(std::string buttonName)
+void GuiManager::deleteList(const std::string& listName)
 {
-	if(!buttonMap.count(buttonName))
+#ifdef DEBUGMODE
+	if(!listExists(listName))
 	{
-		Button* newButton = new Button(window, resourceManager, buttonFont, true, -1);
-		newButton->buttonName = buttonName;
-		buttonMap[buttonName] = newButton;
-		buttonMap[buttonName]->setButton(gui::BtnChar::isVisible, false);
-
-		currentButtonEdit = buttonName;
+		//TODO print warning
+		return;
 	}
-}
-
-void GuiManager::createButtonTemplate(std::string buttonName, int layer)
-{
-	if(!buttonMap.count(buttonName))
+#endif
+	//delete lists
+	ListData& list = getList(listName);
+	for(const std::string& group : list.groups)
 	{
-		Button* newButton = new Button(window, resourceManager, buttonFont, true, -1);
-		newButton->buttonName = buttonName;
-		buttonMap[buttonName] = newButton;
-		buttonMap[buttonName]->setButton(gui::BtnChar::isVisible, false);
-
-		newButton->layer = layer;
-
-		currentButtonEdit = buttonName;
+		deleteGroup(group);
 	}
-}
-
-void GuiManager::createButtonTemplate(std::string copyName, std::string originalName)
-{
-	if(!buttonMap.count(copyName))
+	//erase from list vector
+	for(auto it = lists.begin(); it != lists.end(); it++)
 	{
-		if(buttonMap.count(originalName))
+		if((*it).listName == listName)
 		{
-			Button* newButton = new Button(*buttonMap[originalName], -1);
-			newButton->buttonName = copyName;
-			buttonMap[copyName] = newButton;
-			buttonMap[copyName]->setButton(gui::BtnChar::isVisible, false);
-			buttonMap[copyName]->setButton(gui::BtnChar::isTemplate, true);
-
-			currentButtonEdit = copyName;
+			lists.erase(it);
+			break;
 		}
 	}
 }
 
-
-void GuiManager::createButton(std::string buttonName)
+void GuiManager::deleteGroup(const std::string& groupName)
 {
-	if(!buttonMap.count(buttonName))
+#ifdef DEBUGMODE
+	if(!groupExists(groupName))
 	{
-		Button* newButton = new Button(window, resourceManager, buttonFont, false, buttonCount);
-		newButton->buttonName = buttonName;
-		buttonCount++;
-		buttonMap[buttonName] = newButton;
-
-		currentButtonEdit = buttonName;
-
-		placeInDrawList(newButton);
+		//TODO print warning
+		return;
 	}
-}
-
-void GuiManager::createButton(std::string buttonName, int layer)
-{
-	if(!buttonMap.count(buttonName))
+#endif
+	//delete buttons
+	std::vector<int>& buttonIDs = getGroupIDs(groupName);
+	for(int buttonID : buttonIDs)
 	{
-		Button* newButton = new Button(window, resourceManager, buttonFont, false, buttonCount);
-		newButton->buttonName = buttonName;
-		buttonCount++;
-		buttonMap[buttonName] = newButton;
-
-		currentButtonEdit = buttonName;
-
-		newButton->layer = layer;
-		placeInDrawList(newButton);
+		deleteButton(buttonID);
 	}
-}
-
-void GuiManager::createButton(std::string copyName, std::string originalName)
-{
-	if(buttonMap.count(originalName))
+	//erase from group vector
+	for(auto it = groups.begin(); it != groups.end(); it++)
 	{
-		if(!buttonMap.count(copyName))
+		if((*it).first == groupName)
 		{
-			Button* newButton = new Button(*buttonMap[originalName], buttonCount);
-			newButton->buttonName = copyName;
-			buttonCount++;
-			buttonMap[copyName] = newButton;
-
-			currentButtonEdit = copyName;
-
-			placeInDrawList(newButton);
+			groups.erase(it);
+			break;
 		}
+	}
+}
+
+void GuiManager::deleteButton(const std::string& buttonName)
+{
+	deleteButton(buttonIDs.at(buttonName));
+}
+
+void GuiManager::deleteButton(int buttonID)
+{
+#ifdef DEBUGMODE
+	if(getPos(buttonID) == -1)
+	{
+		//TODO print warning
+		return;
+	}
+#endif
+	Button& btn = buttons.at(getPos(buttonID));
+
+	//make the button inactive
+	btn.isActive = false;
+	btn.isVisible = false;
+
+	//erase from draw vector
+	bool refreshDraw = false;
+	for(auto it = visibleButtonIDs.begin(); it != visibleButtonIDs.end(); it++)
+	{
+		if((*it) == buttonID)
+		{
+			visibleButtonIDs.erase(it);
+			refreshDraw = true;
+			break;
+		}
+	}
+	if(refreshDraw)
+	{
+		refreshDrawVector();
+	}
+
+	//free up space in buttons vector
+	for(unsigned int it = 0; it < buttons.size(); it++)
+	{
+		if(buttons.at(it).buttonID == buttonID)
+		{
+			unusedPos.push_back(it);
+			break;
+		}
+	}
+
+	//remove all aliases to buttonID
+	auto it = buttonIDs.begin();
+	while(it != buttonIDs.end())
+	{
+		if(it->second == buttonID)
+		{
+			it = buttonIDs.erase(it);
+		}
+		else
+		{
+			it++;
+		}
+	}
+}
+
+bool GuiManager::isClicked(const std::string& buttonName)
+{
+	return buttons.at(getPos(buttonName)).isHovered;
+}
+bool GuiManager::isClicked(int buttonID)
+{
+	return buttons.at(getPos(buttonID)).isHovered;
+}
+
+void GuiManager::draw()
+{
+	for(unsigned int i = 0; i < visibleButtons.size(); i++)
+	{
+		visibleButtons.at(i)->draw();
 	}
 }
 
 void GuiManager::placeInDrawList(Button* button)
 {
-	//check if it exists
-	for(auto it = buttonDrawList.begin(); it != buttonDrawList.end(); it++)
+	int layer = button->layer;
+	std::vector<int>::iterator it = visibleButtonIDs.begin();
+	bool inserted = false;
+	for(; it != visibleButtonIDs.end(); it++)
 	{
-		if((*it)->buttonID == button->buttonID)
+		if(layer <= buttons.at(getPos(*it)).layer)
 		{
-			return;
+			visibleButtonIDs.insert(it, button->buttonID);
+			inserted = true;
+			break;
 		}
 	}
-
-	//insert the new button
-	if(buttonDrawList.size() == 0)
+	if(!inserted)
 	{
-		buttonDrawList.push_back(button);
-		return;
+		visibleButtonIDs.push_back(button->buttonID);
 	}
-	else
+	refreshDrawVector();
+}
+
+void GuiManager::refreshDrawVector()
+{
+	visibleButtons.clear();
+	for(int id : visibleButtonIDs)
 	{
-		for(auto it = buttonDrawList.begin(); it != buttonDrawList.end(); it++)
+		visibleButtons.push_back(&buttons.at(getPos(id)));
+	}
+}
+
+void GuiManager::setMousePosition(utl::Vector2f mouseCoords)
+{
+	this->mouseCoords = mouseCoords;
+
+	for(auto& it : buttons)
+	{
+		if(it.isActive)
 		{
-			if(button->layer <= (*it)->layer)
-			{
-				buttonDrawList.insert(it,button);
-				return;
-			}
-		}
-		//in the back
-		buttonDrawList.push_back(button);
-	}
-}
-
-void GuiManager::createBtnAtr(std::string buttonName, std::string atrName, gui::BtnAtr buttonAtr)
-{
-	if(buttonMap.count(buttonName))
-	{
-		buttonMap[buttonName]->addBtnAtr(atrName, buttonAtr);
-		currentButtonEdit = buttonName;
-		currentBtnAtrEdit = atrName;
-	}
-}
-
-void GuiManager::createBtnAtr(std::string atrName, gui::BtnAtr buttonAtr)
-{
-	buttonMap[currentButtonEdit]->addBtnAtr(atrName, buttonAtr);
-	currentBtnAtrEdit = atrName;
-}
-
-void GuiManager::createGroup(std::string groupName)
-{
-	groupMap[groupName];
-	currentGroupEdit = groupName;
-}
-
-void GuiManager::createGroupTemplate(std::string groupName)
-{
-	groupTemplateMap[groupName];
-	currentGroupEdit = groupName;
-}
-
-void GuiManager::createGroupFromTemplate(std::string groupName, std::string templateName)
-{
-	if(groupTemplateMap.count(templateName))
-	{
-		groupMap[groupName] = std::vector <std::string>();
-		for(std::string it : groupTemplateMap[templateName])
-		{
-			Button* newButton = new Button(*buttonMap[it], buttonCount);
-			newButton->buttonName = buttonMap[it]->buttonName;
-			buttonCount++;
-			std::string buttonName = it + "_" + groupName;
-			buttonMap[buttonName] = newButton;
-			buttonMap[buttonName]->setButton(gui::BtnChar::coords, buttonMap[it]->buttonPosition);
-
-			groupMap[groupName].push_back(buttonName);
-
-			placeInDrawList(newButton);
-		}
-		currentGroupEdit = groupName;
-	}
-}
-
-std::string GuiManager::getGroupEntry(std::string groupName, std::string buttonName)
-{
-	for(const std::string& it : groupMap[groupName])
-	{
-		if(buttonMap[it]->buttonName == buttonName)
-		{
-			return it;
-		}
-	}
-	return "nil";
-}
-
-void GuiManager::addToGroup(std::string groupName, std::string entryName)
-{
-	if(groupMap.count(groupName))
-	{
-		if(buttonMap.count(entryName))
-		{
-			groupMap[groupName].push_back(entryName);
-		}
-	}
-	else if(groupTemplateMap.count(groupName))
-	{
-		if(buttonMap.count(entryName))
-		{
-			if(buttonMap[entryName]->isTemplate)
-			{
-				groupTemplateMap[groupName].push_back(entryName);
-			}
-		}
-	}
-}
-void GuiManager::addToGroup(std::string entryName)
-{
-	if(groupMap.count(currentGroupEdit))
-	{
-		if(buttonMap.count(entryName))
-		{
-			groupMap[currentGroupEdit].push_back(entryName);
-		}
-	}
-	else if(groupTemplateMap.count(currentGroupEdit))
-	{
-		if(buttonMap.count(entryName))
-		{
-			if(buttonMap[entryName]->isTemplate)
-			{
-				groupTemplateMap[currentGroupEdit].push_back(entryName);
-			}
+			it.update(std::make_pair((int)mouseCoords.x, (int)mouseCoords.y));
 		}
 	}
 }
 
-bool GuiManager::isClicked(std::string buttonName)
+void GuiManager::setFont(sf::Font buttonFont)
 {
-	if(buttonMap.count(buttonName))
-	{
-		if(buttonMap[buttonName]->isVisible && buttonMap[buttonName]->isActive)
-		{
-			std::pair <int, int> buttonCoords = buttonMap[buttonName]->buttonPosition;
-			std::pair <int, int> buttonBounds = buttonMap[buttonName]->buttonBounds;
-			buttonCoords.first  += buttonMap[buttonName]->scroll_x;
-			buttonCoords.second += buttonMap[buttonName]->scroll_y;
-
-			if(mouseCoords.x  > buttonCoords.first  && mouseCoords.x  < buttonCoords.first  + buttonBounds.first &&
-			        mouseCoords.y > buttonCoords.second && mouseCoords.y < buttonCoords.second + buttonBounds.second)
-			{
-				return true;
-			}
-		}
-	}
-	else if(aliasMap.count(buttonName))
-	{
-		return isClicked(aliasMap[buttonName]);
-	}
-	return false;
+	this->buttonFont = buttonFont;
 }
 
-void GuiManager::createAlias(std::string alias, std::string buttonName)
-{
-	aliasMap[alias] = buttonName;
-}
-
-void GuiManager::draw()
-{
-	for(auto it = buttonDrawList.begin(); it != buttonDrawList.end(); it++)
-	{
-		(*it)->draw();
-	}
-}
-
-void GuiManager::setButtonLayer(std::string buttonName, int layer)
-{
-	if(buttonMap.count(buttonName))
-	{
-		Button* button = buttonMap[buttonName];
-		button->layer = layer;
-		if(button->isTemplate != true)
-		{
-			placeInDrawList(button);
-		}
-	}
-}
-void GuiManager::setButtonLayer(int layer)
-{
-	Button* button = buttonMap[currentButtonEdit];
-	button->layer = layer;
-	if(button->isTemplate != true)
-	{
-		placeInDrawList(button);
-	}
-}
-
-void GuiManager::deleteButton(std::string buttonName)
-{
-	//remove from draw list
-	Button* btn = buttonMap[buttonName];
-	buttonDrawList.remove(btn);
-
-	delete buttonMap[buttonName];
-	buttonMap.erase(buttonName);
-}
-void GuiManager::deleteGroup(std::string groupName)
-{
-	std::vector<std::string>& buttonNames = groupMap[groupName];
-	for(auto& buttonName : buttonNames)
-	{
-		deleteButton(buttonName);
-	}
-	groupMap.erase(groupName);
-}
-void GuiManager::deleteList(std::string listName)
-{
-	ListData& list = listMap[listName];
-	std::vector<std::string>& groups = list.elementGroups;
-	for(auto& groupName : groups)
-	{
-		deleteGroup(groupName);
-	}
-	listMap.erase(listName);
-}
-
-void GuiManager::setMousePosition(utl::Vector2f _mouseCoords)
-{
-	mouseCoords = _mouseCoords;
-
-	for(std::map<std::string, Button*>::iterator it = buttonMap.begin(); it != buttonMap.end(); ++it)
-	{
-		it->second->update(std::make_pair((int)_mouseCoords.x, (int)_mouseCoords.y));
-	}
-}
-
-void GuiManager::setFont(sf::Font _buttonFont)
-{
-	buttonFont = _buttonFont;
-}
-
-
-void GuiManager::createList(std::string listName)
-{
-	listMap[listName] = ListData();
-	currentListEdit = listName;
-}
-
-void GuiManager::setListSpacing(std::string listName, int spacing_x, int spacing_y)
-{
-	if(listMap.count(listName))
-	{
-		listMap[listName].listSpacing = std::make_pair(spacing_x, spacing_y);
-	}
-}
-void GuiManager::setListSpacing(int spacing_x, int spacing_y)
-{
-	listMap[currentListEdit].listSpacing = std::make_pair(spacing_x, spacing_y);
-}
-void GuiManager::setListTemplate(std::string listName, std::string groupTemplate)
-{
-	if(listMap.count(listName))
-	{
-		if(groupTemplateMap.count(groupTemplate))
-		{
-			listMap[listName].groupTemplate = groupTemplate;
-		}
-	}
-}
-void GuiManager::setListTemplate(std::string groupTemplate)
-{
-	if(groupTemplateMap.count(groupTemplate))
-	{
-		listMap[currentListEdit].groupTemplate = groupTemplate;
-	}
-}
-
-void GuiManager::setListPosition(std::string listName, std::pair<int, int> position)
-{
-	if(listMap.count(listName))
-	{
-		listMap[listName].position = position;
-	}
-}
-void GuiManager::setListPosition(std::pair<int, int> position)
-{
-	listMap[currentListEdit].position = position;
-}
-
-std::string GuiManager::createListEntry(std::string listName)
-{
-	if(listMap[listName].groupTemplate != "NOTEMPLATE")
-	{
-		int entries = listMap[listName].elementGroups.size();
-		std::stringstream ss;
-		ss << entries;
-		std::string entryName = listName + "_" + ss.str();
-
-		createGroupFromTemplate(entryName, listMap[listName].groupTemplate);
-		setGroupAtr(gui::BtnChar::coords,
-		            std::make_pair(listMap[listName].position.first  + entries * listMap[listName].listSpacing.first,
-		                           listMap[listName].position.second + entries * listMap[listName].listSpacing.second));
-		listMap[listName].elementGroups.push_back(entryName);
-
-		return entryName;
-	}
-	return "nil";
-}
-std::string GuiManager::createListEntry()
-{
-	if(listMap[currentListEdit].groupTemplate != "NOTEMPLATE")
-	{
-		int entries = listMap[currentListEdit].elementGroups.size();
-		std::stringstream ss;
-		ss << entries;
-		std::string entryName = currentListEdit + "_" + ss.str();
-
-		createGroupFromTemplate(entryName, listMap[currentListEdit].groupTemplate);
-		setGroupAtr(gui::BtnChar::coords,
-		            std::make_pair(listMap[currentListEdit].position.first  + entries * listMap[currentListEdit].listSpacing.first,
-		                           listMap[currentListEdit].position.second + entries * listMap[currentListEdit].listSpacing.second));
-		listMap[currentListEdit].elementGroups.push_back(entryName);
-
-		return entryName;
-	}
-	return "nil";
-}
-
-bool GuiManager::isLoadedGuiPack(std::string guiPack)
+bool GuiManager::isLoadedGuiPack(const std::string& guiPack)
 {
 	if(std::find(loadedGuiPacks.begin(), loadedGuiPacks.end(), guiPack) == loadedGuiPacks.end())
 	{

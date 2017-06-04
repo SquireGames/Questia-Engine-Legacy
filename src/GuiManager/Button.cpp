@@ -2,21 +2,23 @@
 
 //TODO log errors with __LINE__ and __FILE__
 
-Button::Button(sf::RenderWindow& _window, ResourceManager &_resourceManager, sf::Font& _buttonFont, bool _isTemplate, int _buttonID):
-	window(_window)
-	, resourceManager(_resourceManager)
-	, buttonFont(_buttonFont)
+Button::Button(sf::RenderWindow& window, ResourceManager& resourceManager, sf::Font& buttonFont, bool isTemplate, int buttonID, int buttonGroupID):
+	window(window)
+	, resourceManager(resourceManager)
+	, buttonFont(buttonFont)
 	, buttonBounds(std::make_pair(0,0))
-	, buttonID(_buttonID)
-	, isTemplate(_isTemplate)
+	, buttonID(buttonID)
+	, buttonGroupID(buttonGroupID)
+	, isTemplate(isTemplate)
 	, isVisible(true)
 {}
-Button::Button(const Button& oldButton, int _buttonID):
+Button::Button(const Button& oldButton, int buttonID, int buttonGroupID):
 	window(oldButton.window)
 	, resourceManager(oldButton.resourceManager)
 	, buttonFont(oldButton.buttonFont)
 	, buttonBounds(oldButton.buttonBounds)
-	, buttonID(_buttonID)
+	, buttonID(buttonID)
+	, buttonGroupID(buttonGroupID)
 	, layer(oldButton.layer)
 	, isTemplate(false)
 	, isVisible(oldButton.isVisible || oldButton.isTemplate)
@@ -26,11 +28,32 @@ Button::Button(const Button& oldButton, int _buttonID):
 	, percents(oldButton.percents)
 {}
 
+Button& Button::operator=(const Button& other)
+{
+	buttonPosition 	= other.buttonPosition;
+	buttonBounds 	= other.buttonBounds;
+	buttonID 		= other.buttonID;
+	buttonGroupID	= other.buttonGroupID;
+	layer 			= other.layer;
+	scroll_x 		= other.scroll_x;
+	scroll_y	 	= other.scroll_y;
+	isTemplate 		= other.isTemplate;
+	isVisible 		= other.isVisible;
+	isCoordsChanged = other.isCoordsChanged;
+	isActive 		= other.isActive;
+	sprites 		= other.sprites;
+	texts 			= other.texts;
+	hovers 			= other.hovers;
+	percents 		= other.percents;
+	return *this;
+}
+
 void Button::setButton(gui::BtnChar buttonChar, const char* value)
 {
-	setButton(buttonChar, std::string(value));
+	std::string str = std::string(value);
+	setButton(buttonChar, str);
 }
-void Button::setButton(gui::BtnChar buttonChar, std::string value)
+void Button::setButton(gui::BtnChar buttonChar, const std::string& value)
 {
 	switch(buttonChar)
 	{
@@ -110,7 +133,7 @@ void Button::setButton(gui::BtnChar buttonChar, std::pair <int, int> value)
 	}
 }
 
-void Button::addBtnAtr(std::string atrName, gui::BtnAtr buttonAtr)
+void Button::addBtnAtr(const std::string& atrName, gui::BtnAtr buttonAtr)
 {
 	switch(buttonAtr)
 	{
@@ -130,8 +153,7 @@ void Button::addBtnAtr(std::string atrName, gui::BtnAtr buttonAtr)
 		break;
 	}
 }
-
-void Button::setBtnAtr(std::string atrName, gui::BtnAtrChar atrChar, std::string value)
+void Button::setBtnAtr(const std::string& atrName, gui::BtnAtrChar atrChar, const std::string& value)
 {
 	int elementID = count(atrName, sprites);
 	if(elementID != -1)
@@ -177,7 +199,7 @@ void Button::setBtnAtr(std::string atrName, gui::BtnAtrChar atrChar, std::string
 		}
 	}
 }
-void Button::setBtnAtr(std::string atrName, gui::BtnAtrChar atrChar, std::pair<int, int> value)
+void Button::setBtnAtr(const std::string& atrName, gui::BtnAtrChar atrChar, std::pair<int, int> value)
 {
 	int elementID = count(atrName, sprites);
 	if(elementID != -1)
@@ -240,7 +262,7 @@ void Button::setBtnAtr(std::string atrName, gui::BtnAtrChar atrChar, std::pair<i
 		return;
 	}
 }
-void Button::setBtnAtr(std::string atrName, gui::BtnAtrChar atrChar, sf::Color color)
+void Button::setBtnAtr(const std::string& atrName, gui::BtnAtrChar atrChar, sf::Color color)
 {
 	int elementID = count(atrName, sprites);
 	if(elementID != -1)
@@ -268,7 +290,7 @@ void Button::setBtnAtr(std::string atrName, gui::BtnAtrChar atrChar, sf::Color c
 		return;
 	}
 }
-void Button::setBtnAtr(std::string atrName, gui::BtnAtrChar atrChar, int value)
+void Button::setBtnAtr(const std::string& atrName, gui::BtnAtrChar atrChar, int value)
 {
 	int elementID = count(atrName, sprites);
 	if(elementID != -1)
@@ -418,7 +440,7 @@ void Button::setBtnAtr(std::string atrName, gui::BtnAtrChar atrChar, int value)
 		return;
 	}
 }
-void Button::setBtnAtr(std::string atrName, gui::BtnAtrChar atrChar, char value)
+void Button::setBtnAtr(const std::string& atrName, gui::BtnAtrChar atrChar, char value)
 {
 	int elementID = count(atrName, sprites);
 	if(elementID != -1)
@@ -584,15 +606,20 @@ void Button::setBtnAtr(std::string atrName, gui::BtnAtrChar atrChar, char value)
 
 void Button::update(std::pair <int, int> mouseCoords)
 {
-	for(unsigned int i = 0; i < hovers.size(); i++)
+	if(mouseCoords.first >  buttonPosition.first + scroll_x && mouseCoords.first  < buttonPosition.first + scroll_x  + buttonBounds.first &&
+	        mouseCoords.second > buttonPosition.second + scroll_y && mouseCoords.second < buttonPosition.second + scroll_y + buttonBounds.second)
 	{
-		if(mouseCoords.first >  buttonPosition.first + scroll_x && mouseCoords.first  < buttonPosition.first + scroll_x  + buttonBounds.first &&
-		        mouseCoords.second > buttonPosition.second + scroll_y && mouseCoords.second < buttonPosition.second + scroll_y + buttonBounds.second)
+		isHovered = (isActive && isVisible);
+		for(unsigned int i = 0; i < hovers.size(); i++)
 		{
 			hovers.at(i).isChanged = true;
 			hovers.at(i).isHoveredOver = true;
 		}
-		else
+	}
+	else
+	{
+		isHovered = false;
+		for(unsigned int i = 0; i < hovers.size(); i++)
 		{
 			hovers.at(i).isChanged = true;
 			hovers.at(i).isHoveredOver = false;
@@ -602,7 +629,7 @@ void Button::update(std::pair <int, int> mouseCoords)
 
 void Button::draw()
 {
-	if(isVisible)
+	if(isVisible && !isTemplate)
 	{
 		for(unsigned int i = 0; i < sprites.size(); i++)
 		{
