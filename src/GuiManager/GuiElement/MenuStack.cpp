@@ -23,7 +23,7 @@ MenuStack::~MenuStack()
 	//dtor
 }
 
-int MenuStack::addEntry(std::string text, std::string buttonName)
+int MenuStack::addEntry(const std::string& text, const std::string& buttonName)
 {
 	int tabID = entries.size();
 	entries.push_back(Entry(text));
@@ -31,7 +31,7 @@ int MenuStack::addEntry(std::string text, std::string buttonName)
 	return tabID;
 }
 
-void MenuStack::init(std::string stackName, int x, int y, GuiManager& pGuiManager, GuiLoader& guiLoader)
+void MenuStack::init(const std::string& stackName, int x, int y, GuiManager& pGuiManager, GuiLoader& guiLoader)
 {
 	guiManager = &pGuiManager;
 	listName = stackName;

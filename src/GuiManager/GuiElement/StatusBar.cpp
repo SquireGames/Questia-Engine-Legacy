@@ -12,7 +12,7 @@ StatusBar::~StatusBar()
 
 }
 
-void StatusBar::init(std::string barName, GuiManager& pGuiManager, GuiLoader& guiLoader)
+void StatusBar::init(const std::string& barName, GuiManager& pGuiManager, GuiLoader& guiLoader)
 {
 	guiManager = &pGuiManager;
 	buttonName = barName;
@@ -61,12 +61,12 @@ void StatusBar::init(std::string barName, GuiManager& pGuiManager, GuiLoader& gu
 	}
 }
 
-void StatusBar::track(std::string text, int val, int space)
+void StatusBar::track(const std::string& text, int val, int space)
 {
 	track(text, std::to_string(val), space);
 }
 
-void StatusBar::track(std::string text, std::string val, int space)
+void StatusBar::track(const std::string& text, const std::string& val, int space)
 {
 	entries.emplace_back(Entry());
 	Entry& e = entries.back();
@@ -83,12 +83,12 @@ void StatusBar::addSpace(int space)
 	e.spacing = space;
 }
 
-void StatusBar::updateVal(std::string key, int val)
+void StatusBar::updateVal(const std::string& key, int val)
 {
 	updateVal(key, std::to_string(val));
 }
 
-void StatusBar::updateVal(std::string key, std::string val)
+void StatusBar::updateVal(const std::string& key, const std::string& val)
 {
 	for(Entry& entry : entries)
 	{

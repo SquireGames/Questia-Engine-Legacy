@@ -1,8 +1,8 @@
 #include "QuestiaEng/TileEngine/Tile.h"
 
-Tile::Tile(sf::RenderWindow& _window, ResourceManager& _resourceManager):
-	window(_window)
-	, resourceManager(_resourceManager)
+Tile::Tile(sf::RenderWindow& window, ResourceManager& resourceManager):
+	window(window)
+	, resourceManager(resourceManager)
 {
 
 }
@@ -19,7 +19,7 @@ void Tile::drawTile()
 	}
 }
 
-void Tile::setTexture(std::string filePath)
+void Tile::setTexture(const std::string& filePath)
 {
 	switch(tileType)
 	{

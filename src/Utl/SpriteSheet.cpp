@@ -1,13 +1,20 @@
 #include "QuestiaEng/Utl/SpriteSheet.h"
 
-SpriteSheet::SpriteSheet(ResourceManager& _resourceManager, std::string imageLocation, unsigned int slides_x, unsigned int slides_y):
-    res(_resourceManager)
+SpriteSheet::SpriteSheet(ResourceManager& resourceManager, std::string imageLocation, unsigned int slides_x, unsigned int slides_y):
+    res(resourceManager)
     , spriteMap()
 {
     loadSprite(imageLocation, slides_x, slides_y);
 }
 
-void SpriteSheet::loadSprite(std::string imageLocation, unsigned int slides_x, unsigned int slides_y)
+SpriteSheet::SpriteSheet(ResourceManager& resourceManager):
+    res(resourceManager)
+    , spriteMap()
+{
+
+}
+
+void SpriteSheet::loadSprite(const std::string& imageLocation, unsigned int slides_x, unsigned int slides_y)
 {
     //spriteSheet texture
     sf::Texture* texture = nullptr;
@@ -69,14 +76,6 @@ void SpriteSheet::loadSprite(std::string imageLocation, unsigned int slides_x, u
             spriteMap[it_1] [it_2] = sheet;
         }
     }
-}
-
-
-SpriteSheet::SpriteSheet(ResourceManager& _resourceManager):
-    res(_resourceManager)
-    , spriteMap()
-{
-
 }
 
 void SpriteSheet::setSize(float width, float height)

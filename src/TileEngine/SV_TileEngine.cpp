@@ -1,17 +1,17 @@
-#include "QuestiaEng/TileEngine/SaveFile_TileEngine.h"
+#include "QuestiaEng/TileEngine/SV_TileEngine.h"
 
-SaveFile_TileEngine::SaveFile_TileEngine(ResourceManager& _resourceManager):
+SV_TileEngine::SV_TileEngine(ResourceManager& _resourceManager):
 	resourceManager(_resourceManager)
 	, textureAtlas(_resourceManager)
 {
 
 }
-SaveFile_TileEngine::~SaveFile_TileEngine()
+SV_TileEngine::~SV_TileEngine()
 {
 	//dtor
 }
 
-TileMap SaveFile_TileEngine::openMap(std::string mapName, sf::RenderWindow& window, TileMap::TextureMode textureMode, TileMap::TileMode tileMode)
+TileMap SV_TileEngine::openMap(const std::string& mapName, sf::RenderWindow& window, TileMap::TextureMode textureMode, TileMap::TileMode tileMode)
 {
 	//create map
 	TileMap mapData;
@@ -19,7 +19,7 @@ TileMap SaveFile_TileEngine::openMap(std::string mapName, sf::RenderWindow& wind
 	//make sure directory exists
 	if(!utl::doesExist(utl::conjoinString( {"Maps/", mapName})))
 	{
-		throw std::runtime_error(utl::conjoinString( {"ERROR: Reading map- Maps/", mapName, " <Utl/SaveFile/SaveFile_TileEngine.cpp>"}));
+		throw std::runtime_error(utl::conjoinString( {"ERROR: Reading map- Maps/", mapName, " <Utl/SaveFile/SV_TileEngine.cpp>"}));
 		return mapData;
 	}
 
@@ -76,7 +76,7 @@ TileMap SaveFile_TileEngine::openMap(std::string mapName, sf::RenderWindow& wind
 	return mapData;
 }
 
-void SaveFile_TileEngine::loadRenderData(TileMap& mapData)
+void SV_TileEngine::loadRenderData(TileMap& mapData)
 {
 	//validate all sprites loaded into the map
 	if(mapData.getTileMode() == TileMap::TileMode::Sprite)
@@ -296,10 +296,10 @@ void SaveFile_TileEngine::loadRenderData(TileMap& mapData)
 	}
 }
 
-std::vector <std::pair <int, std::string> > SaveFile_TileEngine::getTileLocations(std::string filePath, TileMap::TextureMode textureMode)
+std::vector <std::pair <int, std::string> > SV_TileEngine::getTileLocations(const std::string& fileDir, TileMap::TextureMode textureMode)
 {
 	//to get block datas
-	filePath = filePath + file_tilesUsed;
+	std::string filePath = fileDir + file_tilesUsed;
 
 	//return vector
 	std::vector<std::pair <int, std::string> > returnTiles = std::vector<std::pair <int, std::string> >();
@@ -412,7 +412,7 @@ std::vector <std::pair <int, std::string> > SaveFile_TileEngine::getTileLocation
 	return returnTiles;
 }
 
-void SaveFile_TileEngine::loadTiles(std::vector <std::pair <int, std::string> >& tileLocations, TileMap& mapData, sf::RenderWindow& window)
+void SV_TileEngine::loadTiles(std::vector <std::pair <int, std::string> >& tileLocations, TileMap& mapData, sf::RenderWindow& window)
 {
 	//used to hold transform data for each tile
 	std::map<int, TileTransform> tileTransform;
@@ -435,10 +435,10 @@ void SaveFile_TileEngine::loadTiles(std::vector <std::pair <int, std::string> >&
 
 			if(filePath.substr(filePath.length() - 4) == ".png")
 			{
-				if(!textureAtlas.addTexture(utl::asString(tileData.first), tileData.second))
+				if(!textureAtlas.addTexture(std::to_string(tileData.first), tileData.second))
 				{
-					std::cout << "TILEENGINE - Tile: '" << filePath << "' failed to load <Utl/SaveFile/SaveFile_TileEngine.cpp>" << std::endl;
-					textureAtlas.addTexture(utl::asString(tileData.first), "Media/Image/Game/Tiles/Debug/Missing.png");
+					std::cout << "TILEENGINE - Tile: '" << filePath << "' failed to load <Utl/SaveFile/SV_TileEngine.cpp>" << std::endl;
+					textureAtlas.addTexture(std::to_string(tileData.first), "Media/Image/Game/Tiles/Debug/Missing.png");
 				}
 			}
 			else if(filePath.substr(filePath.length() - 4) == ".txt")
@@ -448,15 +448,15 @@ void SaveFile_TileEngine::loadTiles(std::vector <std::pair <int, std::string> >&
 				texturePath = texturePath + ".png";
 
 				//will not do anything if not a valid filepath (not a reference)
-				if(textureAtlas.addTexture(utl::asString(tileData.first), texturePath))
+				if(textureAtlas.addTexture(std::to_string(tileData.first), texturePath))
 				{
-					std::cout << "TILEENGINE - Reference texture: " << texturePath << "(" << utl::asString(tileData.first) << ")" << std::endl;
+					std::cout << "TILEENGINE - Reference texture: " << texturePath << "(" << std::to_string(tileData.first) << ")" << std::endl;
 				}
 			}
 			else
 			{
-				std::cout << "TILEENGINE - Tile extension of: '" << filePath << "' is not accepted <Utl/SaveFile/SaveFile_TileEngine.cpp>" << std::endl;
-				textureAtlas.addTexture(utl::asString(tileData.first), "Media/Image/Game/Tiles/Debug/Missing.png");
+				std::cout << "TILEENGINE - Tile extension of: '" << filePath << "' is not accepted <Utl/SaveFile/SV_TileEngine.cpp>" << std::endl;
+				textureAtlas.addTexture(std::to_string(tileData.first), "Media/Image/Game/Tiles/Debug/Missing.png");
 			}
 		}
 	}
@@ -527,7 +527,7 @@ void SaveFile_TileEngine::loadTiles(std::vector <std::pair <int, std::string> >&
 						}
 
 						//if texture is made
-						if(textureAtlas.addTexture(utl::asString(newTextureID), fileTransform.second))
+						if(textureAtlas.addTexture(std::to_string(newTextureID), fileTransform.second))
 						{
 							std::cout << "TILEENGINE - Reference texture: " << fileTransform.second << "(" << newTextureID << ")" << std::endl;
 							pngIdDirectory[tileID] = newTextureID;
@@ -540,7 +540,7 @@ void SaveFile_TileEngine::loadTiles(std::vector <std::pair <int, std::string> >&
 						}
 						else
 						{
-							std::cout << "TILEENGINE - Tile: '" << fileTransform.second << "' failed to load <Utl/SaveFile/SaveFile_TileEngine.cpp>" << std::endl;
+							std::cout << "TILEENGINE - Tile: '" << fileTransform.second << "' failed to load <Utl/SaveFile/SV_TileEngine.cpp>" << std::endl;
 
 							pngIdDirectory[tileID] = -1;
 						}
@@ -588,8 +588,8 @@ void SaveFile_TileEngine::loadTiles(std::vector <std::pair <int, std::string> >&
 		}
 		else if(!(filePath.substr(filePath.length() - 4) == ".png"))
 		{
-			std::cout << "TILEENGINE - Tile extension: '" << filePath << "' is not accepted <Utl/SaveFile/SaveFile_TileEngine.cpp>" << std::endl;
-			textureAtlas.addTexture(utl::asString(tileData.first), "Media/Image/Game/Tiles/Debug/Missing.png");
+			std::cout << "TILEENGINE - Tile extension: '" << filePath << "' is not accepted <Utl/SaveFile/SV_TileEngine.cpp>" << std::endl;
+			textureAtlas.addTexture(std::to_string(tileData.first), "Media/Image/Game/Tiles/Debug/Missing.png");
 		}
 	}
 
@@ -618,7 +618,7 @@ void SaveFile_TileEngine::loadTiles(std::vector <std::pair <int, std::string> >&
 		case TileMap::TileMode::Batch:
 			{
 				mapData.getTileKey().at(tileID).tileType = Tile::TileType::texture;
-				mapData.getTileKey().at(tileID).texturePosition = compiledTexture.textureCoords.at(utl::asString(pngIdDirectory[tileID]));
+				mapData.getTileKey().at(tileID).texturePosition = compiledTexture.textureCoords.at(std::to_string(pngIdDirectory[tileID]));
 			}
 			break;
 		case TileMap::TileMode::Sprite:
@@ -665,7 +665,7 @@ void SaveFile_TileEngine::loadTiles(std::vector <std::pair <int, std::string> >&
 	}
 }
 
-void SaveFile_TileEngine::saveMap(std::string mapName, const std::vector <int>& tileMap, unsigned int width, unsigned int height, unsigned int layers, const std::map<int, Tile>& tilePairs)
+void SV_TileEngine::saveMap(const std::string& mapName, const std::vector <int>& tileMap, unsigned int width, unsigned int height, unsigned int layers, const std::map<int, Tile>& tilePairs)
 {
 	if(utl::doesExist(utl::conjoinString( {"Maps/", mapName})))
 	{
@@ -707,7 +707,7 @@ void SaveFile_TileEngine::saveMap(std::string mapName, const std::vector <int>& 
 			}
 			else
 			{
-				saveFile_tilesUsed.saveItem(utl::asString(currentTileID), tilePairs.at(tileID).source);
+				saveFile_tilesUsed.saveItem(std::to_string(currentTileID), tilePairs.at(tileID).source);
 				newTileNumbers[tileID] = currentTileID;
 				currentTileID++;
 			}
@@ -730,10 +730,10 @@ void SaveFile_TileEngine::saveMap(std::string mapName, const std::vector <int>& 
 				//-1 to account for end
 				for(unsigned int it = 0; it != width - 1; it++)
 				{
-					tileLine.push_back(utl::asString(newTileNumbers[tileMap.at(tileMapIterator)]) + "|");
+					tileLine.push_back(std::to_string(newTileNumbers[tileMap.at(tileMapIterator)]) + "|");
 					tileMapIterator++;
 				}
-				tileLine.push_back(utl::asString(newTileNumbers[tileMap.at(tileMapIterator)]));
+				tileLine.push_back(std::to_string(newTileNumbers[tileMap.at(tileMapIterator)]));
 				tileMapIterator++;
 				saveFile_map.addItem(utl::conjoinString(tileLine), "");
 			}
@@ -749,7 +749,7 @@ void SaveFile_TileEngine::saveMap(std::string mapName, const std::vector <int>& 
 }
 
 ///editor
-bool SaveFile_TileEngine::createMap(std::string mapName, unsigned int width, unsigned int height, unsigned int layers)
+bool SV_TileEngine::createMap(const std::string& mapName, unsigned int width, unsigned int height, unsigned int layers)
 {
 	//file paths
 	std::string filePath = "Maps/" + mapName;
@@ -812,11 +812,11 @@ bool SaveFile_TileEngine::createMap(std::string mapName, unsigned int width, uns
 	return true;
 }
 
-int SaveFile_TileEngine::getTile(unsigned int x, unsigned int y, unsigned int layer, TileMap& tileMap)
+int SV_TileEngine::getTile(unsigned int x, unsigned int y, unsigned int layer, TileMap& tileMap)
 {
 	return x + (tileMap.getWidth() * y) + (layer * tileMap.getWidth() * tileMap.getHeight());
 }
-int SaveFile_TileEngine::getChunk(unsigned int x, unsigned int y, unsigned int layer, TileMap& tileMap)
+int SV_TileEngine::getChunk(unsigned int x, unsigned int y, unsigned int layer, TileMap& tileMap)
 {
 	return x + (tileMap.getChunks_x() * y) + (layer * tileMap.getChunks_x() * tileMap.getChunks_y());
 }

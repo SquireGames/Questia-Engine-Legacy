@@ -24,23 +24,23 @@ TabBar::~TabBar()
 	//dtor
 }
 
-int TabBar::addTab(std::string text, std::string buttonName)
+int TabBar::addTab(const std::string& text, const std::string& buttonName)
 {
 	int tabID = mostRecentTab = tabs.size();
 	tabs.push_back(Tab(text, buttonName, dir));
 	return tabID;
 }
 
-void TabBar::addEntry(int tabID, std::string entryText, std::string buttonName)
+void TabBar::addEntry(int tabID, const std::string& entryText, const std::string& buttonName)
 {
 	tabs.at(tabID).menu.addEntry(entryText, buttonName);
 }
-void TabBar::addEntry(std::string entryText, std::string buttonName)
+void TabBar::addEntry(const std::string& entryText, const std::string&buttonName)
 {
 	tabs.at(mostRecentTab).menu.addEntry(entryText, buttonName);
 }
 
-void TabBar::init(std::string tabBarName, GuiManager& pGuiManager, GuiLoader& guiLoader)
+void TabBar::init(const std::string& tabBarName, GuiManager& pGuiManager, GuiLoader& guiLoader)
 {
 	guiManager = &pGuiManager;
 	guiLoader.loadGui(pGuiManager, "tabBar");

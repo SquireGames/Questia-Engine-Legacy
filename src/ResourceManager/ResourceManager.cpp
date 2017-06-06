@@ -2,61 +2,42 @@
 
 ResourceManager::ResourceManager()
 {
-
-}
-
-ResourceManager::~ResourceManager()
-{
 	textureMap.clear();
 }
 
-sf::Texture& ResourceManager::getTexture(std::string filename)
+sf::Texture& ResourceManager::getTexture(const std::string& filename)
 {
-	if(firstTime)
-	{
-		firstTime = false;
-		textureMap.clear();
-	}
 	if(textureMap.count(filename))
 	{
-		return textureMap[filename];
+		return textureMap.at(filename);
 	}
 
 	sf::Texture tex;
 	if(tex.loadFromFile(filename))
 	{
-		textureMap.insert(std::make_pair(filename, tex));
+		textureMap.emplace(filename, tex);
 		std::cout<< "DEBUG: Texture '" << filename << "' was loaded"<< std::endl;
 		return textureMap.at(filename);
 	}
 
-	// if not loaded
-	std::cout<< "DEBUG: Texture '" << filename << "' was not found"<< std::endl;
-	textureMap[filename] = tex;
+	std::cout<< "DEBUG: Texture '" << filename << "' was not able to be loaded"<< std::endl;
+	textureMap.emplace(filename, tex);
 	return textureMap.at(filename);
 }
 
-sf::Texture& ResourceManager::getBlankTexture(std::string textureName)
+sf::Texture& ResourceManager::getBlankTexture(const std::string& textureName)
 {
-	if(firstTime)
+	if(textureMap.count(textureName))
 	{
-		firstTime = false;
-		textureMap.clear();
+		return textureMap.at(textureName);
 	}
-	for(auto it = textureMap.begin(); it != textureMap.end(); it++)
-	{
-		if(textureName == it->first)
-		{
-			return it->second;
-		}
-	}
-	// if not loaded
-	textureMap.insert(std::make_pair(textureName, sf::Texture()));
+
+	textureMap.emplace(textureName, sf::Texture());
 	std::cout<< "DEBUG: Blank Texture '" << textureName << "' was created"<< std::endl;
-	return textureMap[textureName];
+	return textureMap.at(textureName);
 }
 
-void ResourceManager::kill(std::string filename)
+void ResourceManager::kill(const std::string& filename)
 {
 	if(textureMap.count(filename))
 	{
@@ -64,14 +45,7 @@ void ResourceManager::kill(std::string filename)
 	}
 }
 
-bool ResourceManager::isTexture(std::string textureName)
+bool ResourceManager::isTexture(const std::string& textureName)
 {
-	for(auto it = textureMap.begin(); it != textureMap.end(); it++)
-	{
-		if(textureName == it->first)
-		{
-			return true;
-		}
-	}
-	return false;
+	return textureMap.count(textureName);
 }

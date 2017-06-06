@@ -1,8 +1,8 @@
 #include "QuestiaEng/TileEngine/TileEngine.h"
 
-TileEngine::TileEngine(sf::RenderWindow& _window, ResourceManager& _resourceManager):
-	window(_window)
-	, resourceManager(_resourceManager)
+TileEngine::TileEngine(sf::RenderWindow& window, ResourceManager& resourceManager):
+	window(window)
+	, resourceManager(resourceManager)
 	, currentMap()
 {
 
@@ -13,10 +13,10 @@ TileEngine::~TileEngine()
 
 }
 
-void TileEngine::loadMap(std::string _mapName, TileMap::TextureMode textureMode, TileMap::TileMode tileMode)
+void TileEngine::loadMap(const std::string& mapName, TileMap::TextureMode textureMode, TileMap::TileMode tileMode)
 {
 	//loads the current map
-	currentMap = std::move(SaveFile_TileEngine(resourceManager).openMap(_mapName, window, textureMode, tileMode));
+	currentMap = std::move(SV_TileEngine(resourceManager).openMap(mapName, window, textureMode, tileMode));
 	//TODO fix initialize
 	currentMap.initialize();
 }

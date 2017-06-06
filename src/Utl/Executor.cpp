@@ -10,7 +10,7 @@ utl::Executor::~Executor()
     //dtor
 }
 
-void utl::Executor::addTask(std::string taskName, TaskType taskType, utl::Ticker ticker, std::function<void(float taskPercentage)> task)
+void utl::Executor::addTask(const std::string& taskName, TaskType taskType, utl::Ticker ticker, std::function<void(float taskPercentage)> task)
 {
     eventVector.push_back(std::make_pair(taskName, std::unique_ptr<Event>(new Event(taskType, ticker, task))));
 }
@@ -52,7 +52,7 @@ void utl::Executor::processTasks()
     }), eventVector.end());
 }
 
-void utl::Executor::tryDelete(std::string taskName)
+void utl::Executor::tryDelete(const std::string& taskName)
 {
     auto taskIterator = eventVector.end();
     for(auto it = eventVector.begin(); it != eventVector.end(); it++)

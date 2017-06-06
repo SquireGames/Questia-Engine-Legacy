@@ -23,7 +23,6 @@ public:
 	int getScroll(){return scroll;}
 	utl::Vector2f getMousePos(){return mousePos;}
 	
-	
 private:
     bool isMouseHeld_l = false;
     bool isMouseHeld_m = false;

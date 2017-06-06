@@ -1,9 +1,9 @@
 #include "QuestiaEng/TileEngine/TileEngine_Editor.h"
 
 //ctor
-TileEngine_Editor::TileEngine_Editor(sf::RenderWindow& _window, ResourceManager& _resourceManager, TileEngine& tileEng):
-	window(_window)
-	, resourceManager(_resourceManager)
+TileEngine_Editor::TileEngine_Editor(sf::RenderWindow& window, ResourceManager& resourceManager, TileEngine& tileEng):
+	window(window)
+	, resourceManager(resourceManager)
 	, tileEngine(tileEng)
 	, gridLines()
 	, saveFile(resourceManager)
@@ -11,14 +11,14 @@ TileEngine_Editor::TileEngine_Editor(sf::RenderWindow& _window, ResourceManager&
 	gridLines.setPrimitiveType(sf::PrimitiveType::Lines);
 }
 
-void TileEngine_Editor::createMap(std::string mapName, unsigned int width, unsigned int height, unsigned int layers)
+void TileEngine_Editor::createMap(const std::string& mapName, unsigned int width, unsigned int height, unsigned int layers)
 {
 	saveFile.createMap(mapName, width, height, layers);
 }
 
-void TileEngine_Editor::loadMap(std::string mapName)
+void TileEngine_Editor::loadMap(const std::string& mapName)
 {
-	tileEngine.currentMap = std::move(SaveFile_TileEngine(resourceManager).openMap(mapName, window, TileMap::TextureMode::All, TileMap::TileMode::Sprite));
+	tileEngine.currentMap = std::move(SV_TileEngine(resourceManager).openMap(mapName, window, TileMap::TextureMode::All, TileMap::TileMode::Sprite));
 
 	//2 vertices
 	gridLines.resize((tileEngine.currentMap.getWidth() + 1) * 2 + ((tileEngine.currentMap.getHeight() + 1) * 2));
@@ -295,7 +295,7 @@ unsigned int TileEngine_Editor::getMapLayers()
 {
 	return tileEngine.currentMap.getLayers();
 }
-void TileEngine_Editor::changeMapName(std::string newName)
+void TileEngine_Editor::changeMapName(const std::string& newName)
 {
 	tileEngine.currentMap.setName(newName);
 }

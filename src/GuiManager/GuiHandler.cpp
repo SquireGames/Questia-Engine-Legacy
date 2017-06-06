@@ -1,7 +1,7 @@
 #include "QuestiaEng/GuiManager/GuiHandler.h"
 
-GuiHandler::GuiHandler(MouseListener& mou):
-	mouse(mou)
+GuiHandler::GuiHandler(MouseListener& mouse):
+	mouse(mouse)
 {
 
 }

@@ -10,12 +10,12 @@ GuiLoader::~GuiLoader()
     //dtor
 }
 
-void GuiLoader::setGuiPack(std::string guiPack)
+void GuiLoader::setGuiPack(const std::string& guiPack)
 {
     primaryPack = guiPack;
 }
 
-void GuiLoader::loadGui(GuiManager& guiManager, std::string gui)
+void GuiLoader::loadGui(GuiManager& guiManager, const std::string& gui)
 {
     if(guiManager.isLoadedGuiPack(gui))
     {

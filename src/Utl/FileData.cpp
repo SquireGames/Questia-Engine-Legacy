@@ -7,9 +7,9 @@ bool utl::doesExist(const std::string& fileLocation)
 	return fs::exists(fileLocation);
 }
 
-std::vector<std::string> utl::getFiles(std::string directory, bool isWithDirectory)
+std::vector<std::string> utl::getFiles(const std::string& directory, bool isWithDirectory)
 {
-	std::vector <std::string> fileNames;
+	std::vector<std::string> fileNames;
 
 	fs::path directoryFolder(directory);
 	if(fs::exists(directoryFolder) && fs::is_directory(directoryFolder))
@@ -35,7 +35,7 @@ std::vector<std::string> utl::getFiles(std::string directory, bool isWithDirecto
 	return fileNames;
 }
 
-std::vector<std::string> utl::getAllFiles(std::string directory, bool isWithDirectory)
+std::vector<std::string> utl::getAllFiles(const std::string& directory, bool isWithDirectory)
 {
 	std::vector <std::string> fileNames;
 
@@ -60,8 +60,6 @@ std::vector<std::string> utl::getAllFiles(std::string directory, bool isWithDire
 	}
 	return fileNames;
 }
-
-
 
 bool utl::createDirectory(const std::string& filePath)
 {

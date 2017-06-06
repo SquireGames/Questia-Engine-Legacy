@@ -1,14 +1,9 @@
 #include "QuestiaEng/Utl/Ticker.h"
 
-utl::Ticker::Ticker(unsigned int _tickInterval):
-    tickInterval(_tickInterval)
+utl::Ticker::Ticker(unsigned int tickInterval):
+    tickInterval(tickInterval)
 {
-    //ctor
-}
-
-utl::Ticker::~Ticker()
-{
-    //dtor
+	
 }
 
 void utl::Ticker::tick()

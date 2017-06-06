@@ -8,11 +8,11 @@
 #include "QuestiaEng/Utl/Utl.h"
 #include "QuestiaEng/Utl/Controls/Input.h"
 
-class SaveFile_Options
+class SV_Options
 {
 public:
-    SaveFile_Options();
-    ~SaveFile_Options();
+    SV_Options();
+    ~SV_Options();
 
     //void saveOption(Option_Base* option, std::string optionName);
     void writeOptions();

@@ -1,7 +1,7 @@
 #include "QuestiaEng/Utl/TextureAtlas.h"
 
-TextureAtlas::TextureAtlas(ResourceManager& _resourceManager):
-	resourceManager(&_resourceManager)
+TextureAtlas::TextureAtlas(ResourceManager& resourceManager):
+	resourceManager(&resourceManager)
 {
 
 }
@@ -11,7 +11,7 @@ TextureAtlas::~TextureAtlas()
 	//dtor
 }
 
-bool TextureAtlas::addTexture(std::string name, std::string fileLocation)
+bool TextureAtlas::addTexture(const std::string& name, const std::string& fileLocation)
 {
 	//deleted after, used for getting texture data
 	sf::Texture tempTexture;
@@ -73,7 +73,7 @@ bool TextureAtlas::addTexture(std::string name, std::string fileLocation)
 	return false;
 }
 
-TextureAtlasData TextureAtlas::compileTextures(std::string textureName)
+TextureAtlasData TextureAtlas::compileTextures(const std::string& textureName)
 {
 	TextureAtlasData textureData(&resourceManager->getBlankTexture(textureName));
 	textureData.texture->create(maxWidth, maxHeight);

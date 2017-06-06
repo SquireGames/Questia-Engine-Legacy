@@ -1,6 +1,6 @@
-#include "QuestiaEng/SaveFile_Options.h"
+#include "QuestiaEng/SV_Options.h"
 
-SaveFile_Options::SaveFile_Options()
+SV_Options::SV_Options()
 {
 	saveFile.setFilePath("options.cfg");
 
@@ -13,12 +13,12 @@ SaveFile_Options::SaveFile_Options()
 	std::cout << "Loaded options.cfg" << std::endl;
 }
 
-SaveFile_Options::~SaveFile_Options()
+SV_Options::~SV_Options()
 {
 
 }
 
-void SaveFile_Options::reloadOptions()
+void SV_Options::reloadOptions()
 {
 	saveFile.readFile();
 	if(utl::isNumber(saveFile.getItem(windowMode_name)))
@@ -84,7 +84,7 @@ void SaveFile_Options::reloadOptions()
 }
 
 /*
-void SaveFile_Options::saveOption(Option_Base* option, std::string optionName)
+void SV_Options::saveOption(Option_Base* option, std::string optionName)
 {
 	if(optionName == windowMode_name)
 	{
@@ -158,7 +158,7 @@ void SaveFile_Options::saveOption(Option_Base* option, std::string optionName)
 }
 */
 
-void SaveFile_Options::writeOptions()
+void SV_Options::writeOptions()
 {
 	saveFile.clearSave();
 
@@ -183,34 +183,34 @@ void SaveFile_Options::writeOptions()
 	saveFile.writeFile();
 }
 
-int 		SaveFile_Options::getWindowMode()		{return windowMode;}
-int			SaveFile_Options::getFps()				{return fps;}
-std::string SaveFile_Options::getFont()				{return font;}
-int 		SaveFile_Options::getMusicVolume()		{return musicVolume;}
-std::string SaveFile_Options::getGuiPack()			{return guiPack;}
-ctr::Input 	SaveFile_Options::getKey_moveUp()		{return key_moveUp;}
-ctr::Input 	SaveFile_Options::getKey_moveDown()		{return key_moveDown;}
-ctr::Input 	SaveFile_Options::getKey_moveLeft()		{return key_moveLeft;}
-ctr::Input 	SaveFile_Options::getKey_moveRight()	{return key_moveRight;}
-ctr::Input 	SaveFile_Options::getKey_skill_1()		{return key_skill_1;}
-ctr::Input 	SaveFile_Options::getKey_skill_2()		{return key_skill_2;}
-ctr::Input 	SaveFile_Options::getKey_skill_3()		{return key_skill_3;}
-ctr::Input 	SaveFile_Options::getKey_skill_4()		{return key_skill_4;}
-ctr::Input 	SaveFile_Options::getKey_skill_5()		{return key_skill_5;}
-ctr::Input 	SaveFile_Options::getKey_skill_6()		{return key_skill_6;}
+int 		SV_Options::getWindowMode()		{return windowMode;}
+int			SV_Options::getFps()				{return fps;}
+std::string SV_Options::getFont()				{return font;}
+int 		SV_Options::getMusicVolume()		{return musicVolume;}
+std::string SV_Options::getGuiPack()			{return guiPack;}
+ctr::Input 	SV_Options::getKey_moveUp()		{return key_moveUp;}
+ctr::Input 	SV_Options::getKey_moveDown()		{return key_moveDown;}
+ctr::Input 	SV_Options::getKey_moveLeft()		{return key_moveLeft;}
+ctr::Input 	SV_Options::getKey_moveRight()	{return key_moveRight;}
+ctr::Input 	SV_Options::getKey_skill_1()		{return key_skill_1;}
+ctr::Input 	SV_Options::getKey_skill_2()		{return key_skill_2;}
+ctr::Input 	SV_Options::getKey_skill_3()		{return key_skill_3;}
+ctr::Input 	SV_Options::getKey_skill_4()		{return key_skill_4;}
+ctr::Input 	SV_Options::getKey_skill_5()		{return key_skill_5;}
+ctr::Input 	SV_Options::getKey_skill_6()		{return key_skill_6;}
 
-std::string SaveFile_Options::getWindowMode_name()		{return windowMode_name;}
-std::string SaveFile_Options::getFps_name()				{return fps_name;}
-std::string SaveFile_Options::getFont_name()			{return font_name;}
-std::string SaveFile_Options::getMusicVolume_name()		{return musicVolume_name;}
-std::string SaveFile_Options::getGuiPack_name()			{return guiPack_name;}
-std::string SaveFile_Options::getKey_moveUp_name() 		{return key_moveUp_name;}
-std::string SaveFile_Options::getKey_moveDown_name() 	{return key_moveDown_name;}
-std::string SaveFile_Options::getKey_moveLeft_name() 	{return key_moveLeft_name;}
-std::string SaveFile_Options::getKey_moveRight_name() 	{return key_moveRight_name;}
-std::string SaveFile_Options::getKey_skill_1_name() 	{return key_skill_1_name;}
-std::string SaveFile_Options::getKey_skill_2_name() 	{return key_skill_2_name;}
-std::string SaveFile_Options::getKey_skill_3_name() 	{return key_skill_3_name;}
-std::string SaveFile_Options::getKey_skill_4_name() 	{return key_skill_4_name;}
-std::string SaveFile_Options::getKey_skill_5_name() 	{return key_skill_5_name;}
-std::string SaveFile_Options::getKey_skill_6_name() 	{return key_skill_6_name;}
+std::string SV_Options::getWindowMode_name()		{return windowMode_name;}
+std::string SV_Options::getFps_name()				{return fps_name;}
+std::string SV_Options::getFont_name()			{return font_name;}
+std::string SV_Options::getMusicVolume_name()		{return musicVolume_name;}
+std::string SV_Options::getGuiPack_name()			{return guiPack_name;}
+std::string SV_Options::getKey_moveUp_name() 		{return key_moveUp_name;}
+std::string SV_Options::getKey_moveDown_name() 	{return key_moveDown_name;}
+std::string SV_Options::getKey_moveLeft_name() 	{return key_moveLeft_name;}
+std::string SV_Options::getKey_moveRight_name() 	{return key_moveRight_name;}
+std::string SV_Options::getKey_skill_1_name() 	{return key_skill_1_name;}
+std::string SV_Options::getKey_skill_2_name() 	{return key_skill_2_name;}
+std::string SV_Options::getKey_skill_3_name() 	{return key_skill_3_name;}
+std::string SV_Options::getKey_skill_4_name() 	{return key_skill_4_name;}
+std::string SV_Options::getKey_skill_5_name() 	{return key_skill_5_name;}
+std::string SV_Options::getKey_skill_6_name() 	{return key_skill_6_name;}

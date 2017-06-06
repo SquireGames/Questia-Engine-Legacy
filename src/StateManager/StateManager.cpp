@@ -20,12 +20,12 @@ StateManager::~StateManager()
 	std::cout << "DEBUG: StateManager Destroyed" << std::endl;
 }
 
-void StateManager::reg(std::string name, std::function<State*()> state)
+void StateManager::reg(const std::string& name, std::function<State*()> state)
 {
 	stateMap[name] = state;
 }
 
-void StateManager::pushState(std::string stateName)
+void StateManager::pushState(const std::string& stateName)
 {
 	isStateQueued = true;
 	newStateName = stateName;
@@ -38,7 +38,7 @@ void StateManager::popState()
 		delIndex = stateStack.size() - 1;
 	}
 }
-void StateManager::transitionState(std::string newState, std::string loadingState)
+void StateManager::transitionState(const std::string& newState, const std::string& loadingState)
 {
 	isTransitionQueued = true;
 	newStateName = newState;
@@ -57,7 +57,7 @@ void StateManager::deleteState(unsigned int index)
 	stackIndex--;
 	isDelQueued = false;
 }
-void StateManager::createState(std::string stateName)
+void StateManager::createState(const std::string& stateName)
 {
 	if(stateMap.count(stateName))
 	{
@@ -69,7 +69,7 @@ void StateManager::createState(std::string stateName)
 	}
 	isStateQueued = false;
 }
-void StateManager::makeTransition(std::string newState, std::string loadingState)
+void StateManager::makeTransition(const std::string& newState, const std::string& loadingState)
 {
 	//delete the top state
 	if(stateStack.size()) {deleteState(stackIndex);};
@@ -106,7 +106,7 @@ void StateManager::checkQueues()
 	}
 	checkLoading();
 }
-void StateManager::changeState(std::string stateName)
+void StateManager::changeState(const std::string& stateName)
 {
 	//queue a state deletion
 	popState();

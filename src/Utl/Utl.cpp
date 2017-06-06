@@ -1,47 +1,24 @@
 #include "QuestiaEng/Utl/Utl.h"
 
-///types
-//comparison
-
-bool utl::isNumber(const std::string& _string)
+bool utl::isNumber(const std::string& string)
 {
-    return (_string.find_first_not_of("0123456789.-") == std::string::npos);
+    return (string.find_first_not_of("0123456789.-") == std::string::npos);
 }
 
-bool utl::isWithAnyCharacter(const std::string& _string, const std::string& characters)
+bool utl::isWithAnyCharacter(const std::string& string, const std::string& characters)
 {
-    return (_string.find_first_of(characters) != std::string::npos);
+    return (string.find_first_of(characters) != std::string::npos);
 }
 
-//conversion
-
-int utl::asInt(const std::string& _string)
+int utl::asInt(const std::string& string)
 {
-    return atoi(_string.c_str());
+    return atoi(string.c_str());
 }
 
-float utl::asFloat(const std::string& _string)
+float utl::asFloat(const std::string& string)
 {
-    return atoi(_string.c_str());
+    return atoi(string.c_str());
 }
-
-template std::string utl::asString <bool>           (const bool& _item);
-template std::string utl::asString <char>           (const char& _item);
-template std::string utl::asString <int>            (const int& _item);
-template std::string utl::asString <unsigned int>   (const unsigned int& _item);
-template std::string utl::asString <unsigned short> (const unsigned short& _item);
-template std::string utl::asString <float>          (const float& _item);
-template std::string utl::asString <std::string>    (const std::string& _item);
-template <class T>
-std::string utl::asString (const T& _item)
-{
-    std::stringstream ss;
-    ss << _item;
-    std::string item = ss.str();
-    return item;
-}
-
-//combination
 
 std::vector <std::string> utl::separateString (const std::string& saveString, const char& delimiter)
 {
@@ -55,13 +32,6 @@ std::vector <std::string> utl::separateString (const std::string& saveString, co
         returnVector.push_back(entry);
     }
     return returnVector;
-}
-
-std::vector <std::string> utl::separateString (const std::string& saveString, const std::string& delimiters)
-{
-    std::vector<std::string> parts;
-//    boost::split(parts, saveString, boost::is_any_of(delimiters));
-    return parts;
 }
 
 std::string utl::conjoinString (const std::vector <std::string>& stringParts, const char& delimiter)

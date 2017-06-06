@@ -10,12 +10,12 @@ QueryWindow::~QueryWindow()
 	//dtor
 }
 
-void QueryWindow::addQuery(std::string queryID, std::string queryQuestion, QueryType queryType)
+void QueryWindow::addQuery(const std::string& queryID, const std::string& queryQuestion, QueryType queryType)
 {
 	queryValues.push_back(std::make_pair(queryID, Query(queryQuestion, queryType)));
 }
 
-void QueryWindow::init(std::string windowName, GuiManager& pGuiManager, GuiLoader* guiLoader, std::function<void()> handle)
+void QueryWindow::init(const std::string& windowName, GuiManager& pGuiManager, GuiLoader* guiLoader, std::function<void()> handle)
 {
 	guiManager = &pGuiManager;
 	if(guiLoader != nullptr)
@@ -44,14 +44,14 @@ void QueryWindow::init(std::string windowName, GuiManager& pGuiManager, GuiLoade
 		{
 		case QueryType::Input_int:
 		case QueryType::Input_string:
-			queryValues.at(it).second.buttonName = groupName + "-" + utl::asString(it);
+			queryValues.at(it).second.buttonName = groupName + "-" + std::to_string(it);
 			pGuiManager.createButton(queryValues.at(it).second.buttonName, "textInputBox");
 			pGuiManager.setButton(queryValues.at(it).second.buttonName, gui::BtnChar::coords, std::make_pair(250, 60 + it*40));
 			pGuiManager.setBtnAtr(queryValues.at(it).second.buttonName, "buttonText", gui::BtnAtrChar::text, queryValues.at(it).second.queryQuestion);
 			pGuiManager.addToGroup(groupName, queryValues.at(it).second.buttonName);
 			break;
 		case QueryType::Choice_string:
-			queryValues.at(it).second.buttonName = groupName + "-" + utl::asString(it);
+			queryValues.at(it).second.buttonName = groupName + "-" + std::to_string(it);
 			pGuiManager.createButton(queryValues.at(it).second.buttonName, "windowChoice");
 			pGuiManager.setButton(queryValues.at(it).second.buttonName, gui::BtnChar::coords, std::make_pair(100, 60 + it*40));
 			pGuiManager.setBtnAtr(queryValues.at(it).second.buttonName, "buttonTextAnswer", gui::BtnAtrChar::text, queryValues.at(it).second.queryQuestion);
@@ -101,7 +101,7 @@ void QueryWindow::reInit()
 	init(groupName, *guiManager, nullptr, handleRes);
 }
 
-int QueryWindow::getResult_int(std::string queryID)
+int QueryWindow::getResult_int(const std::string& queryID)
 {
 	for(auto& query : queryValues)
 	{
@@ -113,7 +113,7 @@ int QueryWindow::getResult_int(std::string queryID)
 	return 0;
 }
 
-std::string QueryWindow::getResult_string(std::string queryID)
+std::string QueryWindow::getResult_string(const std::string& queryID)
 {
 	for(auto& query : queryValues)
 	{
@@ -153,7 +153,7 @@ bool QueryWindow::isDone()
 {
 	return isWindowDone;
 }
-bool QueryWindow::isWindow(std::string question)
+bool QueryWindow::isWindow(const std::string& question)
 {
 	return (question == groupName);
 }

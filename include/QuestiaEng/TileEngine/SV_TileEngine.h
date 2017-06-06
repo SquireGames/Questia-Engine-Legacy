@@ -20,7 +20,7 @@
 
 struct TileTransform
 {
-	TileTransform(std::string _texturePath):texturePath(_texturePath) {}
+	TileTransform(std::string texturePath):texturePath(texturePath) {}
 	std::string texturePath;
 	//(-1, -1) means sprite size
 	utl::Vector2i tileSize = utl::Vector2i(-1, -1);
@@ -30,28 +30,28 @@ struct TileTransform
 	char flip = 'n';
 };
 
-class SaveFile_TileEngine
+class SV_TileEngine
 {
 public:
 	//ctor + dtor
-	SaveFile_TileEngine(ResourceManager& _resourceManager);
-	~SaveFile_TileEngine();
+	SV_TileEngine(ResourceManager& resourceManager);
+	~SV_TileEngine();
 
 	///game
 	//loads the TileMap with tileKey and tileMap, loads texture either into Tile's in tileMap or ResourceManager texture TILESTORAGE
-	TileMap openMap(std::string mapName, sf::RenderWindow& window, TileMap::TextureMode textureMode, TileMap::TileMode tileMode);
+	TileMap openMap(const std::string& mapName, sf::RenderWindow& window, TileMap::TextureMode textureMode, TileMap::TileMode tileMode);
 
 	///editor
 	//creating map
-	bool createMap(std::string mapName, unsigned int width, unsigned int height, unsigned int layers);
-	TileMap editMap(std::string mapName, sf::RenderWindow& window);
+	bool createMap(const std::string& mapName, unsigned int width, unsigned int height, unsigned int layers);
+	TileMap editMap(const std::string& mapName, sf::RenderWindow& window);
 	//TODO implement this
-	void changeMapDimensions(std::string mapName, unsigned int width, unsigned int height, unsigned int layers);
+	void changeMapDimensions(const std::string& mapName, unsigned int width, unsigned int height, unsigned int layers);
 	//saving map and tiles used
-	void saveMap(std::string mapName, const std::vector <int>& tileMap, unsigned int width, unsigned int height, unsigned int layers, const std::map<int, Tile>& tilePairs);
+	void saveMap(const std::string& mapName, const std::vector <int>& tileMap, unsigned int width, unsigned int height, unsigned int layers, const std::map<int, Tile>& tilePairs);
 	
 private:
-	std::vector <std::pair <int, std::string> > getTileLocations(std::string filePath, TileMap::TextureMode textureMode);
+	std::vector <std::pair <int, std::string> > getTileLocations(const std::string& fileDir, TileMap::TextureMode textureMode);
 	//loads TileMap with tileKey, and if TileMode = Batch, loads tileAtlas texture into TILESTORAGE in resourceManager
 	void loadTiles(std::vector <std::pair <int, std::string> >& tileLocations, TileMap& mapData, sf::RenderWindow& window);
 	//loads chunks if in batch mode, validates all sprites in sprite mode
