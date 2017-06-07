@@ -173,6 +173,8 @@ std::vector<std::string> SaveFile::getItemList()
 	std::vector<std::string> itemList;
 	for(unsigned int it = 0; it != saveList.size(); it++)
 	{
+		saveList[it].first.erase(std::remove(saveList[it].first.begin(), saveList[it].first.end(), '\r'), saveList[it].first.end());
+		saveList[it].first.erase(std::remove(saveList[it].first.begin(), saveList[it].first.end(), '\n'), saveList[it].first.end());
 		itemList.push_back(saveList[it].first);
 	}
 	return itemList;
