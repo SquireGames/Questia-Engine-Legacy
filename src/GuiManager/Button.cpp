@@ -1,6 +1,6 @@
 #include "QuestiaEng/GuiManager/Button.h"
 
-//TODO log errors with __LINE__ and __FILE__
+//TODO give more descriptive LOG's
 
 Button::Button(sf::RenderWindow& window, ResourceManager& resourceManager, sf::Font& buttonFont, bool isTemplate, int buttonID, int buttonGroupID):
 	window(window)
@@ -67,12 +67,16 @@ void Button::setButton(gui::BtnChar buttonChar, const std::string& value)
 #ifdef DEBUGMODE
 			else
 			{
-				//TODO add warning
+				LOG("Sprite with name: '" + value + "' does not exist. Failed to bind bounds to sprite in use of set|Button|Bonds|<string>" + value);
+				return;
 			}
 #endif
 		}
 		break;
 	default:
+#ifdef DEBUGMODE
+		LOG("Invalid ButtonChar in use of set|Button|ButtonChar|<string>" + value);
+#endif
 		break;
 	}
 }
@@ -167,7 +171,9 @@ void Button::setBtnAtr(const std::string& atrName, gui::BtnAtrChar atrChar, cons
 			setBtnAtr(atrName, atrChar, value.size() ? value.at(0) : 0);
 			break;
 		default:
-			//TODO print warning if invalid
+#ifdef DEBUGMODE
+			LOG("Invalid BtnAtr in use of set|ButtonAtr|" + atrName + "|BtnAtr|<string>" + value + " for Sprite");
+#endif
 			break;
 		}
 		return;
@@ -181,7 +187,9 @@ void Button::setBtnAtr(const std::string& atrName, gui::BtnAtrChar atrChar, cons
 			texts.at(elementID).text.setString(value);
 			break;
 		default:
-			//TODO print warning if invalid
+#ifdef DEBUGMODE
+			LOG("Invalid BtnAtr in use of set|ButtonAtr|" + atrName + "|BtnAtr|<string>" + value + " for Text");
+#endif
 			break;
 		}
 		return;
@@ -195,6 +203,9 @@ void Button::setBtnAtr(const std::string& atrName, gui::BtnAtrChar atrChar, cons
 			percents.at(elementID).sprite.setTexture(resourceManager.getTexture(value));
 			break;
 		default:
+#ifdef DEBUGMODE
+			LOG("Invalid BtnAtr in use of set|ButtonAtr|" + atrName + "|BtnAtr|<string>" + value + " for Percent");
+#endif
 			break;
 		}
 	}
@@ -213,8 +224,11 @@ void Button::setBtnAtr(const std::string& atrName, gui::BtnAtrChar atrChar, std:
 		case gui::BtnAtrChar::size:
 			spr.sprite.setScale(sf::Vector2f(value.first/spr.sprite.getLocalBounds().width,
 			                                 value.second/spr.sprite.getLocalBounds().height));
+			break;
 		default:
-			//TODO print warning if invalid
+#ifdef DEBUGMODE
+			LOG("Invalid BtnAtr in use of set|ButtonAtr|" + atrName + "|BtnAtr|<int>" + std::to_string(value.first) + "|<int>" + std::to_string(value.second) + " for Sprite");
+#endif
 			break;
 		}
 		return;
@@ -228,7 +242,9 @@ void Button::setBtnAtr(const std::string& atrName, gui::BtnAtrChar atrChar, std:
 			texts.at(elementID).position = value;
 			break;
 		default:
-			//TODO print warning if invalid
+#ifdef DEBUGMODE
+			LOG("Invalid BtnAtr in use of set|ButtonAtr|" + atrName + "|BtnAtr|<int>" + std::to_string(value.first) + "|<int>" + std::to_string(value.second) + " for Text");
+#endif
 			break;
 		}
 		return;
@@ -256,7 +272,9 @@ void Button::setBtnAtr(const std::string& atrName, gui::BtnAtrChar atrChar, std:
 			}
 			break;
 		default:
-			//TODO print warning if invalid
+#ifdef DEBUGMODE
+			LOG("Invalid BtnAtr in use of set|ButtonAtr|" + atrName + "|BtnAtr|<int>" + std::to_string(value.first) + "|<int>" + std::to_string(value.second) + " for Percent");
+#endif
 			break;
 		}
 		return;
@@ -289,6 +307,9 @@ void Button::setBtnAtr(const std::string& atrName, gui::BtnAtrChar atrChar, sf::
 		percents.at(elementID).rectOverlay.setFillColor(color);
 		return;
 	}
+#ifdef DEBUGMODE
+	LOG("No ButtonAtr with name: '" + atrName + "'  in use of set|ButtonAtr|" + atrName + "|<Should be Color>|<Color>");
+#endif
 }
 void Button::setBtnAtr(const std::string& atrName, gui::BtnAtrChar atrChar, int value)
 {
@@ -305,7 +326,9 @@ void Button::setBtnAtr(const std::string& atrName, gui::BtnAtrChar atrChar, int 
 			}
 			break;
 		default:
-			//TODO print warning if invalid
+#ifdef DEBUGMODE
+			LOG("Invalid BtnAtr in use of set|ButtonAtr|" + atrName + "|BtnAtr|<int>" + std::to_string(value) + " for Sprite");
+#endif
 			break;
 		}
 		return;
@@ -320,7 +343,9 @@ void Button::setBtnAtr(const std::string& atrName, gui::BtnAtrChar atrChar, int 
 			texts.at(elementID).text.setScale(0.5, 0.5);
 			break;
 		default:
-			//TODO print warning if invalid
+#ifdef DEBUGMODE
+			LOG("Invalid BtnAtr in use of set|ButtonAtr|" + atrName + "|BtnAtr|<int>" + std::to_string(value) + " for Text");
+#endif
 			break;
 		}
 		return;
@@ -338,7 +363,9 @@ void Button::setBtnAtr(const std::string& atrName, gui::BtnAtrChar atrChar, int 
 			}
 			break;
 		default:
-			//TODO print warning if invalid
+#ifdef DEBUGMODE
+			LOG("Invalid BtnAtr in use of set|ButtonAtr|" + atrName + "|BtnAtr|<int>" + std::to_string(value) + " for Hover");
+#endif
 			break;
 		}
 		return;
@@ -434,7 +461,9 @@ void Button::setBtnAtr(const std::string& atrName, gui::BtnAtrChar atrChar, int 
 			}
 			break;
 		default:
-			//TODO print warning if invalid
+#ifdef DEBUGMODE
+			LOG("Invalid BtnAtr in use of set|ButtonAtr|" + atrName + "|BtnAtr|<int>" + std::to_string(value) + " for Percent");
+#endif
 			break;
 		}
 		return;
@@ -478,13 +507,17 @@ void Button::setBtnAtr(const std::string& atrName, gui::BtnAtrChar atrChar, char
 					                                      spr.sprite.getLocalBounds().height));
 					break;
 				default:
-					//TODO print warning if invalid
+#ifdef DEBUGMODE
+					LOG("Invalid <char> value in use of set|ButtonAtr|" + atrName + "|BtnAtr|<char>" + value + " for Sprite");
+#endif
 					break;
 				}
 			}
 			break;
 		default:
-			//TODO print warning if invalid
+#ifdef DEBUGMODE
+			LOG("Invalid BtnAtr in use of set|ButtonAtr|" + atrName + "|BtnAtr|<char>" + value + " for Sprite");
+#endif
 			break;
 		}
 		return;
@@ -499,7 +532,9 @@ void Button::setBtnAtr(const std::string& atrName, gui::BtnAtrChar atrChar, char
 			texts.at(elementID).text.setScale(0.5, 0.5);
 			break;
 		default:
-			//TODO print warning if invalid
+#ifdef DEBUGMODE
+			LOG("Invalid BtnAtr in use of set|ButtonAtr|" + atrName + "|BtnAtr|<char>" + value + " for Text");
+#endif
 			break;
 		}
 		return;
@@ -517,7 +552,9 @@ void Button::setBtnAtr(const std::string& atrName, gui::BtnAtrChar atrChar, char
 			}
 			break;
 		default:
-			//TODO print warning if invalid
+#ifdef DEBUGMODE
+			LOG("Invalid BtnAtr in use of set|ButtonAtr|" + atrName + "|BtnAtr|<char>" + value + " for Hover");
+#endif
 			break;
 		}
 		return;
@@ -567,7 +604,9 @@ void Button::setBtnAtr(const std::string& atrName, gui::BtnAtrChar atrChar, char
 						                                      per.sprite.getLocalBounds().height);
 						break;
 					default:
-						//TODO add warning
+#ifdef DEBUGMODE
+						LOG("Invalid <char> value in use of set|ButtonAtr|" + atrName + "|BtnAtr|<char>" + value + " for Percent");
+#endif
 						break;
 					}
 				}
@@ -591,13 +630,18 @@ void Button::setBtnAtr(const std::string& atrName, gui::BtnAtrChar atrChar, char
 						per.directionOfGap = utl::Direction::right;
 						break;
 					default:
-						//TODO add warning
+#ifdef DEBUGMODE
+						LOG("Invalid <char> value in use of set|ButtonAtr|" + atrName + "|BtnAtr|<char>" + value + " for Percent");
+#endif
 						break;
 					}
 				}
 			}
+			break;
 		default:
-			//TODO print warning if invalid
+#ifdef DEBUGMODE
+			LOG("Invalid BtnAtr in use of set|ButtonAtr|" + atrName + "|BtnAtr|<char>" + value + " for Percent");
+#endif
 			break;
 		}
 		return;
