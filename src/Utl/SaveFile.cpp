@@ -111,6 +111,10 @@ bool SaveFile::readFile(char separator)
 					break;
 				}
 			}
+			lineSeperator[0].erase(std::remove(lineSeperator[0].begin(), lineSeperator[0].end(), '\r'), lineSeperator[0].end());
+			lineSeperator[0].erase(std::remove(lineSeperator[0].begin(), lineSeperator[0].end(), '\n'), lineSeperator[0].end());
+			lineSeperator[1].erase(std::remove(lineSeperator[1].begin(), lineSeperator[1].end(), '\r'), lineSeperator[1].end());
+			lineSeperator[1].erase(std::remove(lineSeperator[1].begin(), lineSeperator[1].end(), '\n'), lineSeperator[1].end());
 			saveList.push_back(std::make_pair(lineSeperator[0], lineSeperator[1]));
 			sStream.str(std::string());
 			sStream.clear();
@@ -173,8 +177,6 @@ std::vector<std::string> SaveFile::getItemList()
 	std::vector<std::string> itemList;
 	for(unsigned int it = 0; it != saveList.size(); it++)
 	{
-		saveList[it].first.erase(std::remove(saveList[it].first.begin(), saveList[it].first.end(), '\r'), saveList[it].first.end());
-		saveList[it].first.erase(std::remove(saveList[it].first.begin(), saveList[it].first.end(), '\n'), saveList[it].first.end());
 		itemList.push_back(saveList[it].first);
 	}
 	return itemList;

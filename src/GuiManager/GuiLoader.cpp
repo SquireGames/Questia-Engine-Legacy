@@ -21,11 +21,12 @@ void GuiLoader::loadGui(GuiManager& guiManager, const std::string& gui)
     {
         return;
     }
+	std::cout << "Loading GUI: " << gui << std::endl;
 
-    std::string filePath = utl::conjoinString({"Data/Gui Pack/", primaryPack, "/",  gui, ".txt"});
+    std::string filePath = "Data/Gui Pack/" + primaryPack + "/" + gui + ".txt";
     if(!utl::doesExist(filePath))
     {
-        filePath = utl::conjoinString({"Data/Gui Pack/", secondaryPack, "/",  gui, ".txt"});
+        filePath = "Data/Gui Pack/" + secondaryPack + "/" + gui + ".txt";
     }
 
     guiFile.setFilePath(filePath);
@@ -507,7 +508,7 @@ void GuiLoader::loadGui(GuiManager& guiManager, const std::string& gui)
     }
     else
     {
-        throw std::runtime_error(utl::conjoinString({"FATAL ERROR - Guiloader failed to read file path:", filePath}));
+        throw std::runtime_error("FATAL ERROR - Guiloader failed to read file path:" + filePath);
     }
 }
 

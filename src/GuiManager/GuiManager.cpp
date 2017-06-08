@@ -2,6 +2,7 @@
 
 //TODO reorder
 //TODO check and give warnings if last~ is default
+//TODO give more descriptive LOG's
 
 GuiManager::GuiManager(sf::RenderWindow& window, ResourceManager& resourceManager):
 	window(window)
@@ -28,7 +29,7 @@ void GuiManager::createButton(const std::string& buttonName, int layer)
 #ifdef DEBUGMODE
 	if(getPos(buttonName) != -1)
 	{
-		//TODO print warning
+		LOG("Button with name: '" + buttonName + "' already exists");
 		return;
 	}
 #endif
@@ -44,12 +45,12 @@ void GuiManager::createButton(const std::string& copyName, const std::string& or
 #ifdef DEBUGMODE
 	if(getPos(originalName) == -1)
 	{
-		//TODO print warning
+		LOG("Button with name: '" + copyName + "' already exists");
 		return;
 	}
 	if(getPos(copyName) != -1)
 	{
-		//TODO print warning
+		LOG("Button with name: '" + originalName + "' does not exist");
 		return;
 	}
 #endif
@@ -64,17 +65,17 @@ void GuiManager::createAlias(const std::string& alias, const std::string& button
 #ifdef DEBUGMODE
 	if(getPos(buttonName) == -1)
 	{
-		//TODO print warning
+		LOG("Button with name: '" + buttonName + "' does not exist");
 		return;
 	}
 	if(getPos(alias) != -1)
 	{
-		//TODO print warning
+		LOG("Button with name: '" + alias + "' already exists, failed to make alias");
 		return;
 	}
 	if(buttonIDs.count(alias))
 	{
-		//TODO print warning
+		LOG("Alias with name: '" + alias + "' already exists");
 		return;
 	}
 #endif
@@ -93,7 +94,7 @@ void GuiManager::createButtonTemplate(const std::string& buttonName, int layer)
 #ifdef DEBUGMODE
 	if(getPos(buttonName) != -1)
 	{
-		//TODO print warning
+		LOG("Button with name: '" + buttonName + "' already exists");
 		return;
 	}
 #endif
@@ -107,12 +108,12 @@ void GuiManager::createButtonTemplate(const std::string& copyName, const std::st
 #ifdef DEBUGMODE
 	if(getPos(originalName) == -1)
 	{
-		//TODO print warning
+		LOG("Button with name: '" + originalName + "' does not exist");
 		return;
 	}
 	if(getPos(copyName) != -1)
 	{
-		//TODO print warning
+		LOG("Button with name: '" + copyName + "' already exists");
 		return;
 	}
 #endif
@@ -132,7 +133,7 @@ void GuiManager::createBtnAtr(const std::string& buttonName, const std::string& 
 #ifdef DEBUGMODE
 	if(getPos(buttonName) == -1)
 	{
-		//TODO print warning
+		LOG("Button with name: '" + buttonName + "' does not exist");
 		return;
 	}
 #endif
@@ -142,10 +143,9 @@ void GuiManager::createBtnAtr(const std::string& buttonName, const std::string& 
 void GuiManager::createBtnAtr(int buttonID, const std::string& atrName, gui::BtnAtr buttonAtr)
 {
 #ifdef DEBUGMODE
-	int pos = getPos(buttonID);
-	if(pos == -1)
+	if(getPos(buttonID) == -1)
 	{
-		//TODO print warning
+		LOG("Button with ID: " + std::to_string(buttonID) + " does not exist");
 		return;
 	}
 #endif
@@ -165,7 +165,7 @@ void GuiManager::setButtonLayer(const std::string& buttonName, int layer)
 #ifdef DEBUGMODE
 	if(getPos(buttonName) == -1)
 	{
-		//TODO print warning
+		LOG("Button with name: '" + buttonName + "' does not exist");
 		return;
 	}
 #endif
@@ -175,10 +175,9 @@ void GuiManager::setButtonLayer(const std::string& buttonName, int layer)
 void GuiManager::setButtonLayer(int buttonID, int layer)
 {
 #ifdef DEBUGMODE
-	int pos = getPos(buttonID);
-	if(pos == -1)
+	if(getPos(buttonID) == -1)
 	{
-		//TODO print warning
+		LOG("Button with ID: " + std::to_string(buttonID) + " does not exist");
 		return;
 	}
 #endif
@@ -206,7 +205,7 @@ void GuiManager::createGroup(const std::string& groupName)
 #ifdef DEBUGMODE
 	if(groupExists(groupName))
 	{
-		//TODO print warning
+		LOG("Group with name: '" + groupName + "' already exists");
 		return;
 	}
 #endif
@@ -219,9 +218,15 @@ void GuiManager::createGroupTemplate(const std::string& groupName)
 #ifdef DEBUGMODE
 	if(groupTemplateExists(groupName))
 	{
-		//TODO print warning
+		LOG("Group Template with name: '" + groupName + "' already exists");
 		return;
 	}
+	if(groupExists(groupName))
+	{
+		LOG("Group with name: '" + groupName + "' already exists");
+		return;
+	}
+	groupTemplates.push_back(groupName);
 #endif
 	createGroup(groupName);
 }
@@ -231,7 +236,7 @@ void GuiManager::createGroupFromTemplate(const std::string& groupName, const std
 #ifdef DEBUGMODE
 	if(!groupTemplateExists(templateName))
 	{
-		//TODO print warning
+		LOG("Group Template with name: '" + templateName + "' does not exist");
 		return;
 	}
 #endif
@@ -260,17 +265,17 @@ void GuiManager::addToGroup(const std::string& groupName, const std::string& ent
 #ifdef DEBUGMODE
 	if(getPos(entryName) == -1)
 	{
-		//TODO print warning
+		LOG("Button with name: '" + entryName + "' does not exist");
 		return;
 	}
 	if(!groupExists(groupName))
 	{
-		//TODO print warning
+		LOG("Group with name: '" + groupName + "' does not exist");
 		return;
 	}
 	if(groupTemplateExists(groupName) && !(buttons.at(getPos(entryName)).isTemplate))
 	{
-		//TODO print warning
+		LOG("Button with name: '" + entryName + "' is not a template, and therefore can't be added to a group template");
 		return;
 	}
 	std::vector<int>& ids = getGroupIDs(groupName);
@@ -310,22 +315,22 @@ int GuiManager::getGroupEntryID(const std::string& groupName, const std::string&
 #ifdef DEBUGMODE
 	if(getPos(buttonName) == -1)
 	{
-		//TODO print warning
+		LOG("Button with name: '" + buttonName + "' does not exist");
 		return -1;
 	}
 	if(!groupExists(groupName))
 	{
-		//TODO print warning
+		LOG("Group with name: '" + groupName + "' does not exist");
 		return -1;
 	}
 	if(groupTemplateExists(groupName))
 	{
-		//TODO print warning
+		LOG("Group with name: '" + groupName + "' is a template, and therefore can't have real entries");
 		return -1;
 	}
-	if(buttons.at(getPos(buttonName)).isTemplate)
+	if(!buttons.at(getPos(buttonName)).isTemplate)
 	{
-		//TODO print warning
+		LOG("Button with name: '" + buttonName + "' is not a template, and therefore cannot exist in a template group");
 		return -1;
 	}
 	//checks if template exists in group
@@ -341,7 +346,7 @@ int GuiManager::getGroupEntryID(const std::string& groupName, const std::string&
 	}
 	if(!templateExists)
 	{
-		//TODO print warning
+		LOG("Button with name: '" + buttonName + "' does not exist inside of " + groupName);
 		return -1;
 	}
 #endif
@@ -367,7 +372,7 @@ void GuiManager::createList(const std::string& listName)
 #ifdef DEBUGMODE
 	if(listExists(listName))
 	{
-		//TODO print warning
+		LOG("List with name: '" + listName + "' already exists");
 		return;
 	}
 #endif
@@ -385,17 +390,17 @@ void GuiManager::setListTemplate(const std::string& listName, const std::string&
 #ifdef DEBUGMODE
 	if(!listExists(listName))
 	{
-		//TODO print warning
+		LOG("List with name: '" + listName + "' does not exist");
 		return;
 	}
 	if(!groupExists(groupTemplate))
 	{
-		//TODO print warning
+		LOG("Group with name: '" + groupTemplate + "' does not exist");
 		return;
 	}
 	if(!groupTemplateExists(groupTemplate))
 	{
-		//TODO print warning
+		LOG("Group Template with name: '" + groupTemplate + "' does not exist");
 		return;
 	}
 #endif
@@ -412,7 +417,7 @@ void GuiManager::setListSpacing(const std::string& listName, int spacing_x, int 
 #ifdef DEBUGMODE
 	if(!listExists(listName))
 	{
-		//TODO print warning
+		LOG("List with name: '" + listName + "' does not exist");
 		return;
 	}
 #endif
@@ -429,7 +434,7 @@ void GuiManager::setListPosition(const std::string& listName, std::pair<int, int
 #ifdef DEBUGMODE
 	if(!listExists(listName))
 	{
-		//TODO print warning
+		LOG("List with name: '" + listName + "' does not exist");
 		return;
 	}
 #endif
@@ -446,18 +451,18 @@ std::string GuiManager::createListEntry(const std::string& listName)
 #ifdef DEBUGMODE
 	if(!listExists(listName))
 	{
-		//TODO print warning
+		LOG("List with name: '" + listName + "' does not exist");
 		return std::string();
 	}
 	ListData& l = getList(listName);
 	if(l.groupTemplate.size() == 0)
 	{
-		//TODO print warning
+		LOG("List with name: '" + listName + "' does not have a set Group Template");
 		return std::string();
 	}
 	if(!groupTemplateExists(l.groupTemplate))
 	{
-		//TODO print warning
+		LOG("List with name: '" + listName + "' does not have a valid Group Template (" + l.groupTemplate + ")");
 		return std::string();
 	}
 #endif
@@ -499,7 +504,7 @@ void GuiManager::deleteList(const std::string& listName)
 #ifdef DEBUGMODE
 	if(!listExists(listName))
 	{
-		//TODO print warning
+		LOG("List with name: '" + listName + "' does not exist");
 		return;
 	}
 #endif
@@ -525,7 +530,7 @@ void GuiManager::deleteGroup(const std::string& groupName)
 #ifdef DEBUGMODE
 	if(!groupExists(groupName))
 	{
-		//TODO print warning
+		LOG("Group with name: '" + groupName + "' does not exist");
 		return;
 	}
 #endif
@@ -556,7 +561,7 @@ void GuiManager::deleteButton(int buttonID)
 #ifdef DEBUGMODE
 	if(getPos(buttonID) == -1)
 	{
-		//TODO print warning
+		LOG("Button with ID: " + std::to_string(buttonID) + " does not exist");
 		return;
 	}
 #endif

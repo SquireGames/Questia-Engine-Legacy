@@ -71,7 +71,9 @@ Engine::Engine(std::string windowName, int tickRate):
 	//allocate space for inputBuffer
 	inputBuffer.reserve(4);
 
-	//TODO remove, print options for debugging
+#ifdef DEBUGMODE
+	//std::freopen("log.txt", "w", stdout);
+
 	std::cout << "------------------" << std::endl;
 	std::cout << "LAUNCH OPTIONS " << std::endl;
 	std::cout << "------------------" << std::endl;
@@ -80,7 +82,7 @@ Engine::Engine(std::string windowName, int tickRate):
 	std::cout << "Scaled size:  " << size_scaled.x << ", " << size_scaled.y << std::endl;
 	std::cout << "Scale factor: " << scaleFactor.x << ", " << scaleFactor.y << std::endl;
 	std::cout << "------------------" << std::endl;
-
+#endif
 }
 
 bool Engine::run()
