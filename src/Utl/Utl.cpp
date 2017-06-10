@@ -10,14 +10,24 @@ bool utl::isWithAnyCharacter(const std::string& string, const std::string& chara
     return (string.find_first_of(characters) != std::string::npos);
 }
 
-int utl::asInt(const std::string& string)
+int utl::toInt(const std::string& string)
 {
     return atoi(string.c_str());
 }
 
-float utl::asFloat(const std::string& string)
+float utl::toFloat(const std::string& string)
 {
     return atoi(string.c_str());
+}
+
+std::u32string utl::toU32(const std::string& string)
+{
+	std::u32string returnStr;
+	for(char c : string)
+	{
+		returnStr += (char32_t)c;
+	}
+	return returnStr;
 }
 
 std::vector <std::string> utl::separateString (const std::string& saveString, const char& delimiter)

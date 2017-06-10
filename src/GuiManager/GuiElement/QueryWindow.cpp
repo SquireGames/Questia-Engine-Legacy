@@ -107,7 +107,7 @@ int QueryWindow::getResult_int(const std::string& queryID)
 	{
 		if(query.first == queryID)
 		{
-			return utl::asInt(query.second.queryAnswer);
+			return utl::toInt(query.second.queryAnswer);
 		}
 	}
 	return 0;

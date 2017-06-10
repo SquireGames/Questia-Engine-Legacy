@@ -23,11 +23,11 @@ void SV_Options::reloadOptions()
 	saveFile.readFile();
 	if(utl::isNumber(saveFile.getItem(windowMode_name)))
 	{
-		windowMode = utl::asInt(saveFile.getItem(windowMode_name));
+		windowMode = utl::toInt(saveFile.getItem(windowMode_name));
 	}
 	if(utl::isNumber(saveFile.getItem(fps_name)))
 	{
-		fps = utl::asInt(saveFile.getItem(fps_name));
+		fps = utl::toInt(saveFile.getItem(fps_name));
 	}
 	if(saveFile.getItem(font_name) != "nil")
 	{
@@ -35,51 +35,55 @@ void SV_Options::reloadOptions()
 	}
 	if(utl::isNumber(saveFile.getItem(musicVolume_name)))
 	{
-		musicVolume = utl::asInt(saveFile.getItem(musicVolume_name));
+		musicVolume = utl::toInt(saveFile.getItem(musicVolume_name));
 	}
 	if(saveFile.getItem(guiPack_name) != "nil")
 	{
 		guiPack = saveFile.getItem(guiPack_name);
 	}
+	if(saveFile.getItem(language_name) != "nil")
+	{
+		guiPack = saveFile.getItem(language_name);
+	}
 	if(utl::isNumber(saveFile.getItem(key_moveUp_name)))
 	{
-		key_moveUp = static_cast<ctr::Input>(utl::asInt(saveFile.getItem(key_moveUp_name)));
+		key_moveUp = static_cast<ctr::Input>(utl::toInt(saveFile.getItem(key_moveUp_name)));
 	}
 	if(utl::isNumber(saveFile.getItem(key_moveDown_name)))
 	{
-		key_moveDown = static_cast<ctr::Input>(utl::asInt(saveFile.getItem(key_moveDown_name)));
+		key_moveDown = static_cast<ctr::Input>(utl::toInt(saveFile.getItem(key_moveDown_name)));
 	}
 	if(utl::isNumber(saveFile.getItem(key_moveLeft_name)))
 	{
-		key_moveLeft = static_cast<ctr::Input>(utl::asInt(saveFile.getItem(key_moveLeft_name)));
+		key_moveLeft = static_cast<ctr::Input>(utl::toInt(saveFile.getItem(key_moveLeft_name)));
 	}
 	if(utl::isNumber(saveFile.getItem(key_moveRight_name)))
 	{
-		key_moveRight = static_cast<ctr::Input>(utl::asInt(saveFile.getItem(key_moveRight_name)));
+		key_moveRight = static_cast<ctr::Input>(utl::toInt(saveFile.getItem(key_moveRight_name)));
 	}
 	if(utl::isNumber(saveFile.getItem(key_skill_1_name)))
 	{
-		key_skill_1 = static_cast<ctr::Input>(utl::asInt(saveFile.getItem(key_skill_1_name)));
+		key_skill_1 = static_cast<ctr::Input>(utl::toInt(saveFile.getItem(key_skill_1_name)));
 	}
 	if(utl::isNumber(saveFile.getItem(key_skill_2_name)))
 	{
-		key_skill_2 = static_cast<ctr::Input>(utl::asInt(saveFile.getItem(key_skill_2_name)));
+		key_skill_2 = static_cast<ctr::Input>(utl::toInt(saveFile.getItem(key_skill_2_name)));
 	}
 	if(utl::isNumber(saveFile.getItem(key_skill_3_name)))
 	{
-		key_skill_3 = static_cast<ctr::Input>(utl::asInt(saveFile.getItem(key_skill_3_name)));
+		key_skill_3 = static_cast<ctr::Input>(utl::toInt(saveFile.getItem(key_skill_3_name)));
 	}
 	if(utl::isNumber(saveFile.getItem(key_skill_4_name)))
 	{
-		key_skill_4 = static_cast<ctr::Input>(utl::asInt(saveFile.getItem(key_skill_4_name)));
+		key_skill_4 = static_cast<ctr::Input>(utl::toInt(saveFile.getItem(key_skill_4_name)));
 	}
 	if(utl::isNumber(saveFile.getItem(key_skill_5_name)))
 	{
-		key_skill_5 = static_cast<ctr::Input>(utl::asInt(saveFile.getItem(key_skill_5_name)));
+		key_skill_5 = static_cast<ctr::Input>(utl::toInt(saveFile.getItem(key_skill_5_name)));
 	}
 	if(utl::isNumber(saveFile.getItem(key_skill_6_name)))
 	{
-		key_skill_6 = static_cast<ctr::Input>(utl::asInt(saveFile.getItem(key_skill_6_name)));
+		key_skill_6 = static_cast<ctr::Input>(utl::toInt(saveFile.getItem(key_skill_6_name)));
 	}
 }
 
@@ -90,14 +94,14 @@ void SV_Options::saveOption(Option_Base* option, std::string optionName)
 	{
 		if(utl::isNumber(option->getValueString()))
 		{
-			windowMode = utl::asInt(option->getValueString());
+			windowMode = utl::toInt(option->getValueString());
 		}
 	}
 	else if(optionName == fps_name)
 	{
 		if(utl::isNumber(option->getValueString()))
 		{
-			fps = utl::asInt(option->getValueString());
+			fps = utl::toInt(option->getValueString());
 		}
 	}
 	else if(optionName == font_name)
@@ -108,7 +112,7 @@ void SV_Options::saveOption(Option_Base* option, std::string optionName)
 	{
 		if(utl::isNumber(option->getValueString()))
 		{
-			musicVolume = utl::asInt(option->getValueString());
+			musicVolume = utl::toInt(option->getValueString());
 		}
 	}
 	else if(optionName == guiPack_name)
@@ -117,43 +121,43 @@ void SV_Options::saveOption(Option_Base* option, std::string optionName)
 	}
 	else if(optionName == key_moveUp_name)
 	{
-		key_moveUp = static_cast<ctr::Input>(utl::asInt(option->getValueString()));
+		key_moveUp = static_cast<ctr::Input>(utl::toInt(option->getValueString()));
 	}
 	else if(optionName == key_moveDown_name)
 	{
-		key_moveDown = static_cast<ctr::Input>(utl::asInt(option->getValueString()));
+		key_moveDown = static_cast<ctr::Input>(utl::toInt(option->getValueString()));
 	}
 	else if(optionName == key_moveLeft_name)
 	{
-		key_moveLeft = static_cast<ctr::Input>(utl::asInt(option->getValueString()));
+		key_moveLeft = static_cast<ctr::Input>(utl::toInt(option->getValueString()));
 	}
 	else if(optionName == key_moveRight_name)
 	{
-		key_moveRight = static_cast<ctr::Input>(utl::asInt(option->getValueString()));
+		key_moveRight = static_cast<ctr::Input>(utl::toInt(option->getValueString()));
 	}
 	else if(optionName == key_skill_1_name)
 	{
-		key_skill_1 = static_cast<ctr::Input>(utl::asInt(option->getValueString()));
+		key_skill_1 = static_cast<ctr::Input>(utl::toInt(option->getValueString()));
 	}
 	else if(optionName == key_skill_2_name)
 	{
-		key_skill_2 = static_cast<ctr::Input>(utl::asInt(option->getValueString()));
+		key_skill_2 = static_cast<ctr::Input>(utl::toInt(option->getValueString()));
 	}
 	else if(optionName == key_skill_3_name)
 	{
-		key_skill_3 = static_cast<ctr::Input>(utl::asInt(option->getValueString()));
+		key_skill_3 = static_cast<ctr::Input>(utl::toInt(option->getValueString()));
 	}
 	else if(optionName == key_skill_4_name)
 	{
-		key_skill_4 = static_cast<ctr::Input>(utl::asInt(option->getValueString()));
+		key_skill_4 = static_cast<ctr::Input>(utl::toInt(option->getValueString()));
 	}
 	else if(optionName == key_skill_5_name)
 	{
-		key_skill_5 = static_cast<ctr::Input>(utl::asInt(option->getValueString()));
+		key_skill_5 = static_cast<ctr::Input>(utl::toInt(option->getValueString()));
 	}
 	else if(optionName == key_skill_6_name)
 	{
-		key_skill_6 = static_cast<ctr::Input>(utl::asInt(option->getValueString()));
+		key_skill_6 = static_cast<ctr::Input>(utl::toInt(option->getValueString()));
 	}
 }
 */
@@ -166,6 +170,7 @@ void SV_Options::writeOptions()
 	saveFile.saveItem(fps_name, fps);
 	saveFile.saveItem(font_name, font);
 	saveFile.saveItem(guiPack_name, guiPack);
+	saveFile.saveItem(language_name, language);
 
 	saveFile.saveItem(musicVolume_name, musicVolume);
 
@@ -184,33 +189,38 @@ void SV_Options::writeOptions()
 }
 
 int 		SV_Options::getWindowMode()		{return windowMode;}
-int			SV_Options::getFps()				{return fps;}
-std::string SV_Options::getFont()				{return font;}
-int 		SV_Options::getMusicVolume()		{return musicVolume;}
-std::string SV_Options::getGuiPack()			{return guiPack;}
+int			SV_Options::getFps()			{return fps;}
+std::string SV_Options::getFont()			{return font;}
+std::string SV_Options::getGuiPack()		{return guiPack;}
+std::string SV_Options::getLang()			{return language;}
+int 		SV_Options::getMusicVolume()	{return musicVolume;}
 ctr::Input 	SV_Options::getKey_moveUp()		{return key_moveUp;}
-ctr::Input 	SV_Options::getKey_moveDown()		{return key_moveDown;}
-ctr::Input 	SV_Options::getKey_moveLeft()		{return key_moveLeft;}
+ctr::Input 	SV_Options::getKey_moveDown()	{return key_moveDown;}
+ctr::Input 	SV_Options::getKey_moveLeft()	{return key_moveLeft;}
 ctr::Input 	SV_Options::getKey_moveRight()	{return key_moveRight;}
-ctr::Input 	SV_Options::getKey_skill_1()		{return key_skill_1;}
-ctr::Input 	SV_Options::getKey_skill_2()		{return key_skill_2;}
-ctr::Input 	SV_Options::getKey_skill_3()		{return key_skill_3;}
-ctr::Input 	SV_Options::getKey_skill_4()		{return key_skill_4;}
-ctr::Input 	SV_Options::getKey_skill_5()		{return key_skill_5;}
-ctr::Input 	SV_Options::getKey_skill_6()		{return key_skill_6;}
+ctr::Input 	SV_Options::getKey_skill_1()	{return key_skill_1;}
+ctr::Input 	SV_Options::getKey_skill_2()	{return key_skill_2;}
+ctr::Input 	SV_Options::getKey_skill_3()	{return key_skill_3;}
+ctr::Input 	SV_Options::getKey_skill_4()	{return key_skill_4;}
+ctr::Input 	SV_Options::getKey_skill_5()	{return key_skill_5;}
+ctr::Input 	SV_Options::getKey_skill_6()	{return key_skill_6;}
 
-std::string SV_Options::getWindowMode_name()		{return windowMode_name;}
-std::string SV_Options::getFps_name()				{return fps_name;}
+std::string SV_Options::getWindowMode_name()	{return windowMode_name;}
+std::string SV_Options::getFps_name()			{return fps_name;}
 std::string SV_Options::getFont_name()			{return font_name;}
-std::string SV_Options::getMusicVolume_name()		{return musicVolume_name;}
-std::string SV_Options::getGuiPack_name()			{return guiPack_name;}
-std::string SV_Options::getKey_moveUp_name() 		{return key_moveUp_name;}
+std::string SV_Options::getLang_name()			{return language_name;}
+std::string SV_Options::getGuiPack_name()		{return guiPack_name;}
+std::string SV_Options::getMusicVolume_name()	{return musicVolume_name;}
+std::string SV_Options::getKey_moveUp_name() 	{return key_moveUp_name;}
 std::string SV_Options::getKey_moveDown_name() 	{return key_moveDown_name;}
 std::string SV_Options::getKey_moveLeft_name() 	{return key_moveLeft_name;}
-std::string SV_Options::getKey_moveRight_name() 	{return key_moveRight_name;}
+std::string SV_Options::getKey_moveRight_name() {return key_moveRight_name;}
 std::string SV_Options::getKey_skill_1_name() 	{return key_skill_1_name;}
 std::string SV_Options::getKey_skill_2_name() 	{return key_skill_2_name;}
 std::string SV_Options::getKey_skill_3_name() 	{return key_skill_3_name;}
 std::string SV_Options::getKey_skill_4_name() 	{return key_skill_4_name;}
 std::string SV_Options::getKey_skill_5_name() 	{return key_skill_5_name;}
 std::string SV_Options::getKey_skill_6_name() 	{return key_skill_6_name;}
+
+
+

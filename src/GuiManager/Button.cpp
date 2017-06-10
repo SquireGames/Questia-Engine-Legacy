@@ -210,6 +210,28 @@ void Button::setBtnAtr(const std::string& atrName, gui::BtnAtrChar atrChar, cons
 		}
 	}
 }
+void Button::setBtnAtr(const std::string& atrName, gui::BtnAtrChar atrChar, const std::u32string& value)
+{
+	int elementID = count(atrName, texts);
+	if(elementID != -1)
+	{
+		switch(atrChar)
+		{
+		case gui::BtnAtrChar::text:
+			texts.at(elementID).text.setString(sf::String::fromUtf32(value.begin(), value.end()));
+			break;
+		default:
+#ifdef DEBUGMODE
+			LOG("Invalid BtnAtr in use of set|ButtonAtr|" + atrName + "|BtnAtr|<32string>" + sf::String::fromUtf32(value.begin(), value.end()) + " for Text");
+#endif
+			break;
+		}
+		return;
+	}
+#ifdef DEBUGMODE
+	LOG("'" + atrName + "' is not an existing Text.");
+#endif
+}
 void Button::setBtnAtr(const std::string& atrName, gui::BtnAtrChar atrChar, std::pair<int, int> value)
 {
 	int elementID = count(atrName, sprites);
@@ -760,3 +782,4 @@ void Button::draw()
 		isCoordsChanged = false;
 	}
 }
+

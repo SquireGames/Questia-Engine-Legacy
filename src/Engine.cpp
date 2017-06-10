@@ -1,22 +1,22 @@
 #include "QuestiaEng/Engine.h"
 
 #ifdef _WIN32
-	#if !(__GNUC__ == 6 && \
+#if !(__GNUC__ == 6 && \
 		  __GNUC_MINOR__ == 1 && \
 		  __GNUC_PATCHLEVEL__ == 0)
-		  #warning Compiler version may be incompatible with pre-built SFML dlls. Use g++ 6.1.0 (DW2).
-	#endif // __GNUC__
+#warning Compiler version may be incompatible with pre-built SFML dlls. Use g++ 6.1.0 (DW2).
+#endif // __GNUC__
 #elif linux
-	#if !(__GNUC__ == 6 && \
+#if !(__GNUC__ == 6 && \
 		  __GNUC_MINOR__ == 2 && \
 		  __GNUC_PATCHLEVEL__ == 0)
-		  #warning Compiler version may be incompatible with pre-built SFML dlls. Use g++ 6.2.0.
-	#endif // __GNUC__
+#warning Compiler version may be incompatible with pre-built SFML dlls. Use g++ 6.2.0.
+#endif // __GNUC__
 #else
-	#warning Your operating system was not yet tested with the prebuilt SFML dlls.
+#warning Your operating system was not yet tested with the prebuilt SFML dlls.
 #endif
 
-Engine::Engine(std::string windowName, int tickRate):
+Engine::Engine(std::string windowName, int tickRate, int majorVersion, int minorVersion, int revision, std::string versionSuffix):
 	//options
 	saveFile()
 	//window
@@ -41,7 +41,10 @@ Engine::Engine(std::string windowName, int tickRate):
 	, clock()
 	, timePerFrame(sf::seconds(1.f/std::max(1, tickRate)))
 	, timeSinceLastTick()
-
+	, majorVersion(majorVersion)
+	, minorVersion(minorVersion)
+	, revision(revision)
+	, versionSuffix(versionSuffix)
 {
 	//load render refresh rate
 	switch(saveFile.getFps())
@@ -61,10 +64,19 @@ Engine::Engine(std::string windowName, int tickRate):
 	//center view
 	window.setView(sf::View(sf::Vector2f(window.getSize().x/2, window.getSize().y/2), sf::Vector2f(window.getSize())));
 
-	//set font
-	if(!font.loadFromFile("Media/Fonts/" + saveFile.getFont()))
+	//set font and language
+	///TODO find better way to match fonts to languages
+	guiManager.setLang(saveFile.getLang());
+	if(saveFile.getLang() != "en")
 	{
-		font.loadFromFile("Media/Fonts/acidstructure.ttf");
+		font.loadFromFile("Media/Fonts/unifont-9.0.06.ttf");
+	}
+	else
+	{
+		if(!font.loadFromFile("Media/Fonts/" + saveFile.getFont()))
+		{
+			font.loadFromFile("Media/Fonts/unifont-9.0.06.ttf");
+		}
 	}
 	guiManager.setFont(font);
 
@@ -73,7 +85,6 @@ Engine::Engine(std::string windowName, int tickRate):
 
 #ifdef DEBUGMODE
 	//std::freopen("log.txt", "w", stdout);
-
 	std::cout << "------------------" << std::endl;
 	std::cout << "LAUNCH OPTIONS " << std::endl;
 	std::cout << "------------------" << std::endl;
@@ -150,4 +161,16 @@ void Engine::render()
 {
 	window.display();
 	window.clear(sf::Color::White);
+}
+
+std::string Engine::getVersion()
+{
+	return std::to_string(majorVersion) + "." + std::to_string(minorVersion) + "." +
+	       std::to_string(revision) + " " + versionSuffix;
+}
+
+std::string Engine::getVersion_eng()
+{
+	return std::to_string(majorVersion_eng) + "." + std::to_string(minorVersion_eng) + "." +
+	       std::to_string(revision_eng) + " " + versionSuffix_eng;
 }

@@ -31,9 +31,9 @@ TileMap SV_TileEngine::openMap(const std::string& mapName, sf::RenderWindow& win
 	SaveFile saveFile_mapInfo;
 	saveFile_mapInfo.setFilePath("Maps/" + mapName + "/mapInfo.txt");
 	saveFile_mapInfo.readFile();
-	mapData.setWidth(utl::asInt(saveFile_mapInfo.getItem(name_width)));
-	mapData.setHeight(utl::asInt(saveFile_mapInfo.getItem(name_height)));
-	mapData.setLayers(utl::asInt(saveFile_mapInfo.getItem(name_layers)));
+	mapData.setWidth(utl::toInt(saveFile_mapInfo.getItem(name_width)));
+	mapData.setHeight(utl::toInt(saveFile_mapInfo.getItem(name_height)));
+	mapData.setLayers(utl::toInt(saveFile_mapInfo.getItem(name_layers)));
 	unsigned int totalTiles = mapData.getWidth() * mapData.getHeight() * mapData.getLayers();
 
 	//get all tile textures locations
@@ -51,7 +51,7 @@ TileMap SV_TileEngine::openMap(const std::string& mapName, sf::RenderWindow& win
 	saveFile_map.setFilePath("Maps/" + mapName + "/map.txt");
 	saveFile_map.readFile();
 	//get tiles saved in map
-	std::vector <std::string> tileVector = saveFile_map.getItemList();
+	std::vector <std::string> tileVector = saveFile_map.getItemKeyList();
 	unsigned int tileNumberIterator = 0; // number of tiles in the map
 	for(const std::string& tileLine : tileVector)
 	{
@@ -59,9 +59,9 @@ TileMap SV_TileEngine::openMap(const std::string& mapName, sf::RenderWindow& win
 		for(std::string& tile : tiles)
 		{
 			//make sure it is not empty
-			if(utl::isNumber(tile) && utl::asInt(tile) != 0)
+			if(utl::isNumber(tile) && utl::toInt(tile) != 0)
 			{
-				mapData.getTileMap()[tileNumberIterator] = utl::asInt(tile);
+				mapData.getTileMap()[tileNumberIterator] = utl::toInt(tile);
 			}
 			if(tile.length() > 0 && tile.at(0) != '\n')
 			{
@@ -310,7 +310,7 @@ std::vector <std::pair <int, std::string> > SV_TileEngine::getTileLocations(cons
 	std::vector<std::pair<std::string, std::string>> tileLocations = saveFile_tileLocations.getSaveList();
 	for(std::pair<std::string, std::string> tileLocation : tileLocations)
 	{
-		returnTiles.push_back(std::make_pair(utl::asInt(tileLocation.first), tileLocation.second));
+		returnTiles.push_back(std::make_pair(utl::toInt(tileLocation.first), tileLocation.second));
 	}
 
 	//adds missing texture if it does not exist
@@ -337,11 +337,11 @@ std::vector <std::pair <int, std::string> > SV_TileEngine::getTileLocations(cons
 	case TileMap::TextureMode::All:
 		{
 			//for tile indexing, turns ID to above the maximum of existing id's
-			std::vector<std::string> tileNumbers_str = saveFile_tileLocations.getItemList();
+			std::vector<std::string> tileNumbers_str = saveFile_tileLocations.getItemKeyList();
 			std::vector<int> tileNumbers = std::vector<int>();
 			for(const std::string& tileStr : tileNumbers_str)
 			{
-				tileNumbers.push_back(utl::asInt(tileStr));
+				tileNumbers.push_back(utl::toInt(tileStr));
 			}
 			int currentID = 1;
 			if(tileNumbers.size() > 0)
@@ -550,21 +550,21 @@ void SV_TileEngine::loadTiles(std::vector <std::pair <int, std::string> >& tileL
 				{
 					if(utl::isNumber(fileTransform.second))
 					{
-						size_x = utl::asInt(fileTransform.second);
+						size_x = utl::toInt(fileTransform.second);
 					}
 				}
 				else if(fileTransform.first == "size_y")
 				{
 					if(utl::isNumber(fileTransform.second))
 					{
-						size_y = utl::asInt(fileTransform.second);
+						size_y = utl::toInt(fileTransform.second);
 					}
 				}
 				else if(fileTransform.first == "rotate")
 				{
 					if(utl::isNumber(fileTransform.second))
 					{
-						degrees = utl::asInt(fileTransform.second);
+						degrees = utl::toInt(fileTransform.second);
 					}
 				}
 				else if(fileTransform.first == "flip")

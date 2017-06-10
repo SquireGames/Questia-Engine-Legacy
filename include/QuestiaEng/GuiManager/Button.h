@@ -73,6 +73,7 @@ public:
 	void setButton(gui::BtnChar buttonChar, std::pair <int, int> value);
 
 	void setBtnAtr(const std::string& atrName, gui::BtnAtrChar atrChar, const std::string& value);
+	void setBtnAtr(const std::string& atrName, gui::BtnAtrChar atrChar, const std::u32string& value);
 	void setBtnAtr(const std::string& atrName, gui::BtnAtrChar atrChar, std::pair<int, int> value);
 	void setBtnAtr(const std::string& atrName, gui::BtnAtrChar atrChar, sf::Color color);
 	void setBtnAtr(const std::string& atrName, gui::BtnAtrChar atrChar, int value);
