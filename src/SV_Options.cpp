@@ -43,7 +43,7 @@ void SV_Options::reloadOptions()
 	}
 	if(saveFile.getItem(language_name) != "nil")
 	{
-		guiPack = saveFile.getItem(language_name);
+		language = saveFile.getItem(language_name);
 	}
 	if(utl::isNumber(saveFile.getItem(key_moveUp_name)))
 	{
@@ -87,80 +87,79 @@ void SV_Options::reloadOptions()
 	}
 }
 
-/*
-void SV_Options::saveOption(Option_Base* option, std::string optionName)
+void SV_Options::saveOption(const std::string& optionName, const std::string& valueStr)
 {
 	if(optionName == windowMode_name)
 	{
-		if(utl::isNumber(option->getValueString()))
+		if(utl::isNumber(valueStr))
 		{
-			windowMode = utl::toInt(option->getValueString());
+			windowMode = utl::toInt(valueStr);
 		}
 	}
 	else if(optionName == fps_name)
 	{
-		if(utl::isNumber(option->getValueString()))
+		if(utl::isNumber(valueStr))
 		{
-			fps = utl::toInt(option->getValueString());
+			fps = utl::toInt(valueStr);
 		}
 	}
 	else if(optionName == font_name)
 	{
-		font = option->getValueString();
+		font = valueStr;
 	}
 	else if(optionName == musicVolume_name)
 	{
-		if(utl::isNumber(option->getValueString()))
+		if(utl::isNumber(valueStr))
 		{
-			musicVolume = utl::toInt(option->getValueString());
+			musicVolume = utl::toInt(valueStr);
 		}
 	}
 	else if(optionName == guiPack_name)
 	{
-		guiPack = option->getValueString();
+		guiPack = valueStr;
 	}
 	else if(optionName == key_moveUp_name)
 	{
-		key_moveUp = static_cast<ctr::Input>(utl::toInt(option->getValueString()));
+		key_moveUp = static_cast<ctr::Input>(utl::toInt(valueStr));
 	}
 	else if(optionName == key_moveDown_name)
 	{
-		key_moveDown = static_cast<ctr::Input>(utl::toInt(option->getValueString()));
+		key_moveDown = static_cast<ctr::Input>(utl::toInt(valueStr));
 	}
 	else if(optionName == key_moveLeft_name)
 	{
-		key_moveLeft = static_cast<ctr::Input>(utl::toInt(option->getValueString()));
+		key_moveLeft = static_cast<ctr::Input>(utl::toInt(valueStr));
 	}
 	else if(optionName == key_moveRight_name)
 	{
-		key_moveRight = static_cast<ctr::Input>(utl::toInt(option->getValueString()));
+		key_moveRight = static_cast<ctr::Input>(utl::toInt(valueStr));
 	}
 	else if(optionName == key_skill_1_name)
 	{
-		key_skill_1 = static_cast<ctr::Input>(utl::toInt(option->getValueString()));
+		key_skill_1 = static_cast<ctr::Input>(utl::toInt(valueStr));
 	}
 	else if(optionName == key_skill_2_name)
 	{
-		key_skill_2 = static_cast<ctr::Input>(utl::toInt(option->getValueString()));
+		key_skill_2 = static_cast<ctr::Input>(utl::toInt(valueStr));
 	}
 	else if(optionName == key_skill_3_name)
 	{
-		key_skill_3 = static_cast<ctr::Input>(utl::toInt(option->getValueString()));
+		key_skill_3 = static_cast<ctr::Input>(utl::toInt(valueStr));
 	}
 	else if(optionName == key_skill_4_name)
 	{
-		key_skill_4 = static_cast<ctr::Input>(utl::toInt(option->getValueString()));
+		key_skill_4 = static_cast<ctr::Input>(utl::toInt(valueStr));
 	}
 	else if(optionName == key_skill_5_name)
 	{
-		key_skill_5 = static_cast<ctr::Input>(utl::toInt(option->getValueString()));
+		key_skill_5 = static_cast<ctr::Input>(utl::toInt(valueStr));
 	}
 	else if(optionName == key_skill_6_name)
 	{
-		key_skill_6 = static_cast<ctr::Input>(utl::toInt(option->getValueString()));
+		key_skill_6 = static_cast<ctr::Input>(utl::toInt(valueStr));
 	}
 }
-*/
+
 
 void SV_Options::writeOptions()
 {

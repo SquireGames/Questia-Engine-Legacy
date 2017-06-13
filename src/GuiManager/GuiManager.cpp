@@ -248,6 +248,8 @@ void GuiManager::createGroupFromTemplate(const std::string& groupName, const std
 		Button& btnTemplate = buttons.at(getPos(it));
 		std::string btnName =  groupName + "__" + std::to_string(btnTemplate.buttonID);
 		Button& newBtn = copyButton(btnTemplate, btnName, btnTemplate.buttonID);
+		newBtn.setButton(gui::BtnChar::coords, btnTemplate.buttonPosition);
+		
 		groupIDs.push_back(newBtn.buttonID);
 		
 		placeInDrawList(&newBtn);
@@ -614,10 +616,24 @@ void GuiManager::deleteButton(int buttonID)
 
 bool GuiManager::isClicked(const std::string& buttonName)
 {
+#ifdef DEBUGMODE
+	if(getPos(buttonName) == -1)
+	{
+		LOG("Button with name: '" + buttonName + "' does not exist");
+		return false;
+	}
+#endif
 	return buttons.at(getPos(buttonName)).isHovered;
 }
 bool GuiManager::isClicked(int buttonID)
 {
+#ifdef DEBUGMODE
+	if(getPos(buttonID) == -1)
+	{
+		LOG("Button with ID: " + std::to_string(buttonID) + " does not exist");
+		return false;
+	}
+#endif
 	return buttons.at(getPos(buttonID)).isHovered;
 }
 

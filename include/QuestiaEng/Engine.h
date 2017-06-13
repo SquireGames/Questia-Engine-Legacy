@@ -34,7 +34,8 @@ public:
 	void terminate() {toTerminate = true;}
 
 	//input
-	MouseListener& 		mouse() {return mouseListener;}
+	MouseListener& 		mouse() 	{return mouseListener;}
+	ctr::Input			lastKey()	{return lastInput;}
 
 	//interfaces
 	sf::RenderWindow&   win()   {return window;}
@@ -45,10 +46,13 @@ public:
 	TileEngine&	 		tile()	{return tileEngine;}
 	TileEngine_Editor&	tileEd(){return tileEngineEditor;}
 	StateManager& 		state() {return stateManager;}
+	SV_Options& 		sv() 	{return saveFile;}
 	
 	//versions
 	std::string getVersion();
 	std::string getVersion_eng();
+	
+	void fixWindowScale();
 
 private:
 	//options
@@ -73,11 +77,11 @@ private:
 	TileEngine_Editor tileEngineEditor;
 	StateManager stateManager;
 
-	//text
-	sf::Font font;
-
 	//input buffer
 	std::u32string inputBuffer;
+	
+	//most recent input method (e.g. for key binding)
+	ctr::Input lastInput = ctr::Input::None;
 
 	//timing
 	sf::Clock clock;

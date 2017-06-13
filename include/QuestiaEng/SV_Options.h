@@ -14,7 +14,7 @@ public:
     SV_Options();
     ~SV_Options();
 
-    //void saveOption(Option_Base* option, std::string optionName);
+    void saveOption(const std::string& optionName, const std::string& valueStr);
     void writeOptions();
 
     void reloadOptions();

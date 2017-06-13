@@ -13,6 +13,7 @@ public:
     GuiLoader();
     ~GuiLoader();
 
+	//TODO have instance of guiManager
     void loadGui(GuiManager& guiManager, const std::string& gui);
     void setGuiPack(const std::string& guiPack);
 

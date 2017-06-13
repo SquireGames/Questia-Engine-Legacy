@@ -36,7 +36,6 @@ Engine::Engine(std::string windowName, int tickRate, int majorVersion, int minor
 	, tileEngineEditor(window, resourceManager, tileEngine)
 	, stateManager(*this)
 	//variables
-	, font()
 	, inputBuffer()
 	, clock()
 	, timePerFrame(sf::seconds(1.f/std::max(1, tickRate)))
@@ -66,6 +65,7 @@ Engine::Engine(std::string windowName, int tickRate, int majorVersion, int minor
 
 	//set font and language
 	///TODO find better way to match fonts to languages
+	sf::Font font;
 	guiManager.setLang(saveFile.getLang());
 	if(saveFile.getLang() != "en")
 	{
@@ -124,6 +124,8 @@ void Engine::processInput()
 {
 	sf::Event event;
 
+	lastInput = ctr::Input::None;
+
 	mouseListener.setScroll(0);
 	while(window.pollEvent(event))
 	{
@@ -134,6 +136,7 @@ void Engine::processInput()
 			inputBuffer += event.text.unicode;
 			break;
 		case sf::Event::KeyPressed:
+			lastInput = static_cast<ctr::Input>(event.key.code);
 			break;
 		case sf::Event::KeyReleased:
 			break;
@@ -141,8 +144,7 @@ void Engine::processInput()
 			mouseListener.setScroll(event.mouseWheel.delta);
 			break;
 		case sf::Event::Resized:
-			size_scaled = utl::Vector2ui(window.getSize().x, window.getSize().y);
-			scaleFactor = utl::Vector2f(1920.f / static_cast<float>(size_scaled.x), 1080.f / static_cast<float>(size_scaled.y));
+			fixWindowScale();
 			break;
 		case sf::Event::MouseButtonReleased:
 			break;
@@ -173,4 +175,10 @@ std::string Engine::getVersion_eng()
 {
 	return std::to_string(majorVersion_eng) + "." + std::to_string(minorVersion_eng) + "." +
 	       std::to_string(revision_eng) + " " + versionSuffix_eng;
+}
+
+void Engine::fixWindowScale()
+{
+	size_scaled = utl::Vector2ui(window.getSize().x, window.getSize().y);
+	scaleFactor = utl::Vector2f(1920.f / static_cast<float>(size_scaled.x), 1080.f / static_cast<float>(size_scaled.y));
 }
