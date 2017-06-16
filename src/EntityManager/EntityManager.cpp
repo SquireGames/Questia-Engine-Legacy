@@ -7,68 +7,14 @@
 #include "QuestiaEng/EntityManager/Entity/Entity_Obj/Entity_Coll/Entity_Living/Entity_Living.h"
 #include "QuestiaEng/EntityManager/Entity/Entity_Obj/Entity_Coll/Entity_Living/Entity_Player/Entity_Player.h"
 
-/// declaration of derived entities
-//Entity_Obj
-#include "QuestiaEng/EntityManager/Entity/Entity_Obj/Test/Entity_Orb.h"
-//Entity_Coll
-#include "QuestiaEng/EntityManager/Entity/Entity_Obj/Entity_Coll/Test/Entity_Crate.h"
-
-EntityManager::EntityManager(ResourceManager& _resourceManager):
-	resourceManager(_resourceManager)
+EntityManager::EntityManager(ResourceManager& resourceManager):
+	resourceManager(resourceManager)
 {
 	std::cout<<"DEBUG: Entity Manager Initialized"<<std::endl;
-
-	{
-		std::shared_ptr<Entity_Orb> entity = std::make_shared<Entity_Orb> (getNewID(), *this, resourceManager, utl::Vector2f(500,500));
-
-		entities.push_back(entity);
-		entities_Obj.push_back(entity);
-		ids.push_back(entity->getID());
-	}
-
-	{
-		std::shared_ptr<Entity_Player> entity = std::make_shared<Entity_Player> (getNewID(), *this, resourceManager);
-
-		entities.push_back(entity);
-		entities_Obj.push_back(entity);
-		entities_Coll.push_back(entity);
-		entities_Living.push_back(entity);
-		entities_Player.push_back(entity);
-		ids.push_back(entity->getID());
-	}
-
-	{
-		std::shared_ptr<Entity_Crate> entity = std::make_shared<Entity_Crate> (getNewID(), *this, resourceManager, utl::Vector2f(400,400.01));
-
-		//entities.push_back(entity);
-		entities_Obj.push_back(entity);
-		entities_Coll.push_back(entity);
-		ids.push_back(entity->getID());
-	}
-	{
-		std::shared_ptr<Entity_Crate> entity = std::make_shared<Entity_Crate> (getNewID(), *this, resourceManager, utl::Vector2f(400,430));
-
-		//entities.push_back(entity);
-		entities_Obj.push_back(entity);
-		entities_Coll.push_back(entity);
-		ids.push_back(entity->getID());
-	}
-	{
-		std::shared_ptr<Entity_Crate> entity = std::make_shared<Entity_Crate> (getNewID(), *this, resourceManager, utl::Vector2f(425,400));
-
-		//entities.push_back(entity);
-		entities_Obj.push_back(entity);
-		entities_Coll.push_back(entity);
-		ids.push_back(entity->getID());
-	}
 }
 
 EntityManager::~EntityManager()
 {
-	for(auto& id : ids)
-	{
-		killEntity(id);
-	}
 	std::cout<<"DEBUG: Destroyed Entity Manager"<<std::endl;
 }
 
@@ -104,13 +50,13 @@ void EntityManager::update()
 	deadIDs.clear();
 }
 
-void EntityManager::draw(sf::RenderWindow& window, const DrawLayer& drawLayer)
+void EntityManager::draw(sf::RenderWindow& window, DrawLayer drawLayer)
 {
 	//sort entities by y value
 	std::sort(entities_Obj.begin(), entities_Obj.end(),
-	          [](std::shared_ptr<Entity_Obj> obj_1, std::shared_ptr<Entity_Obj> obj_2)
+	          [](Entity_Obj* obj_1, Entity_Obj* obj_2)
 	{
-		return obj_1->coords.y + obj_1->origin.y <= obj_2->coords.y + obj_2->origin.y;
+		return obj_1->coords.y + obj_1->getGroundOffset() <= obj_2->coords.y + obj_2->getGroundOffset();
 	});
 
 	for(auto& entity : entities_Obj)
@@ -119,7 +65,7 @@ void EntityManager::draw(sf::RenderWindow& window, const DrawLayer& drawLayer)
 	}
 }
 
-Entity_Player& EntityManager::getPlayer(const unsigned int& playerID)
+Entity_Player& EntityManager::getPlayer(unsigned int playerID)
 {
 	return *entities_Player.front();
 }
@@ -130,31 +76,57 @@ unsigned int EntityManager::getNewID()
 	{
 		return (idCounter++);
 	}
-	//game can run a year straight spawning 136 entities per second before need for restart
-	//reason why - simplifies networking
 	throw std::runtime_error("ENTITYMANAGER: Out of ID's");
 }
 
-void EntityManager::killEntity(const unsigned int& id)
+Entity* EntityManager::getEntity(unsigned int id)
 {
+	for(std::unique_ptr<Entity>& e : entities)
+	{
+		if(e->getID() == id)
+		{
+			return &*e;
+		}
+	}
+	return nullptr;
+}
+
+void EntityManager::killEntity(unsigned int id)
+{
+	Entity* e = getEntity(id);
+	if(e->inEntity_Base)
+	{
+		removeID(id, entities_Base);
+	}
+	if(e->inEntity_Obj)
+	{
+		removeID(id, entities_Obj);
+	}
+	if(e->inEntity_Coll)
+	{
+		removeID(id, entities_Coll);
+	}
+	if(e->inEntity_Living)
+	{
+		removeID(id, entities_Living);
+	}
+	if(e->inEntity_Player)
+	{
+		removeID(id, entities_Player);
+	}
 	removeID(id, entities);
-	removeID(id, entities_Obj);
-	removeID(id, entities_Coll);
-	removeID(id, entities_Living);
-	removeID(id, entities_Player);
 	ids.remove(id);
 	std::cout << "ENTITYMANAGER: Killed ID - " << id << std::endl;
 }
 
-void EntityManager::queueKill(const unsigned int& id)
+void EntityManager::queueKill(unsigned int id)
 {
 	deadIDs.push_back(id);
 }
 
-///draw coll bounds
-void drawCollBounds(sf::RenderWindow& window, Bounds& bounds, utl::Vector2f coords, sf::Color color)
+void EntityManager::drawCollBounds(sf::RenderWindow& window, const Bounds* bounds, utl::Vector2f coords, sf::Color color)
 {
-	switch(bounds.getShape())
+	switch(bounds->getShape())
 	{
 	case Bounds::Shape::circ:
 		{
@@ -203,13 +175,13 @@ void EntityManager::draw_coll(sf::RenderWindow& window)
 {
 	for(auto& entity : entities_Coll)
 	{
-		drawCollBounds(window, entity->hitBounds, entity->coords, sf::Color::Blue);
-		drawCollBounds(window, entity->collBounds, entity->coords, sf::Color::Red);
+		drawCollBounds(window, entity->getHitBounds(), entity->coords, sf::Color::Blue);
+		drawCollBounds(window, entity->getCollBounds(), entity->coords, sf::Color::Red);
 	}
 	for(auto& entity : entities_Obj)
 	{
-		auto originPoint = Bounds(Dot(entity->origin));
-		drawCollBounds(window, originPoint, entity->coords, sf::Color::Yellow);
+		auto originPoint = Bounds(Dot(utl::Vector2f(16, entity->getGroundOffset())));
+		drawCollBounds(window, &originPoint, entity->coords, sf::Color::Yellow);
 	}
 }
 
@@ -227,7 +199,7 @@ void EntityManager::attemptMove(Entity_Coll& entity, const utl::Vector2f& veloci
 			//TODO remember to check max range for collision
 			if(true)
 			{
-				if(entity.collBounds.getShape() == Bounds::Shape::rect && other->collBounds.getShape() == Bounds::Shape::rect)
+				if(entity.getCollBounds()->getShape() == Bounds::Shape::rect && other->getCollBounds()->getShape() == Bounds::Shape::rect)
 				{
 					/*
 					utl::Vector2f& entity_coords     = entity.coords;
@@ -259,5 +231,30 @@ void EntityManager::attemptMove(Entity_Coll& entity, const utl::Vector2f& veloci
 			}
 		}
 	}
-	entity.forceMove(entity, allowedMovement);
+	entity.forceMove(allowedMovement);
+}
+
+void EntityManager::reg(const std::string& name, std::function<Entity*(unsigned int id, EntityManager&)> entity)
+{
+	entityRegistry[name] = entity;
+}
+void EntityManager::reg(const std::string& name, std::function<Entity*(unsigned int id, EntityManager&, ResourceManager&, utl::Vector2f coords)> entity)
+{
+	entityRegistry_Obj[name] = entity;
+}
+
+int EntityManager::spawn(const std::string& name)
+{
+	int id = getNewID();
+	entities.emplace_back(std::unique_ptr<Entity>(entityRegistry.at(name)(id, *this)));
+	ids.push_back(id);
+	return id;
+}
+
+int EntityManager::spawn(const std::string& name, utl::Vector2f coords)
+{
+	int id = getNewID();
+	entities.emplace_back(std::unique_ptr<Entity>(entityRegistry_Obj.at(name)(id, *this, resourceManager, coords)));
+	ids.push_back(id);
+	return id;
 }

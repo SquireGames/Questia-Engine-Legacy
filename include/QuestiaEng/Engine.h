@@ -10,6 +10,7 @@
 #include "QuestiaEng/GuiManager/GuiLoader.h"
 #include "QuestiaEng/TileEngine/TileEngine.h"
 #include "QuestiaEng/TileEngine/TileEngine_Editor.h"
+#include "QuestiaEng/EntityManager/EntityManager.h"
 #include "QuestiaEng/StateManager/StateManager.h"
 
 #include "QuestiaEng/SV_Options.h"
@@ -45,6 +46,7 @@ public:
 	GuiLoader& 			guiLd() {return guiLoader;}
 	TileEngine&	 		tile()	{return tileEngine;}
 	TileEngine_Editor&	tileEd(){return tileEngineEditor;}
+	EntityManager& 		ent()	{return entityManager;}
 	StateManager& 		state() {return stateManager;}
 	SV_Options& 		sv() 	{return saveFile;}
 	
@@ -75,6 +77,7 @@ private:
 	GuiLoader guiLoader;
 	TileEngine tileEngine;
 	TileEngine_Editor tileEngineEditor;
+	EntityManager entityManager;
 	StateManager stateManager;
 
 	//input buffer

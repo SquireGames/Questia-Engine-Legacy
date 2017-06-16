@@ -34,6 +34,7 @@ Engine::Engine(std::string windowName, int tickRate, int majorVersion, int minor
 	, guiLoader()
 	, tileEngine(window, resourceManager)
 	, tileEngineEditor(window, resourceManager, tileEngine)
+	, entityManager(resourceManager)
 	, stateManager(*this)
 	//variables
 	, inputBuffer()

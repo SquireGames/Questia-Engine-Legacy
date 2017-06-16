@@ -35,7 +35,7 @@ Bounds::Bounds():
 
 }
 
-Bounds::Shape Bounds::getShape()
+Bounds::Shape Bounds::getShape() const
 {
     return coll_shape;
 }

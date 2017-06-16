@@ -1,9 +1,7 @@
 #include "QuestiaEng/EntityManager/Entity/Entity_Obj/Entity_Coll/Entity_Coll.h"
 
-Entity_Coll::Entity_Coll(unsigned int id, EntityManager& entityManager, ResourceManager& resourceManager, Bounds _collBounds, Bounds _hitBounds, utl::Vector2f origin):
-    Entity_Obj(id, entityManager, resourceManager, origin)
-    , collBounds(_collBounds)
-    , hitBounds(_hitBounds)
+Entity_Coll::Entity_Coll(unsigned int id, EntityManager& entityManager, ResourceManager& resourceManager, utl::Vector2f coords):
+    Entity_Obj(id, entityManager, resourceManager, coords)
 {
     //ctor
 }
@@ -13,23 +11,32 @@ Entity_Coll::~Entity_Coll()
     //dtor
 }
 
-void Entity_Coll::attemptMove(Entity_Coll& entity, const utl::Vector2f velocity)
+void Entity_Coll::attemptMove(utl::Vector2f velocity)
 {
-    entityManager.attemptMove(entity, velocity);
+    entityManager.attemptMove(*this, velocity);
 }
 
-void Entity_Coll::forceMove(Entity_Coll& entity, const utl::Vector2f velocity)
+void Entity_Coll::forceMove(utl::Vector2f velocity)
 {
-    entity.coords += velocity;
+    this->coords += velocity;
 }
 
 void Entity_Coll::onCollision(Entity_Coll& other)
 {
-    onCollision(other.atrs, other.getID());
+    onCollision(other.properties, other.getID());
 }
 
-void Entity_Coll::onCollision(std::map <Type, Type_Field>& atrs, const unsigned int& entityID)
+void Entity_Coll::onCollision(const std::map <pKey, pValue>& properties, unsigned int entityID)
 {
 
+}
+
+const Bounds* Entity_Coll::getCollBounds()
+{
+	return nullptr;
+}
+const Bounds* Entity_Coll::getHitBounds()
+{
+	return nullptr;
 }
 
