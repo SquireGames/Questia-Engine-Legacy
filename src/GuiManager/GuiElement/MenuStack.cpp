@@ -31,27 +31,27 @@ int MenuStack::addEntry(const std::string& text, const std::string& buttonName)
 	return tabID;
 }
 
-void MenuStack::init(const std::string& stackName, int x, int y, GuiManager& pGuiManager, GuiLoader& guiLoader)
+void MenuStack::init(const std::string& stackName, int x, int y, GuiManager& guiManager, GuiLoader& guiLoader)
 {
-	guiManager = &pGuiManager;
+	this->guiManager = &guiManager;
 	listName = stackName;
 
-	guiLoader.loadGui(pGuiManager, "menuStack");
+	guiLoader.loadGui("menuStack");
 
-	guiManager->createList(stackName);
-	guiManager->setListTemplate("stackTemplate");
-	guiManager->setListSpacing(0, ((dir == utl::Direction::down) ? 24 : -24));
-	guiManager->setListPosition(std::make_pair(x, (dir == utl::Direction::down) ? y : (y - 24)));
+	guiManager.createList(stackName);
+	guiManager.setListTemplate("stackTemplate");
+	guiManager.setListSpacing(0, ((dir == utl::Direction::down) ? 24 : -24));
+	guiManager.setListPosition(std::make_pair(x, (dir == utl::Direction::down) ? y : (y - 24)));
 
 	//make all entries
 	for(unsigned int i = 0; i < entries.size(); i++)
 	{
 		std::string alias = entries[i].buttonName;
-		entries[i].buttonName = guiManager->getGroupEntry(guiManager->createListEntry(), "stackButtonTemplate");
-		guiManager->createAlias(alias, entries[i].buttonName);
-		guiManager->setBtnAtr(entries[i].buttonName, "buttonText", gui::BtnAtrChar::text, entries[i].entryText);
+		entries[i].buttonName = guiManager.getGroupEntry(guiManager.createListEntry(), "stackButtonTemplate");
+		guiManager.createAlias(alias, entries[i].buttonName);
+		guiManager.setBtnAtr(entries[i].buttonName, "buttonText", gui::BtnAtrChar::text, entries[i].entryText);
 	}
-	guiManager->setListAtr(listName, gui::BtnChar::isVisible, false);
+	guiManager.setListAtr(listName, gui::BtnChar::isVisible, false);
 }
 
 void MenuStack::handleInput(std::u32string& input)

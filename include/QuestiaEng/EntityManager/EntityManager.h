@@ -28,7 +28,7 @@ class Entity_Player;
 class EntityManager
 {
 public:
-	EntityManager(ResourceManager& resourceManager);
+	EntityManager(ResourceManager& resourceManager, sf::RenderWindow& window);
 	~EntityManager();
 
 	//registers recipes of entities
@@ -41,8 +41,8 @@ public:
 
 	void update();
 
-	void draw(sf::RenderWindow& window, DrawLayer drawLayer);
-	void draw_coll(sf::RenderWindow& window);
+	void draw(DrawLayer drawLayer);
+	void draw_coll();
 
 	Entity_Player& getPlayer(unsigned int playerID);
 
@@ -52,6 +52,7 @@ public:
 
 private:
 	ResourceManager& resourceManager;
+	sf::RenderWindow& window;
 
 	//every entity has a unique ID
 	unsigned int idCounter = 0;

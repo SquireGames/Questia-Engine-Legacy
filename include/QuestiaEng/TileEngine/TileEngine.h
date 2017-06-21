@@ -12,6 +12,8 @@
 #include <map>
 #include <cmath>    //std::floor
 
+#include <unordered_map>
+
 #include "QuestiaEng/TileEngine/TileMap.h"
 
 #include "QuestiaEng/ResourceManager/ResourceManager.h"
@@ -29,47 +31,56 @@ public:
 	//ctor and dtor
 	TileEngine(sf::RenderWindow& window, ResourceManager& resourceManager);
 	~TileEngine();
-	
-	friend class TileEngine_Editor;
 
-	void loadMap(const std::string& mapName, TileMap::TextureMode textureMode = TileMap::TextureMode::Map, TileMap::TileMode tileMode = TileMap::TileMode::Batch);
+	//loads map and textures
+	void loadMap(const std::string& mapName, TileMap::TextureMode textureMode = TileMap::TextureMode::Map, TileMap::RenderMode tileMode = TileMap::RenderMode::Batch);
+
+	//just loads map data
+	void loadMapData(); 
+	
 	void closeMap();
 
 	void draw();
 
 	void setViewportSize(float width, float height);
-
 	void setPosition(int x, int y);
-	
-	bool isLoaded() {return currentMap.isLoaded();}
-	
+
+	bool isLoaded() {return currentMap->isLoaded();}
+
 private:
+	void loadMap(TileMap* map, const std::string& mapName, TileMap::TextureMode textureMode = TileMap::TextureMode::Map, TileMap::RenderMode tileMode = TileMap::RenderMode::Batch);
 
 	//draws chunks
 	void drawMap();
 	//draws separate tiles
 	void drawTiles();
-	
-	//in charge of next map to load
-	std::string nextMap = std::string();
-
-	//tiles fit on screen
-	unsigned int tileFit_x = (1920.f / 64.f) + 2; // +2 for transitioning tiles
-	unsigned int tileFit_y = (1080.f / 64.f) + 2; // +2 for transitioning tiles
-	
-	utl::Vector2i cameraPosition {utl::Vector2i(0,0)};
 
 	///helpers
 	//for map
-	int getTile(unsigned int x, unsigned int y, unsigned int layer);
-	int getChunk(unsigned int x, unsigned int y, unsigned int layer);
+	int getTile(unsigned int x, unsigned int y, unsigned int layer, TileMap* map);
+	int getChunk(unsigned int x, unsigned int y, unsigned int layer, TileMap* map);
+	
+	//every map is generated an ID
+	std::unordered_map<std::string, int> mapID;
+	
+	//tiles fit on screen
+	unsigned int tileFit_x = (1920.f / 64.f) + 2; // +2 for transitioning tiles
+	unsigned int tileFit_y = (1080.f / 64.f) + 2; // +2 for transitioning tiles
+
+	utl::Vector2i cameraPosition {utl::Vector2i(0,0)};
+	TileMap::TextureMode textureMode = TileMap::TextureMode::Map;
+	TileMap::RenderMode tileMode = TileMap::RenderMode::Batch;
 
 	///default
 	sf::RenderWindow& window;
 	ResourceManager& resourceManager;
 
 	//holds map
-	TileMap currentMap;
+	TileMap maps[2];
+	TileMap* currentMap;
+	TileMap* nextMap;
+
+	friend class TileEngine_Editor;
 };
 
 #endif // TILEENGINE_H

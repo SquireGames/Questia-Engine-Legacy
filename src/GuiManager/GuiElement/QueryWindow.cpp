@@ -15,12 +15,12 @@ void QueryWindow::addQuery(const std::string& queryID, const std::string& queryQ
 	queryValues.push_back(std::make_pair(queryID, Query(queryQuestion, queryType)));
 }
 
-void QueryWindow::init(const std::string& windowName, GuiManager& pGuiManager, GuiLoader* guiLoader, std::function<void()> handle)
+void QueryWindow::init(const std::string& windowName, GuiManager& guiManager, GuiLoader* guiLoader, std::function<void()> handle)
 {
-	guiManager = &pGuiManager;
+	this->guiManager = &guiManager;
 	if(guiLoader != nullptr)
 	{
-		guiLoader->loadGui(pGuiManager, "queryWindow");
+		guiLoader->loadGui("queryWindow");
 	}
 
 	handleRes = handle;
@@ -31,11 +31,11 @@ void QueryWindow::init(const std::string& windowName, GuiManager& pGuiManager, G
 		windowPos_y -= 20;
 	}
 
-	pGuiManager.createGroupFromTemplate(windowName, "queryWindowTemplate");
+	guiManager.createGroupFromTemplate(windowName, "queryWindowTemplate");
 	groupName = windowName;
-	button_windowBox   = pGuiManager.getGroupEntry(windowName, "windowBox");
-	button_closeButton = pGuiManager.getGroupEntry(windowName, "windowClose");
-	pGuiManager.setBtnAtr(button_windowBox, "windowSprite", gui::BtnAtrChar::size, std::make_pair(windowSize_x, windowSize_y));
+	button_windowBox   = guiManager.getGroupEntry(windowName, "windowBox");
+	button_closeButton = guiManager.getGroupEntry(windowName, "windowClose");
+	guiManager.setBtnAtr(button_windowBox, "windowSprite", gui::BtnAtrChar::size, std::make_pair(windowSize_x, windowSize_y));
 
 	//add queries
 	for(unsigned int it = 0; it != queryValues.size(); it++)
@@ -45,43 +45,43 @@ void QueryWindow::init(const std::string& windowName, GuiManager& pGuiManager, G
 		case QueryType::Input_int:
 		case QueryType::Input_string:
 			queryValues.at(it).second.buttonName = groupName + "-" + std::to_string(it);
-			pGuiManager.createButton(queryValues.at(it).second.buttonName, "textInputBox");
-			pGuiManager.setButton(queryValues.at(it).second.buttonName, gui::BtnChar::coords, std::make_pair(250, 60 + it*40));
-			pGuiManager.setBtnAtr(queryValues.at(it).second.buttonName, "buttonText", gui::BtnAtrChar::text, queryValues.at(it).second.queryQuestion);
-			pGuiManager.addToGroup(groupName, queryValues.at(it).second.buttonName);
+			guiManager.createButton(queryValues.at(it).second.buttonName, "textInputBox");
+			guiManager.setButton(queryValues.at(it).second.buttonName, gui::BtnChar::coords, std::make_pair(250, 60 + it*40));
+			guiManager.setBtnAtr(queryValues.at(it).second.buttonName, "buttonText", gui::BtnAtrChar::text, queryValues.at(it).second.queryQuestion);
+			guiManager.addToGroup(groupName, queryValues.at(it).second.buttonName);
 			break;
 		case QueryType::Choice_string:
 			queryValues.at(it).second.buttonName = groupName + "-" + std::to_string(it);
-			pGuiManager.createButton(queryValues.at(it).second.buttonName, "windowChoice");
-			pGuiManager.setButton(queryValues.at(it).second.buttonName, gui::BtnChar::coords, std::make_pair(100, 60 + it*40));
-			pGuiManager.setBtnAtr(queryValues.at(it).second.buttonName, "buttonTextAnswer", gui::BtnAtrChar::text, queryValues.at(it).second.queryQuestion);
-			pGuiManager.addToGroup(groupName, queryValues.at(it).second.buttonName);
+			guiManager.createButton(queryValues.at(it).second.buttonName, "windowChoice");
+			guiManager.setButton(queryValues.at(it).second.buttonName, gui::BtnChar::coords, std::make_pair(100, 60 + it*40));
+			guiManager.setBtnAtr(queryValues.at(it).second.buttonName, "buttonTextAnswer", gui::BtnAtrChar::text, queryValues.at(it).second.queryQuestion);
+			guiManager.addToGroup(groupName, queryValues.at(it).second.buttonName);
 			break;
 		}
 	}
 
 	//add title
-	pGuiManager.createButton(groupName + "_title", "windowTitle");
-	pGuiManager.setBtnAtr(groupName + "_title", "buttonText", gui::BtnAtrChar::text, windowName);
-	pGuiManager.addToGroup(groupName, groupName + "_title");
+	guiManager.createButton(groupName + "_title", "windowTitle");
+	guiManager.setBtnAtr(groupName + "_title", "buttonText", gui::BtnAtrChar::text, windowName);
+	guiManager.addToGroup(groupName, groupName + "_title");
 
 	//add submit button
 	button_submitButton = groupName + "_submit";
-	pGuiManager.createButton(button_submitButton, "windowSubmit");
-	pGuiManager.setButton(button_submitButton, gui::BtnChar::coords, std::make_pair(350-25, windowSize_y - 35));
-	pGuiManager.addToGroup(groupName, button_submitButton);
+	guiManager.createButton(button_submitButton, "windowSubmit");
+	guiManager.setButton(button_submitButton, gui::BtnChar::coords, std::make_pair(350-25, windowSize_y - 35));
+	guiManager.addToGroup(groupName, button_submitButton);
 
 	//choice - when more than 24 options add scrolling and move OK button
 	if(queryValues.size() > 24)
 	{
-		pGuiManager.setButton(button_submitButton, gui::BtnChar::coords, std::make_pair(700-50-10, 1060-35));
-		pGuiManager.setBtnAtr(groupName + "_title", "buttonText", gui::BtnAtrChar::text, "");
+		guiManager.setButton(button_submitButton, gui::BtnChar::coords, std::make_pair(700-50-10, 1060-35));
+		guiManager.setBtnAtr(groupName + "_title", "buttonText", gui::BtnAtrChar::text, "");
 		scrollWindow = true;
 	}
 
 	//set position and not visible
-	pGuiManager.setGroupAtr(gui::BtnChar::coords_group, std::make_pair(windowPos_x, windowPos_y));
-	pGuiManager.setGroupAtr(groupName, gui::BtnChar::isVisible, false);
+	guiManager.setGroupAtr(gui::BtnChar::coords_group, std::make_pair(windowPos_x, windowPos_y));
+	guiManager.setGroupAtr(groupName, gui::BtnChar::isVisible, false);
 }
 
 void QueryWindow::reInit()

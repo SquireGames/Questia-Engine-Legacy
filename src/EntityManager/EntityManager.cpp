@@ -7,8 +7,9 @@
 #include "QuestiaEng/EntityManager/Entity/Entity_Obj/Entity_Coll/Entity_Living/Entity_Living.h"
 #include "QuestiaEng/EntityManager/Entity/Entity_Obj/Entity_Coll/Entity_Living/Entity_Player/Entity_Player.h"
 
-EntityManager::EntityManager(ResourceManager& resourceManager):
+EntityManager::EntityManager(ResourceManager& resourceManager, sf::RenderWindow& window):
 	resourceManager(resourceManager)
+	, window(window)
 {
 	std::cout<<"DEBUG: Entity Manager Initialized"<<std::endl;
 }
@@ -50,7 +51,7 @@ void EntityManager::update()
 	deadIDs.clear();
 }
 
-void EntityManager::draw(sf::RenderWindow& window, DrawLayer drawLayer)
+void EntityManager::draw(DrawLayer drawLayer)
 {
 	//sort entities by y value
 	std::sort(entities_Obj.begin(), entities_Obj.end(),
@@ -171,7 +172,7 @@ void EntityManager::drawCollBounds(sf::RenderWindow& window, const Bounds* bound
 	}
 }
 
-void EntityManager::draw_coll(sf::RenderWindow& window)
+void EntityManager::draw_coll()
 {
 	for(auto& entity : entities_Coll)
 	{

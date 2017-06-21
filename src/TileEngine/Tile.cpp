@@ -7,124 +7,113 @@ Tile::Tile(sf::RenderWindow& window, ResourceManager& resourceManager):
 
 }
 
-void Tile::drawTile()
-{
-	switch(tileType)
-	{
-	case TileType::sprite:
-		window.draw(tileSprite, moveTransform.combine(tileTransform));
-		break;
-	case TileType::texture:
-		break;
-	}
-}
-
 void Tile::setTexture(const std::string& filePath)
 {
-	switch(tileType)
+	//TODO add multiple nested folder support
+	std::vector<std::string> tileSourceDir = utl::separateString(filePath, '/');
+	source = filePath;
+	display = (filePath.size() > 28) ? filePath.substr(23) : filePath;
+	
+	if(tileSourceDir.size() >= 6)
 	{
-	case TileType::sprite:
-		{
-			tileSprite.setTexture(resourceManager.getTexture(filePath));
+		folder   = tileSourceDir[4];
+		tileName = tileSourceDir[5];
+	}
+}
 
-			tileTransform = tileSprite.getTransform();
-			tileSize = utl::Vector2i(tileSprite.getLocalBounds().width / 64, tileSprite.getLocalBounds().height / 64);
+void Tile::setDisplay(const std::string& filePath)
+{
+	display = (filePath.size() > 28) ? filePath.substr(23) : filePath;
+}
 
-			//TODO add multiple nested folder support
-			std::vector<std::string> tileSourceDir = utl::separateString(filePath, '/');
-			source   = filePath;
-			folder   = tileSourceDir[4];
-			tileName = tileSourceDir[5];
-		}
-		break;
-	case TileType::texture:
-		break;
-	}
-}
-void Tile::setPosition(int x, int y)
-{
-	switch(tileType)
-	{
-	case TileType::sprite:
-		moveTransform = sf::Transform().translate(x * 64, y * 64);
-		tilePosition = utl::Vector2i(x, y);
-		break;
-	case TileType::texture:
-		break;
-	}
-}
-void Tile::setTransparency(int alpha)
-{
-	switch(tileType)
-	{
-	case TileType::sprite:
-		{
-			sf::Color newColor = tileSprite.getColor();
-			float trans = static_cast <float>(alpha);
-			trans = trans * 255 / 100;
-			newColor.a = trans;
-			tileSprite.setColor(newColor);
-		}
-		break;
-	case TileType::texture:
-		break;
-	}
-}
 void Tile::setSize(unsigned int tilesWidth, unsigned int tilesHeight)
 {
 	tileSize = utl::Vector2i(tilesWidth, tilesHeight);
-	switch(tileType)
-	{
-	case TileType::sprite:
-		tileTransform = tileSprite.getTransform();
-		tileTransform.scale((64.f / tileSprite.getLocalBounds().width) * tilesWidth, (64.f / tileSprite.getLocalBounds().height) * tilesHeight);
-	case TileType::texture:
-		break;
-	}
 }
-void Tile::setRotate(int _degrees)
+void Tile::setSize_x(unsigned int tilesWidth)
 {
-	switch(tileType)
-	{
-	case TileType::sprite:
-		{
-			sf::Transform rotateTransform = sf::Transform().rotate(_degrees, tileSprite.getLocalBounds().width/2, tileSprite.getLocalBounds().height/2);
-			tileTransform.combine(rotateTransform);
-		}
-		break;
-	case TileType::texture:
-		degrees = _degrees;
-		break;
-	}
+	tileSize.x = tilesWidth;
 }
+void Tile::setSize_y(unsigned int tilesHeight)
+{
+	tileSize.y = tilesHeight;
+}
+
+void Tile::setRotation(int degrees)
+{
+	this->degrees = degrees;
+}
+
 void Tile::setFlip(char direction)
 {
-	switch(tileType)
+	flip = direction;
+}
+
+utl::Vector2i Tile::getSize() const {return tileSize;}
+int Tile::getSize_x() const {return tileSize.x;}
+int Tile::getSize_y() const {return tileSize.y;}
+int Tile::getRotate() const {return degrees;}
+char Tile::getFlip() const {return flip;}
+const std::string& Tile::getTexturePath() const {return source;}
+const std::string& Tile::getDisplay() const {return display;}
+const std::string& Tile::getFolder() const {return folder;}
+const std::string& Tile::getTileName() const {return tileName;}
+
+void Tile::setCollisionRect(int x, int y, int width, int height)
+{
+	collisionRect = utl::IntRect(x, y, width, height);
+}
+utl::IntRect& Tile::getCollisionRect()
+{
+	return collisionRect;
+}
+
+void Tile::loadSprite()
+{
+	//setTexture()
+	tileSprite.setTexture(resourceManager.getTexture(source));
+	tileTransform = tileSprite.getTransform();
+	//setSize()
+	tileTransform.scale((64.f / tileSprite.getLocalBounds().width) * tileSize.x, (64.f / tileSprite.getLocalBounds().height) * tileSize.y);
+	//setRotate()
+	sf::Transform rotateTransform = sf::Transform().rotate(degrees, tileSprite.getLocalBounds().width/2, tileSprite.getLocalBounds().height/2);
+	tileTransform.combine(rotateTransform);
+	//setFlip()
+	switch(flip)
 	{
-	case TileType::sprite:
-		{
-			const int& width  = tileSprite.getLocalBounds().width;
-			const int& height = tileSprite.getLocalBounds().height;
-			switch(direction)
-			{
-			case 'x':
-				tileSprite.setTextureRect(sf::IntRect(width, 0, -width, height));
-				break;
-			case 'y':
-				tileSprite.setTextureRect(sf::IntRect(0, height, width, -height));
-				break;
-			case 'b':
-				tileSprite.setTextureRect(sf::IntRect(width, height, -width, -height));
-				break;
-			default:
-				break;
-			}
-		}
+	case 'x':
+		tileSprite.setTextureRect(sf::IntRect(tileSprite.getLocalBounds().width, 0,
+		                                      -1 * tileSprite.getLocalBounds().width, tileSprite.getLocalBounds().height));
 		break;
-	case TileType::texture:
-		flip = direction;
+	case 'y':
+		tileSprite.setTextureRect(sf::IntRect(0, tileSprite.getLocalBounds().height,
+		                                      tileSprite.getLocalBounds().width, -1 * tileSprite.getLocalBounds().height));
+		break;
+	case 'b':
+		tileSprite.setTextureRect(sf::IntRect(tileSprite.getLocalBounds().width, tileSprite.getLocalBounds().height,
+		                                      -1 * tileSprite.getLocalBounds().width, -1 * tileSprite.getLocalBounds().height));
+		break;
+	default:
 		break;
 	}
+
+}
+void Tile::setPosition(int x, int y)
+{
+	moveTransform = sf::Transform().translate(x * 64, y * 64);
+	tilePosition = utl::Vector2i(x, y);
+}
+void Tile::setTransparency(int alpha)
+{
+	sf::Color newColor = tileSprite.getColor();
+	float trans = static_cast <float>(alpha);
+	trans = trans * 255 / 100;
+	newColor.a = trans;
+	tileSprite.setColor(newColor);
+}
+void Tile::drawTile()
+{
+	window.draw(tileSprite, moveTransform.combine(tileTransform));
 }
 
 bool Tile::isInTile(int x, int y)
@@ -135,13 +124,4 @@ bool Tile::isInTile(int x, int y)
 		return true;
 	}
 	return false;
-}
-
-void Tile::setCollisionRect(int x, int y, int width, int height)
-{
-	collisionRect = utl::IntRect(x, y, width, height);
-}
-utl::IntRect& Tile::getCollisionRect()
-{
-	return collisionRect;
 }

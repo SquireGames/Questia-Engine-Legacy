@@ -5,3 +5,8 @@ Entity_Player::Entity_Player(unsigned int id, EntityManager& entityManager, Reso
 {
 
 }
+
+Entity_Player::~Entity_Player()
+{
+	
+}

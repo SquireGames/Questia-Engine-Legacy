@@ -19,7 +19,7 @@ class Entity_Player : public Entity_Living
 {
 public:
     Entity_Player(unsigned int id, EntityManager& entityManager, ResourceManager& resourceManager, utl::Vector2f coords);
-    ~Entity_Player() = 0;
+    virtual ~Entity_Player() = 0;
 
 private:
 };

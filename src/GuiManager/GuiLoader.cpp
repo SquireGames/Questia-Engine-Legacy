@@ -1,6 +1,7 @@
 #include "QuestiaEng/GuiManager/GuiLoader.h"
 
-GuiLoader::GuiLoader()
+GuiLoader::GuiLoader(GuiManager& guiManager):
+	guiManager(guiManager)
 {
 	//ctor
 }
@@ -15,7 +16,7 @@ void GuiLoader::setGuiPack(const std::string& guiPack)
 	primaryPack = guiPack;
 }
 
-void GuiLoader::loadGui(GuiManager& guiManager, const std::string& gui)
+void GuiLoader::loadGui(const std::string& gui)
 {
 	if(guiManager.isLoadedGuiPack(gui))
 	{

@@ -11,8 +11,8 @@ public:
 	TileMap();
 	~TileMap();
 
-	enum class TextureMode  {Map, All} textureMode		= TextureMode::Map;
-	enum class TileMode     {Sprite, Batch} tileMode	= TileMode::Batch;
+	enum class TextureMode  {Map, All} textureMode					= TextureMode::Map;
+	enum class RenderMode     {Sprite, Batch, Unloaded} tileMode	= RenderMode::Batch;
 
 	void initialize() {isInitialized = true;}
 
@@ -25,7 +25,7 @@ public:
 	void setMaxTileSize_x(unsigned int p_maxTileSize_x) { if(!isInitialized) {maxTileSize_x = p_maxTileSize_x;}}
 	void setMaxTileSize_y(unsigned int p_maxTileSize_y) { if(!isInitialized) {maxTileSize_y = p_maxTileSize_y;}}
 	void setTextureMode(TextureMode mode)				{ if(!isInitialized) {textureMode = mode;}}
-	void setTileMode(TileMode mode)						{ if(!isInitialized) {tileMode = mode;}}	
+	void setRenderMode(RenderMode mode)						{ if(!isInitialized) {tileMode = mode;}}	
 	void setLoaded()									{ if(!isInitialized) {isMapLoaded = true;}}	
 	//chunk rendering
 	void setAtlasTexture(std::string location, sf::Texture* atlas)	{ if(!isInitialized) {textureAtlasLocation = location, textureAtlas = atlas;}}
@@ -41,7 +41,7 @@ public:
 	unsigned int getMaxTileSize_x() 	{return maxTileSize_x;}
 	unsigned int getMaxTileSize_y() 	{return maxTileSize_y;}
 	TextureMode  getTextureMode() 		{return textureMode;}
-	TileMode     getTileMode() 			{return tileMode;}
+	RenderMode     getRenderMode() 			{return tileMode;}
 	std::string  getAtlasLocation() 	{return textureAtlasLocation;}
 	sf::Texture* getAtlas() 			{return textureAtlas;}
 	bool isLoaded()						{return isMapLoaded;}

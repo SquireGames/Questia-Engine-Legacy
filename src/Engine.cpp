@@ -1,19 +1,19 @@
 #include "QuestiaEng/Engine.h"
 
 #ifdef _WIN32
-#if !(__GNUC__ == 6 && \
-		  __GNUC_MINOR__ == 1 && \
-		  __GNUC_PATCHLEVEL__ == 0)
-#warning Compiler version may be incompatible with pre-built SFML dlls. Use g++ 6.1.0 (DW2).
-#endif // __GNUC__
+	#if !(__GNUC__ == 6 && \
+			  __GNUC_MINOR__ == 1 && \
+			  __GNUC_PATCHLEVEL__ == 0)
+		#warning Compiler version may be incompatible with pre-built SFML dlls. Use g++ 6.1.0 (DW2).
+	#endif // __GNUC__
 #elif linux
-#if !(__GNUC__ == 6 && \
-		  __GNUC_MINOR__ == 2 && \
-		  __GNUC_PATCHLEVEL__ == 0)
-#warning Compiler version may be incompatible with pre-built SFML dlls. Use g++ 6.2.0.
-#endif // __GNUC__
+	#if !(__GNUC__ == 6 && \
+			  __GNUC_MINOR__ == 2 && \
+			  __GNUC_PATCHLEVEL__ == 0)
+		#warning Compiler version may be incompatible with pre-built SFML dlls. Use g++ 6.2.0.
+	#endif // __GNUC__
 #else
-#warning Your operating system was not yet tested with the prebuilt SFML dlls.
+	#warning Your operating system was not yet tested with the prebuilt SFML dlls.
 #endif
 
 Engine::Engine(std::string windowName, int tickRate, int majorVersion, int minorVersion, int revision, std::string versionSuffix):
@@ -31,10 +31,10 @@ Engine::Engine(std::string windowName, int tickRate, int majorVersion, int minor
 	, resourceManager()
 	, guiManager(window, resourceManager)
 	, guiHandler(mouseListener)
-	, guiLoader()
+	, guiLoader(guiManager)
 	, tileEngine(window, resourceManager)
 	, tileEngineEditor(window, resourceManager, tileEngine)
-	, entityManager(resourceManager)
+	, entityManager(resourceManager, window)
 	, stateManager(*this)
 	//variables
 	, inputBuffer()
