@@ -35,7 +35,7 @@ public:
 	//TODO implement this
 	void changeMapDimensions(const std::string& mapName, unsigned int width, unsigned int height, unsigned int layers);
 	//saving map and tiles used
-	void saveMap(const std::string& mapName, const std::vector <int>& tileMap, unsigned int width, unsigned int height, unsigned int layers, const std::map<int, Tile>& tilePairs);
+	void saveMap(TileMap* map);
 
 private:
 	std::vector <std::pair <int, std::string> > getTileLocations(const std::string& fileDir, TileMap::TextureMode textureMode);
@@ -54,6 +54,14 @@ private:
 	const std::string name_width = "width";
 	const std::string name_height = "height";
 	const std::string name_layers = "layers";
+	const std::string name_map_up	 	 = "map_up";
+	const std::string name_map_up_off 	 = "map_up_offset";
+	const std::string name_map_down 	 = "map_down";
+	const std::string name_map_down_off  = "map_down_offset";
+	const std::string name_map_left 	 = "map_left";
+	const std::string name_map_left_off  = "map_left_offset";
+	const std::string name_map_right 	 = "map_right";
+	const std::string name_map_right_off = "map_right_offset";
 
 	//for tilework
 	ResourceManager& resourceManager;

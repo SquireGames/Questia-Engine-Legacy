@@ -18,6 +18,7 @@ void TileEngine_Editor::createMap(const std::string& mapName, unsigned int width
 
 void TileEngine_Editor::loadMap(const std::string& mapName)
 {
+	/*
 	*tileEngine.currentMap = std::move(SV_TileEngine(resourceManager).openMap(mapName, window, TileMap::TextureMode::All, TileMap::RenderMode::Sprite));
 
 	//2 vertices
@@ -58,6 +59,7 @@ void TileEngine_Editor::loadMap(const std::string& mapName)
 		std::pair<std::string, std::vector<Tile*> >& tileDir = getFolder(folder);
 		tileDir.second.push_back(&tile);
 	}
+	 * */
 }
 void TileEngine_Editor::closeMap()
 {
@@ -116,6 +118,7 @@ void TileEngine_Editor::drawTiles(sf::Font& font)
 
 void TileEngine_Editor::drawLayer(int layer, int transparency)
 {
+	/*
 	//find boundaries
 	int drawMin_x = (tileEngine.cameraPosition.x / 64.f) - (0.5 * tileEngine.tileFit_x) - (tileEngine.currentMap->getMaxTileSize_x() - 1);
 	int drawMin_y = (tileEngine.cameraPosition.y / 64.f) - (0.5 * tileEngine.tileFit_y) - (tileEngine.currentMap->getMaxTileSize_y() - 1);
@@ -170,20 +173,24 @@ void TileEngine_Editor::drawLayer(int layer, int transparency)
 			}
 		}
 	}
+	 * */
 }
 
 void TileEngine_Editor::overrideMap()
 {
+	/*
 	saveFile.saveMap(tileEngine.currentMap->getName(),
 	                 tileEngine.currentMap->getTileMap(),
 	                 tileEngine.currentMap->getWidth(),
 	                 tileEngine.currentMap->getHeight(),
 	                 tileEngine.currentMap->getLayers(),
 	                 tileEngine.currentMap->getTileKey());
+					  * */
 }
 
 void TileEngine_Editor::replaceTile(int newTile, int x, int y, int layer)
 {
+	/*
 	if((x >= 0  && x < (int)tileEngine.currentMap->getWidth())
 	        && (y >= 0 && y < (int)tileEngine.currentMap->getHeight())
 	        && (layer >= 0 && layer < (int)tileEngine.currentMap->getLayers())
@@ -191,15 +198,18 @@ void TileEngine_Editor::replaceTile(int newTile, int x, int y, int layer)
 	{
 		tileEngine.currentMap->getTileMap().at(tileEngine.getTile(x, y, layer, tileEngine.currentMap)) = newTile;
 	}
+	 * */
 }
 
 void TileEngine_Editor::resetTileAlpha()
 {
+	/*
 	for(auto& it : tileEngine.currentMap->getTileKey())
 	{
 		Tile& tile = it.second;
 		tile.setTransparency(100);
 	}
+	 * */
 }
 
 void TileEngine_Editor::drawGridLines()
@@ -259,6 +269,7 @@ void TileEngine_Editor::hoverSpan(int x, int y, int size_x, int size_y)
 
 Tile* TileEngine_Editor::getTile_tileState(int x, int y)
 {
+	/*
 	for(auto& it : tileEngine.currentMap->getTileKey())
 	{
 		Tile& tile = it.second;
@@ -268,10 +279,12 @@ Tile* TileEngine_Editor::getTile_tileState(int x, int y)
 		}
 	}
 	return nullptr;
+	 * */
 }
 
 int TileEngine_Editor::getTileID(const std::string& source)
 {
+	/*
 	for(auto& tile : tileEngine.currentMap->getTileKey())
 	{
 		if(tile.second.getDisplay() == source)
@@ -281,21 +294,22 @@ int TileEngine_Editor::getTileID(const std::string& source)
 	}
 	//TODO log error
 	return -1;
+	 * */
 }
 
 unsigned int TileEngine_Editor::getMapWidth()
 {
-	return tileEngine.currentMap->getWidth();
+	//return tileEngine.currentMap->getWidth();
 }
 unsigned int TileEngine_Editor::getMapHeight()
 {
-	return tileEngine.currentMap->getHeight();
+	//return tileEngine.currentMap->getHeight();
 }
 unsigned int TileEngine_Editor::getMapLayers()
 {
-	return tileEngine.currentMap->getLayers();
+	//return tileEngine.currentMap->getLayers();
 }
 void TileEngine_Editor::changeMapName(const std::string& newName)
 {
-	tileEngine.currentMap->setName(newName);
+	//tileEngine.currentMap->setName(newName);
 }

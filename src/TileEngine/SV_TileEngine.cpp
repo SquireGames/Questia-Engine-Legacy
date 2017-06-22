@@ -28,12 +28,21 @@ TileMap SV_TileEngine::openMap(const std::string& mapName, sf::RenderWindow& win
 	mapData.setRenderMode(tileMode);
 
 	//reads mapInfo file
-	SaveFile saveFile_mapInfo;
-	saveFile_mapInfo.setFilePath("Maps/" + mapName + "/mapInfo.txt");
-	saveFile_mapInfo.readFile();
-	mapData.setWidth(utl::toInt(saveFile_mapInfo.getItem(name_width)));
-	mapData.setHeight(utl::toInt(saveFile_mapInfo.getItem(name_height)));
-	mapData.setLayers(utl::toInt(saveFile_mapInfo.getItem(name_layers)));
+	SaveFile sv_mapInfo;
+	sv_mapInfo.setFilePath("Maps/" + mapName + "/mapInfo.txt");
+	sv_mapInfo.readFile();
+	mapData.setWidth(utl::toInt(sv_mapInfo.getItem(name_width)));
+	mapData.setHeight(utl::toInt(sv_mapInfo.getItem(name_height)));
+	mapData.setLayers(utl::toInt(sv_mapInfo.getItem(name_layers)));
+	mapData.setBorderMap(sv_mapInfo.getItem(name_map_up), utl::Direction::up);
+	mapData.setBorderMap(sv_mapInfo.getItem(name_map_down), utl::Direction::down);
+	mapData.setBorderMap(sv_mapInfo.getItem(name_map_left), utl::Direction::left);
+	mapData.setBorderMap(sv_mapInfo.getItem(name_map_right), utl::Direction::right);
+	mapData.setBorderMapOffset(utl::toInt(sv_mapInfo.getItem(name_map_up_off)), utl::Direction::up);
+	mapData.setBorderMapOffset(utl::toInt(sv_mapInfo.getItem(name_map_down_off)), utl::Direction::down);
+	mapData.setBorderMapOffset(utl::toInt(sv_mapInfo.getItem(name_map_left_off)), utl::Direction::left);
+	mapData.setBorderMapOffset(utl::toInt(sv_mapInfo.getItem(name_map_right_off)), utl::Direction::right);
+
 	unsigned int totalTiles = mapData.getWidth() * mapData.getHeight() * mapData.getLayers();
 
 	//get all tile textures locations
@@ -630,87 +639,105 @@ void SV_TileEngine::loadTiles(std::vector <std::pair <int, std::string>>& tileLo
 	}
 }
 
-void SV_TileEngine::saveMap(const std::string& mapName, const std::vector <int>& tileMap, unsigned int width, unsigned int height, unsigned int layers, const std::map<int, Tile>& tilePairs)
+void SV_TileEngine::saveMap(TileMap* map)
 {
-	if(utl::doesExist(utl::conjoinString({"Maps/", mapName})))
+	if(!utl::doesExist("Maps/" + map->getName()))
 	{
-		std::string filePath = utl::conjoinString({"Maps/", mapName});
-
-		//create info file
-		SaveFile saveFile_mapInfo;
-		saveFile_mapInfo.setFilePath(filePath + file_mapInfo);
-		saveFile_mapInfo.saveItem(name_width, width);
-		saveFile_mapInfo.saveItem(name_height, height);
-		saveFile_mapInfo.saveItem(name_layers, layers);
-		saveFile_mapInfo.writeFile();
-
-		//create tile info file
-		SaveFile saveFile_tilesUsed;
-		saveFile_tilesUsed.setFilePath(filePath + file_tilesUsed);
-
-		std::vector<int> tilesUsed = std::vector<int>();
-		for(const int& tileID : tileMap)
-		{
-			if(std::find(tilesUsed.begin(), tilesUsed.end(), tileID) == tilesUsed.end())
-			{
-				if(tileID != 0)
-				{
-					tilesUsed.push_back(tileID);
-				}
-			}
-		}
-
-		std::map<int, int> newTileNumbers =  std::map<int, int>();
-
-		int currentTileID = 1;
-		for(const int& tileID : tilesUsed)
-		{
-			if(tilePairs.at(tileID).getTexturePath() == "Media/Image/Game/Tiles/Debug/Missing.png")
-			{
-				saveFile_tilesUsed.saveItem("-1", "Media/Image/Game/Tiles/Debug/Missing.png");
-				newTileNumbers[-1] = -1;
-			}
-			else
-			{
-				saveFile_tilesUsed.saveItem(std::to_string(currentTileID), tilePairs.at(tileID).getTexturePath());
-				newTileNumbers[tileID] = currentTileID;
-				currentTileID++;
-			}
-		}
-		saveFile_tilesUsed.writeFile();
-
-		//create map save
-		SaveFile saveFile_map;
-		saveFile_map.setFilePath(filePath + file_map);
-
-		int tileMapIterator = 0;
-
-		//save map
-		for(unsigned int itLayers = 0; itLayers != layers; itLayers++)
-		{
-			for(unsigned int itHeight = 0; itHeight != height; itHeight++)
-			{
-				//get the map string
-				std::vector <std::string> tileLine;
-				//-1 to account for end
-				for(unsigned int it = 0; it != width - 1; it++)
-				{
-					tileLine.push_back(std::to_string(newTileNumbers[tileMap.at(tileMapIterator)]) + "|");
-					tileMapIterator++;
-				}
-				tileLine.push_back(std::to_string(newTileNumbers[tileMap.at(tileMapIterator)]));
-				tileMapIterator++;
-				saveFile_map.addItem(utl::conjoinString(tileLine), "");
-			}
-			//line between layers
-			if(itLayers != layers - 1)
-			{
-				saveFile_map.addItem("", "");
-			}
-		}
-
-		saveFile_map.writeFile();
+		return;
 	}
+
+	const std::map<int, Tile>& tilePairs = map->getTileKey();
+	const std::vector<int>& tileMap = map->getTileMap();
+	unsigned int width = map->getWidth();
+	unsigned int height = map->getHeight();
+	unsigned int layers = map->getLayers();
+
+	std::string filePath = "Maps/" + map->getName();
+
+	//create info file
+	SaveFile sv_mapInfo;
+	sv_mapInfo.setFilePath(filePath + file_mapInfo);
+	sv_mapInfo.saveItem(name_width, width);
+	sv_mapInfo.saveItem(name_height, height);
+	sv_mapInfo.saveItem(name_layers, layers);
+
+	sv_mapInfo.saveItem(name_map_up, 	map->getBorderMap(utl::Direction::up));
+	sv_mapInfo.saveItem(name_map_down, 	map->getBorderMap(utl::Direction::down));
+	sv_mapInfo.saveItem(name_map_left,	map->getBorderMap(utl::Direction::left));
+	sv_mapInfo.saveItem(name_map_right, map->getBorderMap(utl::Direction::right));
+
+	sv_mapInfo.saveItem(name_map_up_off, 	map->getBorderMapOffset(utl::Direction::up));
+	sv_mapInfo.saveItem(name_map_down_off, 	map->getBorderMapOffset(utl::Direction::down));
+	sv_mapInfo.saveItem(name_map_left_off, 	map->getBorderMapOffset(utl::Direction::left));
+	sv_mapInfo.saveItem(name_map_right_off,	map->getBorderMapOffset(utl::Direction::right));
+
+	sv_mapInfo.writeFile();
+
+	//create tile info file
+	SaveFile sv_tilesUsed;
+	sv_tilesUsed.setFilePath(filePath + file_tilesUsed);
+
+	std::vector<int> tilesUsed = std::vector<int>();
+	for(const int& tileID : tileMap)
+	{
+		if(std::find(tilesUsed.begin(), tilesUsed.end(), tileID) == tilesUsed.end())
+		{
+			if(tileID != 0)
+			{
+				tilesUsed.push_back(tileID);
+			}
+		}
+	}
+
+	std::map<int, int> newTileNumbers =  std::map<int, int>();
+
+	int currentTileID = 1;
+	for(const int& tileID : tilesUsed)
+	{
+		if(tilePairs.at(tileID).getTexturePath() == "Media/Image/Game/Tiles/Debug/Missing.png")
+		{
+			sv_tilesUsed.saveItem("-1", "Media/Image/Game/Tiles/Debug/Missing.png");
+			newTileNumbers[-1] = -1;
+		}
+		else
+		{
+			sv_tilesUsed.saveItem(std::to_string(currentTileID), tilePairs.at(tileID).getTexturePath());
+			newTileNumbers[tileID] = currentTileID;
+			currentTileID++;
+		}
+	}
+	sv_tilesUsed.writeFile();
+
+	//create map save
+	SaveFile sv_map;
+	sv_map.setFilePath(filePath + file_map);
+
+	int tileMapIterator = 0;
+
+	//save map
+	for(unsigned int itLayers = 0; itLayers < layers; itLayers++)
+	{
+		for(unsigned int itHeight = 0; itHeight < height; itHeight++)
+		{
+			//get the map string
+			std::vector <std::string> tileLine;
+			//-1 to account for end
+			for(unsigned int it = 0; it < width - 1; it++)
+			{
+				tileLine.push_back(std::to_string(newTileNumbers[tileMap.at(tileMapIterator)]) + "|");
+				tileMapIterator++;
+			}
+			tileLine.push_back(std::to_string(newTileNumbers[tileMap.at(tileMapIterator)]));
+			tileMapIterator++;
+			sv_map.addItem(utl::conjoinString(tileLine), "");
+		}
+		//line between layers
+		if(itLayers != layers - 1)
+		{
+			sv_map.addItem("", "");
+		}
+	}
+	sv_map.writeFile();
 }
 
 ///editor

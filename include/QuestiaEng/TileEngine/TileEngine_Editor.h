@@ -24,7 +24,8 @@ public:
 	void closeMap();
 	
 	void setViewportSize(float width, float height) {tileEngine.setViewportSize(width, height);}
-	void setPosition(int x, int y) {tileEngine.setPosition(x, y);}
+	//TODO fix
+	//void setPosition(int x, int y) {tileEngine.setPosition(utl::Vector2f(x, y));}
 	bool isLoaded() {return tileEngine.isLoaded();}
 	void draw(){drawMap();}
 

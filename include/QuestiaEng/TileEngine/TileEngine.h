@@ -30,28 +30,31 @@ class TileEngine
 public:
 	//ctor and dtor
 	TileEngine(sf::RenderWindow& window, ResourceManager& resourceManager);
-	~TileEngine();
+	~TileEngine() = default;
+
+	//only needs to be called to change default settings
+	void setMode(TileMap::TextureMode textureMode, TileMap::RenderMode renderMode);
 
 	//loads map and textures
-	void loadMap(const std::string& mapName, TileMap::TextureMode textureMode = TileMap::TextureMode::Map, TileMap::RenderMode tileMode = TileMap::RenderMode::Batch);
+	void loadMap(const std::string& mapName);
 
 	//just loads map data
-	void loadMapData(); 
-	
+	void loadMapData();
+
 	void closeMap();
 
+	//draws the surrounding maps if visible (9 possible)
 	void draw();
 
 	void setViewportSize(float width, float height);
-	void setPosition(int x, int y);
+	void setPosition(utl::Vector2f& pos);
 
-	bool isLoaded() {return currentMap->isLoaded();}
+	bool isLoaded() {return maps.size();}
 
 private:
-	void loadMap(TileMap* map, const std::string& mapName, TileMap::TextureMode textureMode = TileMap::TextureMode::Map, TileMap::RenderMode tileMode = TileMap::RenderMode::Batch);
-
 	//draws chunks
-	void drawMap();
+	void drawMaps();
+	void drawMap(TileMap* map, utl::Direction dir, TileMap* refMap = nullptr, int tilesOffset = 0);
 	//draws separate tiles
 	void drawTiles();
 
@@ -59,27 +62,48 @@ private:
 	//for map
 	int getTile(unsigned int x, unsigned int y, unsigned int layer, TileMap* map);
 	int getChunk(unsigned int x, unsigned int y, unsigned int layer, TileMap* map);
-	
-	//every map is generated an ID
-	std::unordered_map<std::string, int> mapID;
-	
+
 	//tiles fit on screen
 	unsigned int tileFit_x = (1920.f / 64.f) + 2; // +2 for transitioning tiles
 	unsigned int tileFit_y = (1080.f / 64.f) + 2; // +2 for transitioning tiles
 
-	utl::Vector2i cameraPosition {utl::Vector2i(0,0)};
+	utl::Vector2f cameraPosition {utl::Vector2f(0,0)};
 	TileMap::TextureMode textureMode = TileMap::TextureMode::Map;
-	TileMap::RenderMode tileMode = TileMap::RenderMode::Batch;
+	TileMap::RenderMode renderMode = TileMap::RenderMode::Batch;
 
 	///default
 	sf::RenderWindow& window;
 	ResourceManager& resourceManager;
 
-	//holds map
-	TileMap maps[2];
-	TileMap* currentMap;
-	TileMap* nextMap;
+	//every map is generated an ID
+	int mapCount = 0;
+	std::unordered_map<std::string, int> mapID;
+	std::vector<int> activeMaps;
+	std::vector<TileMap> maps;
+	//used to allow functions to remain void
+	TileMap* lastMap = nullptr;
+	
+	int currentMapID = -1;
 
+	bool mapLoaded(const std::string& mapName)
+	{
+		return mapID.count(mapName) && std::find(activeMaps.begin(), activeMaps.end(), mapID.at(mapName)) != activeMaps.end();
+	}
+	TileMap* getMap(const std::string& mapName)
+	{
+		return mapLoaded(mapName) ? getMap(mapID.at(mapName)) : nullptr;
+	}
+	TileMap* getMap(int mapID)
+	{
+		for(auto& map : maps)
+		{
+			if(map.getID() == mapID)
+			{
+				return &map;
+			}
+		}
+		return nullptr;
+	}
 	friend class TileEngine_Editor;
 };
 
