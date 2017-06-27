@@ -39,7 +39,7 @@ void TileEngine::loadMap(const std::string& mapName)
 }
 
 
-void TileEngine::closeMap()
+void TileEngine::closeMaps()
 {
 	for(auto& map : maps)
 	{
@@ -220,7 +220,13 @@ void TileEngine::drawMap(TileMap* map, utl::Direction dir, TileMap* refMap, int 
 
 void TileEngine::drawTiles()
 {
-	/*
+	//TODO draw border maps
+	TileMap* currentMap = getMap(currentMapID);
+	if(currentMap == nullptr)
+	{
+		return;
+	}
+
 	//find boundaries
 	int drawMin_x = (cameraPosition.x / 64.f) - (0.5 * tileFit_x) - (currentMap->getMaxTileSize_x() - 1);
 	int drawMin_y = (cameraPosition.y / 64.f) - (0.5 * tileFit_y) - (currentMap->getMaxTileSize_y() - 1);
@@ -269,7 +275,6 @@ void TileEngine::drawTiles()
 			}
 		}
 	}
-	 * */
 }
 void TileEngine::setViewportSize(float width, float height)
 {
@@ -279,6 +284,7 @@ void TileEngine::setViewportSize(float width, float height)
 
 void TileEngine::setPosition(utl::Vector2f& pos)
 {
+	cameraPosition = pos;
 	if(currentMapID == -1)
 	{
 		return;

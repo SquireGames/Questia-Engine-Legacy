@@ -24,15 +24,13 @@ public:
 	void closeMap();
 	
 	void setViewportSize(float width, float height) {tileEngine.setViewportSize(width, height);}
-	//TODO fix
-	//void setPosition(int x, int y) {tileEngine.setPosition(utl::Vector2f(x, y));}
+	void setPosition(int x, int y);
 	bool isLoaded() {return tileEngine.isLoaded();}
-	void draw(){drawMap();}
 
 	///gets called instead of base class
 	void loadMap(const std::string& mapName);
 	//draws map with sprites
-	void drawMap();
+	void draw();
 	//draws out all tiles
 	void drawTiles(sf::Font& font);
 	//only draws specific layers (transparency out of 100)
@@ -76,7 +74,7 @@ private:
 	TileEngine& tileEngine;
 
 	//stores all tiles for drawing
-	std::vector<std::pair<std::string, std::vector<Tile*> > > sortedTiles;
+	std::vector<std::pair<std::string, std::vector<Tile*>>> sortedTiles;
 
 	//grid
 	sf::VertexArray gridLines;

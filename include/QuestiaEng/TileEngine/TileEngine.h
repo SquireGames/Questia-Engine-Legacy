@@ -41,7 +41,7 @@ public:
 	//just loads map data
 	void loadMapData();
 
-	void closeMap();
+	void closeMaps();
 
 	//draws the surrounding maps if visible (9 possible)
 	void draw();
@@ -71,7 +71,6 @@ private:
 	TileMap::TextureMode textureMode = TileMap::TextureMode::Map;
 	TileMap::RenderMode renderMode = TileMap::RenderMode::Batch;
 
-	///default
 	sf::RenderWindow& window;
 	ResourceManager& resourceManager;
 

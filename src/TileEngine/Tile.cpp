@@ -11,14 +11,19 @@ void Tile::setTexture(const std::string& filePath)
 {
 	//TODO add multiple nested folder support
 	std::vector<std::string> tileSourceDir = utl::separateString(filePath, '/');
-	source = filePath;
+	texture = filePath;
 	display = (filePath.size() > 28) ? filePath.substr(23) : filePath;
-	
+
 	if(tileSourceDir.size() >= 6)
 	{
 		folder   = tileSourceDir[4];
 		tileName = tileSourceDir[5];
 	}
+}
+
+void Tile::setSource(const std::string& filePath)
+{
+	source = filePath;
 }
 
 void Tile::setDisplay(const std::string& filePath)
@@ -54,7 +59,8 @@ int Tile::getSize_x() const {return tileSize.x;}
 int Tile::getSize_y() const {return tileSize.y;}
 int Tile::getRotate() const {return degrees;}
 char Tile::getFlip() const {return flip;}
-const std::string& Tile::getTexturePath() const {return source;}
+const std::string& Tile::getTexturePath() const {return texture;}
+const std::string& Tile::getSource() const {return source;}
 const std::string& Tile::getDisplay() const {return display;}
 const std::string& Tile::getFolder() const {return folder;}
 const std::string& Tile::getTileName() const {return tileName;}
@@ -71,7 +77,7 @@ utl::IntRect& Tile::getCollisionRect()
 void Tile::loadSprite()
 {
 	//setTexture()
-	tileSprite.setTexture(resourceManager.getTexture(source));
+	tileSprite.setTexture(resourceManager.getTexture(texture));
 	tileTransform = tileSprite.getTransform();
 	//setSize()
 	tileTransform.scale((64.f / tileSprite.getLocalBounds().width) * tileSize.x, (64.f / tileSprite.getLocalBounds().height) * tileSize.y);

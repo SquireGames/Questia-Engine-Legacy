@@ -18,40 +18,60 @@ void TileEngine_Editor::createMap(const std::string& mapName, unsigned int width
 
 void TileEngine_Editor::loadMap(const std::string& mapName)
 {
-	/*
-	*tileEngine.currentMap = std::move(SV_TileEngine(resourceManager).openMap(mapName, window, TileMap::TextureMode::All, TileMap::RenderMode::Sprite));
+	//sprite rendering to allow easy tile modification
+	tileEngine.setMode(TileMap::TextureMode::All, TileMap::RenderMode::Sprite);
+
+	if(tileEngine.mapLoaded(mapName))
+	{
+		return;
+	}
+
+	//create the map
+	tileEngine.maps.emplace_back(std::move(SV_TileEngine(resourceManager).openMap(mapName, window, tileEngine.textureMode, tileEngine.renderMode)));
+	TileMap* map = &tileEngine.maps.back();
+
+	int mapID = ++tileEngine.mapCount;
+	map->setID(mapID);
+
+	tileEngine.activeMaps.push_back(mapID);
+	tileEngine.mapID[mapName] = mapID;
+
+	if(tileEngine.maps.size() == 1)
+	{
+		tileEngine.currentMapID = mapID;
+	}
 
 	//2 vertices
-	gridLines.resize((tileEngine.currentMap->getWidth() + 1) * 2 + ((tileEngine.currentMap->getHeight() + 1) * 2));
+	gridLines.resize((map->getWidth() + 1) * 2 + ((map->getHeight() + 1) * 2));
 	//vertex count
 	unsigned int vertexCount = 0;
 	//vertex
 	sf::Vertex vertex;
 	vertex.color = sf::Color::Black;
 	//horizontal lines
-	for(unsigned int it = 0; it != (tileEngine.currentMap->getHeight() + 1); it++)
+	for(unsigned int it = 0; it != (map->getHeight() + 1); it++)
 	{
 		vertex.position = sf::Vector2f(0, it * 64);
 		gridLines[vertexCount] = vertex;
 		vertexCount++;
-		vertex.position = sf::Vector2f(tileEngine.currentMap->getWidth() * 64, it * 64);
+		vertex.position = sf::Vector2f(map->getWidth() * 64, it * 64);
 		gridLines[vertexCount] = vertex;
 		vertexCount++;
 	}
 	//vertical lines
-	for(unsigned int it = 0; it != (tileEngine.currentMap->getWidth() + 1); it++)
+	for(unsigned int it = 0; it != (map->getWidth() + 1); it++)
 	{
 		vertex.position = sf::Vector2f(it * 64, 0);
 		gridLines[vertexCount] = vertex;
 		vertexCount++;
-		vertex.position = sf::Vector2f(it * 64, tileEngine.currentMap->getHeight() * 64);
+		vertex.position = sf::Vector2f(it * 64, map->getHeight() * 64);
 		gridLines[vertexCount] = vertex;
 		vertexCount++;
 	}
 
 	//iterate through tiles, sort by folders
 	sortedTiles.clear();
-	for(auto& it : tileEngine.currentMap->getTileKey())
+	for(auto& it : map->getTileKey())
 	{
 		Tile& tile = it.second;
 		const std::string& folder = tile.getFolder();
@@ -59,12 +79,18 @@ void TileEngine_Editor::loadMap(const std::string& mapName)
 		std::pair<std::string, std::vector<Tile*> >& tileDir = getFolder(folder);
 		tileDir.second.push_back(&tile);
 	}
-	 * */
 }
 void TileEngine_Editor::closeMap()
 {
-	tileEngine.closeMap();
+	tileEngine.closeMaps();
 	sortedTiles.clear();
+	gridLines.clear();
+}
+
+void TileEngine_Editor::setPosition(int x, int y)
+{
+	utl::Vector2f pos = utl::Vector2f(x, y);
+	tileEngine.setPosition(pos);
 }
 
 std::pair<std::string, std::vector<Tile*> >& TileEngine_Editor::getFolder(const std::string& dir)
@@ -81,7 +107,7 @@ std::pair<std::string, std::vector<Tile*> >& TileEngine_Editor::getFolder(const 
 	return sortedTiles.back();
 }
 
-void TileEngine_Editor::drawMap()
+void TileEngine_Editor::draw()
 {
 	tileEngine.drawTiles();
 }
@@ -118,10 +144,15 @@ void TileEngine_Editor::drawTiles(sf::Font& font)
 
 void TileEngine_Editor::drawLayer(int layer, int transparency)
 {
-	/*
+	TileMap* map = tileEngine.getMap(tileEngine.currentMapID);
+	if(map == nullptr)
+	{
+		return;
+	}
+
 	//find boundaries
-	int drawMin_x = (tileEngine.cameraPosition.x / 64.f) - (0.5 * tileEngine.tileFit_x) - (tileEngine.currentMap->getMaxTileSize_x() - 1);
-	int drawMin_y = (tileEngine.cameraPosition.y / 64.f) - (0.5 * tileEngine.tileFit_y) - (tileEngine.currentMap->getMaxTileSize_y() - 1);
+	int drawMin_x = (tileEngine.cameraPosition.x / 64.f) - (0.5 * tileEngine.tileFit_x) - (map->getMaxTileSize_x() - 1);
+	int drawMin_y = (tileEngine.cameraPosition.y / 64.f) - (0.5 * tileEngine.tileFit_y) - (map->getMaxTileSize_y() - 1);
 	int drawMax_x = (tileEngine.cameraPosition.x / 64.f) + (0.5 * tileEngine.tileFit_x);
 	int drawMax_y = (tileEngine.cameraPosition.y / 64.f) + (0.5 * tileEngine.tileFit_y);
 
@@ -134,13 +165,13 @@ void TileEngine_Editor::drawLayer(int layer, int transparency)
 	{
 		drawMin_y = 0;
 	}
-	if(drawMax_x > ((int)tileEngine.currentMap->getWidth()-1))
+	if(drawMax_x > ((int)map->getWidth()-1))
 	{
-		drawMax_x = (tileEngine.currentMap->getWidth()-1);
+		drawMax_x = (map->getWidth()-1);
 	}
-	if(drawMax_y > ((int)tileEngine.currentMap->getHeight()-1))
+	if(drawMax_y > ((int)map->getHeight()-1))
 	{
-		drawMax_y = (tileEngine.currentMap->getHeight()-1);
+		drawMax_y = (map->getHeight()-1);
 	}
 
 	//changed transparency list
@@ -152,13 +183,13 @@ void TileEngine_Editor::drawLayer(int layer, int transparency)
 		for(int tileIt_y = drawMin_y; tileIt_y <= drawMax_y; tileIt_y++)
 		{
 			//get tile index and id
-			const int& currentTileIndex = tileEngine.currentMap->getTileMap()[tileEngine.getTile(tileIt_x, tileIt_y, layer, tileEngine.currentMap)];
+			const int& currentTileIndex = map->getTileMap()[tileEngine.getTile(tileIt_x, tileIt_y, layer, map)];
 
 			//make sure its visible
 			if(currentTileIndex != 0)
 			{
 				//get actual tile
-				Tile& currentTile = tileEngine.currentMap->getTileKey().at(currentTileIndex);
+				Tile& currentTile = map->getTileKey().at(currentTileIndex);
 
 				//change transparency if tile not yet changed
 				if(std::find(modifiedTiles.begin(), modifiedTiles.end(), currentTileIndex) == modifiedTiles.end())
@@ -173,43 +204,47 @@ void TileEngine_Editor::drawLayer(int layer, int transparency)
 			}
 		}
 	}
-	 * */
 }
 
 void TileEngine_Editor::overrideMap()
 {
-	/*
-	saveFile.saveMap(tileEngine.currentMap->getName(),
-	                 tileEngine.currentMap->getTileMap(),
-	                 tileEngine.currentMap->getWidth(),
-	                 tileEngine.currentMap->getHeight(),
-	                 tileEngine.currentMap->getLayers(),
-	                 tileEngine.currentMap->getTileKey());
-					  * */
+	TileMap* map = tileEngine.getMap(tileEngine.currentMapID);
+	if(map == nullptr)
+	{
+		return;
+	}
+	saveFile.saveMap(map);
 }
 
 void TileEngine_Editor::replaceTile(int newTile, int x, int y, int layer)
 {
-	/*
-	if((x >= 0  && x < (int)tileEngine.currentMap->getWidth())
-	        && (y >= 0 && y < (int)tileEngine.currentMap->getHeight())
-	        && (layer >= 0 && layer < (int)tileEngine.currentMap->getLayers())
-			&& newTile != -7)
+	TileMap* map = tileEngine.getMap(tileEngine.currentMapID);
+	if(map == nullptr)
 	{
-		tileEngine.currentMap->getTileMap().at(tileEngine.getTile(x, y, layer, tileEngine.currentMap)) = newTile;
+		return;
 	}
-	 * */
+
+	if((x >= 0  && x < (int)map->getWidth())
+	        && (y >= 0 && y < (int)map->getHeight())
+	        && (layer >= 0 && layer < (int)map->getLayers())
+	        && newTile != -7)
+	{
+		map->getTileMap().at(tileEngine.getTile(x, y, layer, map)) = newTile;
+	}
 }
 
 void TileEngine_Editor::resetTileAlpha()
 {
-	/*
-	for(auto& it : tileEngine.currentMap->getTileKey())
+	TileMap* map = tileEngine.getMap(tileEngine.currentMapID);
+	if(map == nullptr)
+	{
+		return;
+	}
+	for(auto& it : map->getTileKey())
 	{
 		Tile& tile = it.second;
 		tile.setTransparency(100);
 	}
-	 * */
 }
 
 void TileEngine_Editor::drawGridLines()
@@ -269,8 +304,12 @@ void TileEngine_Editor::hoverSpan(int x, int y, int size_x, int size_y)
 
 Tile* TileEngine_Editor::getTile_tileState(int x, int y)
 {
-	/*
-	for(auto& it : tileEngine.currentMap->getTileKey())
+	TileMap* map = tileEngine.getMap(tileEngine.currentMapID);
+	if(map == nullptr)
+	{
+		return nullptr;
+	}
+	for(auto& it : map->getTileKey())
 	{
 		Tile& tile = it.second;
 		if(tile.isInTile(x, y))
@@ -279,13 +318,17 @@ Tile* TileEngine_Editor::getTile_tileState(int x, int y)
 		}
 	}
 	return nullptr;
-	 * */
 }
 
 int TileEngine_Editor::getTileID(const std::string& source)
 {
-	/*
-	for(auto& tile : tileEngine.currentMap->getTileKey())
+	TileMap* map = tileEngine.getMap(tileEngine.currentMapID);
+	if(map == nullptr)
+	{
+		//TODO log error
+		return -1;
+	}
+	for(auto& tile : map->getTileKey())
 	{
 		if(tile.second.getDisplay() == source)
 		{
@@ -294,22 +337,41 @@ int TileEngine_Editor::getTileID(const std::string& source)
 	}
 	//TODO log error
 	return -1;
-	 * */
 }
 
 unsigned int TileEngine_Editor::getMapWidth()
 {
-	//return tileEngine.currentMap->getWidth();
+	TileMap* map = tileEngine.getMap(tileEngine.currentMapID);
+	if(map == nullptr)
+	{
+		return 0;
+	}
+	return map->getWidth();
 }
 unsigned int TileEngine_Editor::getMapHeight()
 {
-	//return tileEngine.currentMap->getHeight();
+	TileMap* map = tileEngine.getMap(tileEngine.currentMapID);
+	if(map == nullptr)
+	{
+		return 0;
+	}
+	return map->getHeight();
 }
 unsigned int TileEngine_Editor::getMapLayers()
 {
-	//return tileEngine.currentMap->getLayers();
+	TileMap* map = tileEngine.getMap(tileEngine.currentMapID);
+	if(map == nullptr)
+	{
+		return 0;
+	}
+	return map->getLayers();
 }
 void TileEngine_Editor::changeMapName(const std::string& newName)
 {
-	//tileEngine.currentMap->setName(newName);
+	TileMap* map = tileEngine.getMap(tileEngine.currentMapID);
+	if(map == nullptr)
+	{
+		return;
+	}
+	map->setName(newName);
 }

@@ -20,6 +20,8 @@ public:
 
 	//saves filePath and directory, and sets as display and texture path
 	void setTexture(const std::string& filePath);
+	//used to save tile after loading it
+	void setSource(const std::string& filePath);
 	//just sets the display name for the tile
 	void setDisplay(const std::string& filePath);
 	//texture size in tiles
@@ -33,6 +35,7 @@ public:
 	void setFlip(char direction);
 	
 	const std::string& getTexturePath() const;
+	const std::string& getSource() const;
 	const std::string& getDisplay() const;
 	const std::string& getFolder() const;
 	const std::string& getTileName() const;
@@ -70,6 +73,7 @@ private:
 
 	//for editor
 	std::string display = "Missing Texture";
+	std::string texture = "Media/Image/Game/Tiles/Debug/Missing.png";
 	std::string source = "Media/Image/Game/Tiles/Debug/Missing.png";
 	std::string folder;
 	std::string tileName;
@@ -81,7 +85,6 @@ private:
 	sf::Transform moveTransform;
 
 	utl::IntRect collisionRect = utl::IntRect(0,0,-1,-1);
-
 };
 
 

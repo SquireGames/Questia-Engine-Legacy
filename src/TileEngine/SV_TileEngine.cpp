@@ -17,9 +17,9 @@ TileMap SV_TileEngine::openMap(const std::string& mapName, sf::RenderWindow& win
 	TileMap mapData;
 
 	//make sure directory exists
-	if(!utl::doesExist(utl::conjoinString({"Maps/", mapName})))
+	if(!utl::doesExist("Data/Maps/" + mapName))
 	{
-		throw std::runtime_error(utl::conjoinString({"ERROR: Reading map- Maps/", mapName, " <Utl/SaveFile/SV_TileEngine.cpp>"}));
+		throw std::runtime_error("ERROR: Reading map- Data/Maps/" + mapName + " <Utl/SaveFile/SV_TileEngine.cpp>");
 		return mapData;
 	}
 
@@ -29,7 +29,7 @@ TileMap SV_TileEngine::openMap(const std::string& mapName, sf::RenderWindow& win
 
 	//reads mapInfo file
 	SaveFile sv_mapInfo;
-	sv_mapInfo.setFilePath("Maps/" + mapName + "/mapInfo.txt");
+	sv_mapInfo.setFilePath("Data/Maps/" + mapName + "/mapInfo.txt");
 	sv_mapInfo.readFile();
 	mapData.setWidth(utl::toInt(sv_mapInfo.getItem(name_width)));
 	mapData.setHeight(utl::toInt(sv_mapInfo.getItem(name_height)));
@@ -46,7 +46,7 @@ TileMap SV_TileEngine::openMap(const std::string& mapName, sf::RenderWindow& win
 	unsigned int totalTiles = mapData.getWidth() * mapData.getHeight() * mapData.getLayers();
 
 	//get all tile textures locations
-	std::vector <std::pair <int, std::string> > tileLocations = getTileLocations("Maps/" + mapName, textureMode);
+	std::vector <std::pair <int, std::string> > tileLocations = getTileLocations("Data/Maps/" + mapName, textureMode);
 
 	///load tile textures and info into resourceManager, tileData into tileStorage
 	loadTiles(tileLocations, mapData, window, mapName);
@@ -57,7 +57,7 @@ TileMap SV_TileEngine::openMap(const std::string& mapName, sf::RenderWindow& win
 	std::fill(mapData.getTileMap().begin(), mapData.getTileMap().end(), 0);
 	//open map file
 	SaveFile saveFile_map;
-	saveFile_map.setFilePath("Maps/" + mapName + "/map.txt");
+	saveFile_map.setFilePath("Data/Maps/" + mapName + "/map.txt");
 	saveFile_map.readFile();
 	//get tiles saved in map
 	std::vector <std::string> tileVector = saveFile_map.getItemKeyList();
@@ -441,6 +441,7 @@ void SV_TileEngine::loadTiles(std::vector <std::pair <int, std::string>>& tileLo
 			//TODO make sure there is defined behavior for new Tile
 			mapTiles.emplace(tileID, Tile(window, resourceManager));
 			mapTiles.at(tileID).setTexture(filePath);
+			mapTiles.at(tileID).setSource(filePath);
 		}
 	}
 	//appends to loop while iterating over it
@@ -467,6 +468,7 @@ void SV_TileEngine::loadTiles(std::vector <std::pair <int, std::string>>& tileLo
 					mapTiles.emplace(++largestID, Tile(window, resourceManager));
 					tileLocations.push_back(std::make_pair(largestID, pngPath));
 					mapTiles.at(largestID).setTexture(pngPath);
+					mapTiles.at(largestID).setSource(filePath);
 					continue;
 				}
 			}
@@ -497,6 +499,7 @@ void SV_TileEngine::loadTiles(std::vector <std::pair <int, std::string>>& tileLo
 						mapTiles.emplace(++largestID, Tile(window, resourceManager));
 						tileLocations.push_back(std::make_pair(largestID, fileTransform.second));
 						mapTiles.at(largestID).setTexture(fileTransform.second);
+						mapTiles.at(largestID).setSource(fileTransform.second);
 						break;
 					}
 				}
@@ -530,6 +533,7 @@ void SV_TileEngine::loadTiles(std::vector <std::pair <int, std::string>>& tileLo
 			{
 				mapTiles.emplace(tileID, Tile(window, resourceManager));
 				tile = &mapTiles.at(tileID);
+				tile->setSource(filePath);
 			}
 
 			//load data from text file
@@ -641,7 +645,7 @@ void SV_TileEngine::loadTiles(std::vector <std::pair <int, std::string>>& tileLo
 
 void SV_TileEngine::saveMap(TileMap* map)
 {
-	if(!utl::doesExist("Maps/" + map->getName()))
+	if(!utl::doesExist("Data/Maps/" + map->getName()))
 	{
 		return;
 	}
@@ -652,7 +656,7 @@ void SV_TileEngine::saveMap(TileMap* map)
 	unsigned int height = map->getHeight();
 	unsigned int layers = map->getLayers();
 
-	std::string filePath = "Maps/" + map->getName();
+	std::string filePath = "Data/Maps/" + map->getName();
 
 	//create info file
 	SaveFile sv_mapInfo;
@@ -701,7 +705,7 @@ void SV_TileEngine::saveMap(TileMap* map)
 		}
 		else
 		{
-			sv_tilesUsed.saveItem(std::to_string(currentTileID), tilePairs.at(tileID).getTexturePath());
+			sv_tilesUsed.saveItem(std::to_string(currentTileID), tilePairs.at(tileID).getSource());
 			newTileNumbers[tileID] = currentTileID;
 			currentTileID++;
 		}
@@ -744,7 +748,7 @@ void SV_TileEngine::saveMap(TileMap* map)
 bool SV_TileEngine::createMap(const std::string& mapName, unsigned int width, unsigned int height, unsigned int layers)
 {
 	//file paths
-	std::string filePath = "Maps/" + mapName;
+	std::string filePath = "Data/Maps/" + mapName;
 
 	//make sure not to override any other map
 	if(utl::doesExist(filePath))
@@ -758,12 +762,20 @@ bool SV_TileEngine::createMap(const std::string& mapName, unsigned int width, un
 	}
 
 	//create info file
-	SaveFile saveFile_mapInfo;
-	saveFile_mapInfo.setFilePath(filePath + file_mapInfo);
-	saveFile_mapInfo.saveItem(name_width, width);
-	saveFile_mapInfo.saveItem(name_height, height);
-	saveFile_mapInfo.saveItem(name_layers, layers);
-	saveFile_mapInfo.writeFile();
+	SaveFile sv_mapInfo;
+	sv_mapInfo.setFilePath(filePath + file_mapInfo);
+	sv_mapInfo.saveItem(name_width, width);
+	sv_mapInfo.saveItem(name_height, height);
+	sv_mapInfo.saveItem(name_layers, layers);
+	sv_mapInfo.saveItem(name_map_up, std::string());
+	sv_mapInfo.saveItem(name_map_down, std::string());
+	sv_mapInfo.saveItem(name_map_left, std::string());
+	sv_mapInfo.saveItem(name_map_right, std::string());
+	sv_mapInfo.saveItem(name_map_up_off, 0);
+	sv_mapInfo.saveItem(name_map_down_off, 0);
+	sv_mapInfo.saveItem(name_map_left_off, 0);
+	sv_mapInfo.saveItem(name_map_right_off, 0);
+	sv_mapInfo.writeFile();
 
 	//create tile info file
 	SaveFile saveFile_tilesUsed;
