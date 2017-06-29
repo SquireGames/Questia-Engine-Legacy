@@ -39,11 +39,14 @@ public:
 	void loadMap(const std::string& mapName);
 
 	//just loads map data
+	//TODO implement
 	void loadMapData();
 
+	void closeMap(const std::string& mapName);
+	void closeMap(int mapID);
 	void closeMaps();
 
-	//draws the surrounding maps if visible (9 possible)
+	//draws the surrounding maps if visible (9 maximum)
 	void draw();
 
 	void setViewportSize(float width, float height);
@@ -52,14 +55,9 @@ public:
 	bool isLoaded() {return maps.size();}
 
 private:
-	//draws chunks
-	void drawMaps();
-	void drawMap(TileMap* map, utl::Direction dir, TileMap* refMap = nullptr, int tilesOffset = 0);
-	//draws separate tiles
-	void drawTiles();
+	//draws single map
+	void drawMap(TileMap* map, utl::Direction dir, TileMap* refMap = nullptr, int tilesOffset = 0, int otherAxisOffset = 0);
 
-	///helpers
-	//for map
 	int getTile(unsigned int x, unsigned int y, unsigned int layer, TileMap* map);
 	int getChunk(unsigned int x, unsigned int y, unsigned int layer, TileMap* map);
 
@@ -74,15 +72,21 @@ private:
 	sf::RenderWindow& window;
 	ResourceManager& resourceManager;
 
-	//every map is generated an ID
-	int mapCount = 0;
+	//every map is generated an ID, derived from mapCount
 	std::unordered_map<std::string, int> mapID;
 	std::vector<int> activeMaps;
 	std::vector<TileMap> maps;
 	//used to allow functions to remain void
 	TileMap* lastMap = nullptr;
-	
+
+	int mapCount = 0;
 	int currentMapID = -1;
+	
+	//used by TileEngine_Editor to only draw specific layers at a specific transparency
+	//only utilized in TileMap::RenderMode::Sprite
+	int layerSelection = -1;
+	//transparency out of 100
+	int layerTransparency = -1;
 
 	bool mapLoaded(const std::string& mapName)
 	{
@@ -102,6 +106,11 @@ private:
 			}
 		}
 		return nullptr;
+	}
+	//used to move camera without changing maps
+	void setCamera(utl::Vector2f pos)
+	{
+		cameraPosition = pos;
 	}
 	friend class TileEngine_Editor;
 };

@@ -81,6 +81,7 @@ private:
 	StateManager stateManager;
 
 	//input buffer
+	//saved as a char32_t to easily only allow ranges of unicode
 	std::u32string inputBuffer;
 	
 	//most recent input method (e.g. for key binding)

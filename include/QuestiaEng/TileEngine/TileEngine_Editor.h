@@ -13,6 +13,10 @@
 
 #include "QuestiaEng/TileEngine/SV_TileEngine.h"
 
+//TODO Add undo/redo
+//TODO Add resize
+//TODO Add copy + paste
+
 class TileEngine_Editor
 {
 public:
@@ -40,6 +44,7 @@ public:
 	void overrideMap();
 
 	void showGridLines(bool gridLinesVisible) {isGridDrawn = gridLinesVisible;}
+	void showBorderMaps(bool gridMapVisible)  {areBordersDrawn = gridMapVisible;}
 
 	//reset transparency
 	void resetTileAlpha();
@@ -48,9 +53,6 @@ public:
 	unsigned int getMapWidth();
 	unsigned int getMapHeight();
 	unsigned int getMapLayers();
-
-	//debugging
-	void displayTiles();
 
 	//hover over
 	void hoverTile(int x, int y);
@@ -64,11 +66,22 @@ public:
 	int getTileID(const std::string& source);
 
 	void replaceTile(int newTile, int x, int y, int layer);
+	
+	//border map editing
+	void changeBorderMap(utl::Direction dir, const std::string& mapName);
+	void changeBorderOffset(utl::Direction dir, int offset);
 
 	//for 'save as' functionality
 	void changeMapName(const std::string& newName);
+	
+	//debugging
+	//prints all tiles and folders into consolse
+	void printTiles();
 
 private:
+	//gets all tiles in a folder
+	std::pair<std::string, std::vector<Tile*> >& getFolder(const std::string& dir);
+
 	sf::RenderWindow& window;
 	ResourceManager& resourceManager;
 	TileEngine& tileEngine;
@@ -76,16 +89,12 @@ private:
 	//stores all tiles for drawing
 	std::vector<std::pair<std::string, std::vector<Tile*>>> sortedTiles;
 
-	//grid
 	sf::VertexArray gridLines;
-
-	//save
+	
 	SV_TileEngine saveFile;
 	
-	bool isGridDrawn = true;
-
-	//helpers
-	std::pair<std::string, std::vector<Tile*> >& getFolder(const std::string& dir);
+	bool isGridDrawn = true;	
+	bool areBordersDrawn = true;	
 };
 
 #endif // TILEENGINE_EDITOR_H

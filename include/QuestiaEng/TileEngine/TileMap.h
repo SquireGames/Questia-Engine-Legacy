@@ -36,7 +36,7 @@ public:
 	void setBorderMapOffset(int tileOffset, utl::Direction dir);
 
 	std::string const& getName()		{return tileMapName;}
-	int getID()							{return id;}
+	int getID()	const					{return id;}
 	std::vector <int>& getTileMap() 	{return tileMap;}
 	std::map <int, Tile>& getTileKey() 	{return tileKey;}
 	unsigned int getWidth() 			{return width;}

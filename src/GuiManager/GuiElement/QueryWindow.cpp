@@ -200,7 +200,7 @@ void QueryWindow::handleInput(std::u32string& input)
 				{
 				case QueryType::Input_int:
 					{
-						if(utl::isNumber(std::to_string(input[0])) && input[0] != '-')
+						if(utl::isNumber(std::to_string(input[0])))
 						{
 							selectedQuery.queryAnswer += input[0];
 						}

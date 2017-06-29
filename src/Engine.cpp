@@ -20,7 +20,10 @@ Engine::Engine(std::string windowName, int tickRate, int majorVersion, int minor
 	//options
 	saveFile()
 	//window
-	, window(sf::VideoMode(1920, 1080), windowName, saveFile.getWindowMode() ? sf::Style::Default : sf::Style::Fullscreen)
+	, window(sf::VideoMode(1920, 1080), 
+			 windowName, 
+			 saveFile.getWindowMode() ? sf::Style::Default : sf::Style::Fullscreen, 
+			 sf::ContextSettings(0,0,16))
 	, size_real(sf::VideoMode::getDesktopMode().width, sf::VideoMode::getDesktopMode().height)
 	, size_scaled(window.getSize().x, window.getSize().y)
 	, scaleFactor(1920.f / static_cast<float>(size_scaled.x), 1080.f / static_cast<float>(size_scaled.y))

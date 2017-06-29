@@ -3,8 +3,6 @@
 TileEngine::TileEngine(sf::RenderWindow& window, ResourceManager& resourceManager):
 	window(window)
 	, resourceManager(resourceManager)
-	//, currentMap(&maps[0])
-	//, nextMap(&maps[1])
 {
 
 }
@@ -24,7 +22,7 @@ void TileEngine::loadMap(const std::string& mapName)
 	}
 
 	//create the map
-	maps.emplace_back(std::move(SV_TileEngine(resourceManager).openMap(mapName, window, textureMode, renderMode)));
+	maps.emplace_back(SV_TileEngine(resourceManager).openMap(mapName, window, textureMode, renderMode));
 	lastMap = &maps.back();
 
 	lastMap->setID(++mapCount);
@@ -48,24 +46,10 @@ void TileEngine::closeMaps()
 	maps.clear();
 	activeMaps.clear();
 	mapID.clear();
+	currentMapID = -1;
 }
 
 void TileEngine::draw()
-{
-	switch(renderMode)
-	{
-	case TileMap::RenderMode::Batch:
-		drawMaps();
-		break;
-	case TileMap::RenderMode::Sprite:
-		drawTiles();
-		break;
-	case TileMap::RenderMode::Unloaded:
-		break;
-	}
-}
-
-void TileEngine::drawMaps()
 {
 	if(currentMapID == -1)
 	{
@@ -86,7 +70,7 @@ void TileEngine::drawMaps()
 		case utl::Direction::right:
 			{
 				const std::string& borderMapName = currentMap->getBorderMap(dir);
-				if(borderMapName.size() > 0)
+				if(borderMapName.size() > 1)
 				{
 					TileMap* borderMap = getMap(borderMapName);
 					if(borderMap == nullptr)
@@ -100,25 +84,25 @@ void TileEngine::drawMaps()
 					{
 						const std::string& leftMap  = borderMap->getBorderMap(utl::Direction::left);
 						const std::string& rightMap = borderMap->getBorderMap(utl::Direction::right);
-						if(leftMap.size() > 0)
+						if(leftMap.size() > 1)
 						{
 							TileMap* sideMap = getMap(leftMap);
-							if(borderMap == nullptr)
+							if(sideMap == nullptr)
 							{
 								loadMap(leftMap);
 								sideMap = lastMap;
 							}
-							drawMap(sideMap, dir, currentMap, currentMap->getBorderMapOffset(dir) - sideMap->getWidth());
+							drawMap(sideMap, dir, currentMap, (-1 * sideMap->getWidth()) + currentMap->getBorderMapOffset(dir), borderMap->getBorderMapOffset(utl::Direction::left));
 						}
-						if(rightMap.size() > 0)
+						if(rightMap.size() > 1)
 						{
 							TileMap* sideMap = getMap(rightMap);
-							if(borderMap == nullptr)
+							if(sideMap == nullptr)
 							{
 								loadMap(rightMap);
 								sideMap = lastMap;
 							}
-							drawMap(sideMap, dir, currentMap, currentMap->getBorderMapOffset(dir) + sideMap->getWidth());
+							drawMap(sideMap, dir, currentMap, borderMap->getWidth() + currentMap->getBorderMapOffset(dir), borderMap->getBorderMapOffset(utl::Direction::right));
 						}
 					}
 				}
@@ -130,7 +114,7 @@ void TileEngine::drawMaps()
 	}
 }
 
-void TileEngine::drawMap(TileMap* map, utl::Direction dir, TileMap* refMap, int tilesOffset)
+void TileEngine::drawMap(TileMap* map, utl::Direction dir, TileMap* refMap, int tilesOffset, int otherAxisOffset)
 {
 	utl::Vector2f cameraDisplacement = utl::Vector2f(0,0);
 	if(refMap != nullptr)
@@ -141,18 +125,22 @@ void TileEngine::drawMap(TileMap* map, utl::Direction dir, TileMap* refMap, int 
 			break;
 		case utl::Direction::right:
 			cameraDisplacement.x -= refMap->getWidth() * 64.f;
+			cameraDisplacement.x -= otherAxisOffset * 64.f;
 			cameraDisplacement.y -= tilesOffset * 64.f;
 			break;
 		case utl::Direction::left:
 			cameraDisplacement.x += map->getWidth() * 64.f;
+			cameraDisplacement.x -= otherAxisOffset * 64.f;
 			cameraDisplacement.y -= tilesOffset * 64.f;
 			break;
 		case utl::Direction::up:
 			cameraDisplacement.y += refMap->getHeight() * 64.f;
+			cameraDisplacement.y -= otherAxisOffset * 64.f;
 			cameraDisplacement.x -= tilesOffset * 64.f;
 			break;
 		case utl::Direction::down:
 			cameraDisplacement.y -= refMap->getHeight() * 64.f;
+			cameraDisplacement.y -= otherAxisOffset * 64.f;
 			cameraDisplacement.x -= tilesOffset * 64.f;
 			break;
 		default:
@@ -188,94 +176,91 @@ void TileEngine::drawMap(TileMap* map, utl::Direction dir, TileMap* refMap, int 
 
 	if(!((drawMin_x > ((int)map->getWidth()-1)) || (drawMax_x < 0) || (drawMin_y > ((int)map->getHeight()-1)) || (drawMax_y < 0)))
 	{
-		//floor rounds down to find correct chunk
-		int minChunk_x = std::floor((float)drawMin_x / 8.f);
-		int minChunk_y = std::floor((float)drawMin_y / 8.f);
-		int maxChunk_x = std::floor((float)drawMax_x / 8.f);
-		int maxChunk_y = std::floor((float)drawMax_y / 8.f);
-
-		//draw chunks
-		const unsigned int layers = map->getLayers();
-		sf::Texture* atlasPtr = map->getAtlas();
-		std::vector<sf::VertexArray> const& chunkVector = map->getChunks();
-
-		sf::View view = window.getView();
-		sf::View transView = window.getView();
-		transView.move(cameraDisplacement.sf());
-		window.setView(transView);
-
-		for(unsigned int it_layer = 0; it_layer < layers; it_layer++)
+		switch(map->getRenderMode())
 		{
-			for(int it_y = minChunk_y; it_y < (maxChunk_y + 1); it_y++)
+		case TileMap::RenderMode::Batch:
 			{
-				for(int it_x = minChunk_x; it_x < (maxChunk_x + 1); it_x++)
+				//floor rounds down to find correct chunk
+				int minChunk_x = std::floor((float)drawMin_x / 8.f);
+				int minChunk_y = std::floor((float)drawMin_y / 8.f);
+				int maxChunk_x = std::floor((float)drawMax_x / 8.f);
+				int maxChunk_y = std::floor((float)drawMax_y / 8.f);
+
+				//draw chunks
+				const unsigned int layers = map->getLayers();
+				sf::Texture* atlasPtr = map->getAtlas();
+				std::vector<sf::VertexArray> const& chunkVector = map->getChunks();
+
+				sf::View view = window.getView();
+				sf::View transView = window.getView();
+				transView.move(cameraDisplacement.sf());
+				window.setView(transView);
+
+				for(unsigned int it_layer = 0; it_layer < layers; it_layer++)
 				{
-					window.draw(chunkVector[getChunk(it_x, it_y, it_layer, map)], atlasPtr);
+					for(int it_y = minChunk_y; it_y < (maxChunk_y + 1); it_y++)
+					{
+						for(int it_x = minChunk_x; it_x < (maxChunk_x + 1); it_x++)
+						{
+							window.draw(chunkVector[getChunk(it_x, it_y, it_layer, map)], atlasPtr);
+						}
+					}
 				}
+				window.setView(view);
 			}
+			break;
+		case TileMap::RenderMode::Sprite:
+			{
+				const unsigned int firstLayer = (layerSelection == -1) ?  0 : layerSelection;
+				const unsigned int endLayer = (layerSelection == -1) ? map->getLayers() : (layerSelection + 1);
+
+				sf::View view = window.getView();
+				sf::View transView = window.getView();
+				transView.move(cameraDisplacement.sf());
+				window.setView(transView);
+
+				//holds all changed transparencies
+				std::vector<int> modifiedTiles = std::vector<int>();
+
+				for(unsigned int layerIt = firstLayer; layerIt < endLayer; layerIt++)
+				{
+					for(int tileIt_y = drawMin_y; tileIt_y <= drawMax_y; tileIt_y++)
+					{
+						for(int tileIt_x = drawMin_x; tileIt_x <= drawMax_x; tileIt_x++)
+						{
+							//get tile index and id
+							const int& currentTileIndex = map->getTileMap()[getTile(tileIt_x, tileIt_y, layerIt, map)];
+
+							//make sure its visible
+							if(currentTileIndex != 0)
+							{
+								//get actual tile
+								Tile& currentTile = map->getTileKey().at(currentTileIndex);
+
+								//change transparency if tile not yet changed
+								if(layerTransparency != -1 && std::find(modifiedTiles.begin(), modifiedTiles.end(), currentTileIndex) == modifiedTiles.end())
+								{
+									modifiedTiles.push_back(currentTileIndex);
+									currentTile.setTransparency(layerTransparency);
+								}
+
+								//move to correct position and draw
+								currentTile.setPosition(tileIt_x, tileIt_y);
+								currentTile.drawTile();
+							}
+						}
+					}
+				}
+				window.setView(view);
+			}
+			break;
+		default:
+			break;
 		}
-		window.setView(view);
+
 	}
 }
 
-void TileEngine::drawTiles()
-{
-	//TODO draw border maps
-	TileMap* currentMap = getMap(currentMapID);
-	if(currentMap == nullptr)
-	{
-		return;
-	}
-
-	//find boundaries
-	int drawMin_x = (cameraPosition.x / 64.f) - (0.5 * tileFit_x) - (currentMap->getMaxTileSize_x() - 1);
-	int drawMin_y = (cameraPosition.y / 64.f) - (0.5 * tileFit_y) - (currentMap->getMaxTileSize_y() - 1);
-	int drawMax_x = (cameraPosition.x / 64.f) + (0.5 * tileFit_x);
-	int drawMax_y = (cameraPosition.y / 64.f) + (0.5 * tileFit_y);
-
-	//make sure they are within the map
-	if(drawMin_x < 0)
-	{
-		drawMin_x = 0;
-	}
-	if(drawMin_y < 0)
-	{
-		drawMin_y = 0;
-	}
-	if(drawMax_x > ((int)currentMap->getWidth()-1))
-	{
-		drawMax_x = (currentMap->getWidth()-1);
-	}
-	if(drawMax_y > ((int)currentMap->getHeight()-1))
-	{
-		drawMax_y = (currentMap->getHeight()-1);
-	}
-
-	//iterate map
-	const unsigned int layers = currentMap->getLayers();
-	for(unsigned int layerIt = 0; layerIt < layers; layerIt++)
-	{
-		for(int tileIt_y = drawMin_y; tileIt_y <= drawMax_y; tileIt_y++)
-		{
-			for(int tileIt_x = drawMin_x; tileIt_x <= drawMax_x; tileIt_x++)
-			{
-				//get tile index and id
-				const int& currentTileIndex = currentMap->getTileMap()[getTile(tileIt_x, tileIt_y, layerIt, currentMap)];
-
-				//make sure its visible
-				if(currentTileIndex != 0)
-				{
-					//get actual tile
-					Tile& currentTile = currentMap->getTileKey().at(currentTileIndex);
-
-					//move to correct position and draw
-					currentTile.setPosition(tileIt_x, tileIt_y);
-					currentTile.drawTile();
-				}
-			}
-		}
-	}
-}
 void TileEngine::setViewportSize(float width, float height)
 {
 	tileFit_x = (width  / 64.f) + 2; // +2 for transitioning tiles
@@ -291,11 +276,21 @@ void TileEngine::setPosition(utl::Vector2f& pos)
 	}
 
 	if(pos.y < 0
-	        && getMap(currentMapID)->getBorderMap(utl::Direction::up).size() > 0)
+	        && getMap(currentMapID)->getBorderMap(utl::Direction::up).size() > 1)
 	{
 		if(!mapLoaded(getMap(currentMapID)->getBorderMap(utl::Direction::up)))
 		{
-			loadMap(getMap(currentMapID)->getBorderMap(utl::Direction::up));
+			TileMap* currentMap = getMap(currentMapID);
+			//load new map
+			loadMap(currentMap->getBorderMap(utl::Direction::up));
+			//close old ones
+			TileMap* downMap = getMap(currentMap->getBorderMap(utl::Direction::down));
+			if(downMap != nullptr)
+			{
+				closeMap(downMap->getBorderMap(utl::Direction::left));
+				closeMap(downMap->getBorderMap(utl::Direction::right));
+				closeMap(downMap->getName());
+			}
 		}
 		pos.y += (float)getMap(currentMapID)->getHeight() * 64.f;
 		pos.x -= (float)getMap(currentMapID)->getBorderMapOffset(utl::Direction::up) * 64.f;
@@ -303,11 +298,21 @@ void TileEngine::setPosition(utl::Vector2f& pos)
 		cameraPosition = pos;
 	}
 	else if(pos.y > getMap(currentMapID)->getHeight() * 64
-	        && getMap(currentMapID)->getBorderMap(utl::Direction::down).size() > 0)
+	        && getMap(currentMapID)->getBorderMap(utl::Direction::down).size() > 1)
 	{
 		if(!mapLoaded(getMap(currentMapID)->getBorderMap(utl::Direction::down)))
 		{
-			loadMap(getMap(currentMapID)->getBorderMap(utl::Direction::down));
+			TileMap* currentMap = getMap(currentMapID);
+			//load new map
+			loadMap(currentMap->getBorderMap(utl::Direction::down));
+			//close old ones
+			TileMap* upMap = getMap(currentMap->getBorderMap(utl::Direction::up));
+			if(upMap != nullptr)
+			{
+				closeMap(upMap->getBorderMap(utl::Direction::left));
+				closeMap(upMap->getBorderMap(utl::Direction::right));
+				closeMap(upMap->getName());
+			}
 		}
 		pos.y -= (float)getMap(currentMapID)->getHeight() * 64.f;
 		pos.x -= (float)getMap(currentMapID)->getBorderMapOffset(utl::Direction::down) * 64.f;
@@ -315,11 +320,29 @@ void TileEngine::setPosition(utl::Vector2f& pos)
 		cameraPosition = pos;
 	}
 	else if(pos.x < 0
-	        && getMap(currentMapID)->getBorderMap(utl::Direction::left).size() > 0)
+	        && getMap(currentMapID)->getBorderMap(utl::Direction::left).size() > 1)
 	{
 		if(!mapLoaded(getMap(currentMapID)->getBorderMap(utl::Direction::left)))
 		{
-			loadMap(getMap(currentMapID)->getBorderMap(utl::Direction::left));
+			TileMap* currentMap = getMap(currentMapID);
+			//load new map
+			loadMap(currentMap->getBorderMap(utl::Direction::left));
+			//close old ones
+			TileMap* rightMap = getMap(currentMap->getBorderMap(utl::Direction::right));
+			TileMap* upMap = getMap(currentMap->getBorderMap(utl::Direction::up));
+			TileMap* downMap = getMap(currentMap->getBorderMap(utl::Direction::down));
+			if(rightMap != nullptr)
+			{
+				closeMap(rightMap->getName());
+			}
+			if(upMap != nullptr)
+			{
+				closeMap(upMap->getBorderMap(utl::Direction::right));
+			}
+			if(downMap != nullptr)
+			{
+				closeMap(downMap->getBorderMap(utl::Direction::right));
+			}
 		}
 		pos.x += (float)getMap(currentMapID)->getWidth() * 64.f;
 		pos.y -= (float)getMap(currentMapID)->getBorderMapOffset(utl::Direction::left) * 64.f;
@@ -327,11 +350,29 @@ void TileEngine::setPosition(utl::Vector2f& pos)
 		cameraPosition = pos;
 	}
 	else if(pos.x > getMap(currentMapID)->getWidth() * 64
-	        && getMap(currentMapID)->getBorderMap(utl::Direction::right).size() > 0)
+	        && getMap(currentMapID)->getBorderMap(utl::Direction::right).size() > 1)
 	{
 		if(!mapLoaded(getMap(currentMapID)->getBorderMap(utl::Direction::right)))
 		{
-			loadMap(getMap(currentMapID)->getBorderMap(utl::Direction::right));
+			TileMap* currentMap = getMap(currentMapID);
+			//load new map
+			loadMap(currentMap->getBorderMap(utl::Direction::right));
+			//close old ones
+			TileMap* leftMap = getMap(currentMap->getBorderMap(utl::Direction::left));
+			TileMap* upMap = getMap(currentMap->getBorderMap(utl::Direction::up));
+			TileMap* downMap = getMap(currentMap->getBorderMap(utl::Direction::down));
+			if(leftMap != nullptr)
+			{
+				closeMap(leftMap->getName());
+			}
+			if(upMap != nullptr)
+			{
+				closeMap(upMap->getBorderMap(utl::Direction::left));
+			}
+			if(downMap != nullptr)
+			{
+				closeMap(downMap->getBorderMap(utl::Direction::left));
+			}
 		}
 		pos.x -= (float)getMap(currentMapID)->getWidth() * 64.f;
 		pos.y -= (float)getMap(currentMapID)->getBorderMapOffset(utl::Direction::right) * 64.f;
@@ -348,4 +389,45 @@ int TileEngine::getTile(unsigned int x, unsigned int y, unsigned int layer, Tile
 int TileEngine::getChunk(unsigned int x, unsigned int y, unsigned int layer, TileMap* map)
 {
 	return x + (map->getChunks_x() * y) + (layer * map->getChunks_x() * map->getChunks_y());
+}
+
+void TileEngine::closeMap(const std::string& mapName)
+{
+	if(mapName.size() > 1)
+	{
+		closeMap(mapID.at(mapName));
+	}
+}
+void TileEngine::closeMap(int mapID)
+{
+	int idCount = 0;
+	for(auto id : activeMaps)
+	{
+		if(id == mapID)
+		{
+			idCount++;
+		}
+	}
+	if(idCount == 0)
+	{
+		return;
+	}
+	else if(idCount == 1)
+	{
+		//TODO reuse vector slots rather than erasing
+		auto idIt = std::find(activeMaps.begin(), activeMaps.end(), mapID);
+		std::iter_swap(idIt, activeMaps.end() - 1);
+		activeMaps.erase(activeMaps.end() - 1);
+		
+		auto it = std::find_if(maps.begin(), maps.end(), [&](const TileMap& map)
+		{
+			return map.getID() == mapID;
+		});
+		std::iter_swap(it, maps.end() - 1);
+		maps.erase(maps.end() - 1);
+	}
+	else
+	{
+		activeMaps.erase(std::find(activeMaps.begin(), activeMaps.end(), mapID));
+	}
 }

@@ -21,25 +21,32 @@ void TileEngine_Editor::loadMap(const std::string& mapName)
 	//sprite rendering to allow easy tile modification
 	tileEngine.setMode(TileMap::TextureMode::All, TileMap::RenderMode::Sprite);
 
+	//load enough space for the maximum possible maps loaded, as pointers
+	//to tileMap objects are used (sortedTiles) and resizing invalidates pointers
+	tileEngine.maps.reserve(9);
+
 	if(tileEngine.mapLoaded(mapName))
 	{
 		return;
 	}
 
 	//create the map
-	tileEngine.maps.emplace_back(std::move(SV_TileEngine(resourceManager).openMap(mapName, window, tileEngine.textureMode, tileEngine.renderMode)));
+	tileEngine.maps.emplace_back(SV_TileEngine(resourceManager).openMap(mapName, window, tileEngine.textureMode, tileEngine.renderMode));
 	TileMap* map = &tileEngine.maps.back();
 
-	int mapID = ++tileEngine.mapCount;
-	map->setID(mapID);
+	tileEngine.mapCount++;
+	int newMapID = tileEngine.mapCount;
+	map->setID(newMapID);
 
-	tileEngine.activeMaps.push_back(mapID);
-	tileEngine.mapID[mapName] = mapID;
+	tileEngine.activeMaps.push_back(newMapID);
+	tileEngine.mapID[mapName] = newMapID;
 
-	if(tileEngine.maps.size() == 1)
+	if(tileEngine.maps.size() != 1)
 	{
-		tileEngine.currentMapID = mapID;
+		return;
 	}
+
+	tileEngine.currentMapID = newMapID;
 
 	//2 vertices
 	gridLines.resize((map->getWidth() + 1) * 2 + ((map->getHeight() + 1) * 2));
@@ -89,8 +96,7 @@ void TileEngine_Editor::closeMap()
 
 void TileEngine_Editor::setPosition(int x, int y)
 {
-	utl::Vector2f pos = utl::Vector2f(x, y);
-	tileEngine.setPosition(pos);
+	tileEngine.setCamera(utl::Vector2f(x, y));
 }
 
 std::pair<std::string, std::vector<Tile*> >& TileEngine_Editor::getFolder(const std::string& dir)
@@ -109,7 +115,18 @@ std::pair<std::string, std::vector<Tile*> >& TileEngine_Editor::getFolder(const 
 
 void TileEngine_Editor::draw()
 {
-	tileEngine.drawTiles();
+	if(areBordersDrawn)
+	{
+		tileEngine.draw();
+		return;
+	}
+
+	TileMap* map = tileEngine.getMap(tileEngine.currentMapID);
+	if(map == nullptr)
+	{
+		return;
+	}
+	tileEngine.drawMap(map, utl::Direction::none);
 }
 
 void TileEngine_Editor::drawTiles(sf::Font& font)
@@ -123,7 +140,7 @@ void TileEngine_Editor::drawTiles(sf::Font& font)
 
 		int distance_x = 0;
 
-		std::string& tileDir = sortedTiles[it_folder].first;
+		const std::string& tileDir = sortedTiles[it_folder].first;
 		std::vector<Tile*>& tiles = sortedTiles[it_folder].second;
 
 		sf::Text dirText = sf::Text(tileDir, font, 20);
@@ -131,79 +148,24 @@ void TileEngine_Editor::drawTiles(sf::Font& font)
 		dirText.setPosition(0, (64 * (it_folder + traversedHeight)) - 30);
 		window.draw(dirText);
 
-		for(unsigned int it_tile = 0; it_tile != tiles.size(); it_tile++)
+		for(unsigned int it_tile = 0; it_tile < tiles.size(); it_tile++)
 		{
-			Tile& tile = *tiles[it_tile];
-			previousTileHeightMax = std::max(previousTileHeightMax, tile.getSize_y());
-			tile.setPosition(distance_x, it_folder + traversedHeight);
-			distance_x += tile.getSize_x();
-			tile.drawTile();
+			Tile* tile = &*tiles[it_tile];
+			previousTileHeightMax = std::max(previousTileHeightMax, tile->getSize_y());
+			tile->setPosition(distance_x, it_folder + traversedHeight);
+			distance_x += tile->getSize_x();
+			tile->drawTile();
 		}
 	}
 }
 
 void TileEngine_Editor::drawLayer(int layer, int transparency)
 {
-	TileMap* map = tileEngine.getMap(tileEngine.currentMapID);
-	if(map == nullptr)
-	{
-		return;
-	}
-
-	//find boundaries
-	int drawMin_x = (tileEngine.cameraPosition.x / 64.f) - (0.5 * tileEngine.tileFit_x) - (map->getMaxTileSize_x() - 1);
-	int drawMin_y = (tileEngine.cameraPosition.y / 64.f) - (0.5 * tileEngine.tileFit_y) - (map->getMaxTileSize_y() - 1);
-	int drawMax_x = (tileEngine.cameraPosition.x / 64.f) + (0.5 * tileEngine.tileFit_x);
-	int drawMax_y = (tileEngine.cameraPosition.y / 64.f) + (0.5 * tileEngine.tileFit_y);
-
-	//make sure they are within the map
-	if(drawMin_x < 0)
-	{
-		drawMin_x = 0;
-	}
-	if(drawMin_y < 0)
-	{
-		drawMin_y = 0;
-	}
-	if(drawMax_x > ((int)map->getWidth()-1))
-	{
-		drawMax_x = (map->getWidth()-1);
-	}
-	if(drawMax_y > ((int)map->getHeight()-1))
-	{
-		drawMax_y = (map->getHeight()-1);
-	}
-
-	//changed transparency list
-	std::vector<int> modifiedTiles = std::vector<int>();
-
-	//iterate map
-	for(int tileIt_x = drawMin_x; tileIt_x <= drawMax_x; tileIt_x++)
-	{
-		for(int tileIt_y = drawMin_y; tileIt_y <= drawMax_y; tileIt_y++)
-		{
-			//get tile index and id
-			const int& currentTileIndex = map->getTileMap()[tileEngine.getTile(tileIt_x, tileIt_y, layer, map)];
-
-			//make sure its visible
-			if(currentTileIndex != 0)
-			{
-				//get actual tile
-				Tile& currentTile = map->getTileKey().at(currentTileIndex);
-
-				//change transparency if tile not yet changed
-				if(std::find(modifiedTiles.begin(), modifiedTiles.end(), currentTileIndex) == modifiedTiles.end())
-				{
-					modifiedTiles.push_back(currentTileIndex);
-					currentTile.setTransparency(transparency);
-				}
-
-				//move to correct position and draw
-				currentTile.setPosition(tileIt_x, tileIt_y);
-				currentTile.drawTile();
-			}
-		}
-	}
+	tileEngine.layerSelection = layer;
+	tileEngine.layerTransparency = transparency;
+	tileEngine.draw();
+	tileEngine.layerSelection = -1;
+	tileEngine.layerTransparency = -1;
 }
 
 void TileEngine_Editor::overrideMap()
@@ -245,6 +207,25 @@ void TileEngine_Editor::resetTileAlpha()
 		Tile& tile = it.second;
 		tile.setTransparency(100);
 	}
+
+	for(int i = 0; i < 4; i++)
+	{
+		utl::Direction dir = (i == 0) ? utl::Direction::up :
+		                     (i == 1) ? utl::Direction::right :
+		                     (i == 2) ? utl::Direction::down :
+		                     utl::Direction::left;
+
+		TileMap* borderMap = tileEngine.getMap(map->getBorderMap(dir));
+		if(borderMap == nullptr)
+		{
+			continue;
+		}
+		for(auto& it : borderMap->getTileKey())
+		{
+			Tile& tile = it.second;
+			tile.setTransparency(100);
+		}
+	}
 }
 
 void TileEngine_Editor::drawGridLines()
@@ -255,7 +236,7 @@ void TileEngine_Editor::drawGridLines()
 	}
 }
 
-void TileEngine_Editor::displayTiles()
+void TileEngine_Editor::printTiles()
 {
 	std::cout << "-------------------" << std::endl;
 
@@ -373,5 +354,96 @@ void TileEngine_Editor::changeMapName(const std::string& newName)
 	{
 		return;
 	}
+	TileMap* newMap = tileEngine.getMap(newName);
+	if(newMap != nullptr)
+	{
+		return;
+	}
+
+	tileEngine.mapCount++;
+	int newMapID = tileEngine.mapCount;
+	map->setID(newMapID);
+	tileEngine.activeMaps.push_back(newMapID);
+	tileEngine.mapID[newName] = newMapID;
+
 	map->setName(newName);
+}
+
+void TileEngine_Editor::changeBorderMap(utl::Direction dir, const std::string& mapName)
+{
+	TileMap* map = tileEngine.getMap(tileEngine.currentMapID);
+	if(map == nullptr || mapName == map->getName())
+	{
+		return;
+	}
+
+	utl::Direction flipDir = (dir == utl::Direction::up) ? utl::Direction::down :
+	                         (dir == utl::Direction::down) ? utl::Direction::up :
+	                         (dir == utl::Direction::left) ? utl::Direction::right :
+	                         utl::Direction::left;
+
+	//change old bordering map to empty
+	const std::string& oldMapName = map->getBorderMap(dir);
+	if(oldMapName.size() > 1)
+	{
+		std::cout << oldMapName << std::endl;
+		TileMap* borderMap = tileEngine.getMap(oldMapName);
+		if(borderMap == nullptr)
+		{
+			tileEngine.loadMap(oldMapName);
+			borderMap = tileEngine.getMap(oldMapName);
+		}
+
+		borderMap->setBorderMapOffset(0, flipDir);
+		borderMap->setBorderMap(std::string(), flipDir);
+
+		saveFile.saveMap(borderMap);
+	}
+	tileEngine.closeMap(oldMapName);
+
+	map->setBorderMap(mapName, dir);
+	map->setBorderMapOffset(0, dir);
+
+	//change border of new map
+	if(mapName.size() > 1)
+	{
+		TileMap* borderMap = tileEngine.getMap(mapName);
+		if(borderMap == nullptr)
+		{
+			tileEngine.loadMap(mapName);
+			borderMap = tileEngine.getMap(mapName);
+		}
+		borderMap->setBorderMapOffset(0, flipDir);
+		borderMap->setBorderMap(map->getName(), flipDir);
+		saveFile.saveMap(borderMap);
+	}
+}
+
+void TileEngine_Editor::changeBorderOffset(utl::Direction dir, int offset)
+{
+	TileMap* map = tileEngine.getMap(tileEngine.currentMapID);
+	if(map == nullptr)
+	{
+		return;
+	}
+
+	map->setBorderMapOffset(offset, dir);
+
+	//change border of new map
+	const std::string& mapName = map->getBorderMap(dir);
+	if(mapName.size() > 1)
+	{
+		TileMap* borderMap = tileEngine.getMap(mapName);
+		if(borderMap == nullptr)
+		{
+			tileEngine.loadMap(mapName);
+			borderMap = tileEngine.getMap(mapName);
+		}
+		borderMap->setBorderMapOffset(-1 * offset,
+		                              (dir == utl::Direction::up) ? utl::Direction::down :
+		                              (dir == utl::Direction::down) ? utl::Direction::up :
+		                              (dir == utl::Direction::left) ? utl::Direction::right :
+		                              utl::Direction::left);
+		saveFile.saveMap(borderMap);
+	}
 }

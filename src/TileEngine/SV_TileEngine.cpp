@@ -742,6 +742,7 @@ void SV_TileEngine::saveMap(TileMap* map)
 		}
 	}
 	sv_map.writeFile();
+	std::cout << "Saved map: " << map->getName() << std::endl;
 }
 
 ///editor
