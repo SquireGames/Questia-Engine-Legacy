@@ -225,6 +225,27 @@ void TileEngine_Editor::resetTileAlpha()
 			Tile& tile = it.second;
 			tile.setTransparency(100);
 		}
+		if(dir == utl::Direction::up || dir == utl::Direction::down)
+		{
+			TileMap* leftMap = tileEngine.getMap(borderMap->getBorderMap(utl::Direction::left));
+			TileMap* rightMap = tileEngine.getMap(borderMap->getBorderMap(utl::Direction::right));
+			if(leftMap != nullptr)
+			{
+				for(auto& it : leftMap->getTileKey())
+				{
+					Tile& tile = it.second;
+					tile.setTransparency(100);
+				}
+			}
+			if(rightMap != nullptr)
+			{
+				for(auto& it : rightMap->getTileKey())
+				{
+					Tile& tile = it.second;
+					tile.setTransparency(100);
+				}
+			}
+		}
 	}
 }
 
