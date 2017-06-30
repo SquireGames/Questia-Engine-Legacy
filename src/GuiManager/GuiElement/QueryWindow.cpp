@@ -38,7 +38,7 @@ void QueryWindow::init(const std::string& windowName, GuiManager& guiManager, Gu
 	guiManager.setBtnAtr(button_windowBox, "windowSprite", gui::BtnAtrChar::size, std::make_pair(windowSize_x, windowSize_y));
 
 	//add queries
-	for(unsigned int it = 0; it != queryValues.size(); it++)
+	for(unsigned int it = 0; it < queryValues.size(); it++)
 	{
 		switch(queryValues.at(it).second.queryType)
 		{
@@ -200,7 +200,7 @@ void QueryWindow::handleInput(std::u32string& input)
 				{
 				case QueryType::Input_int:
 					{
-						if(utl::isNumber(std::to_string(input[0])))
+						if(utl::isNumber(std::string(1, input[0])))
 						{
 							selectedQuery.queryAnswer += input[0];
 						}
@@ -243,7 +243,7 @@ void QueryWindow::handleInput(std::u32string& input)
 
 void QueryWindow::update(MouseListener& mouse)
 {
-	if(mouse.isMouseReleased(ctr::Input::LMouse))
+	if(mouse.isMousePressed(ctr::Input::LMouse))
 	{
 		if(guiManager->isClicked(button_closeButton))
 		{

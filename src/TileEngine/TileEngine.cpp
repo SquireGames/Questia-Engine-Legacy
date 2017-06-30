@@ -92,7 +92,10 @@ void TileEngine::draw()
 								loadMap(leftMap);
 								sideMap = lastMap;
 							}
-							drawMap(sideMap, dir, currentMap, (-1 * sideMap->getWidth()) + currentMap->getBorderMapOffset(dir), borderMap->getBorderMapOffset(utl::Direction::left));
+							drawMap(sideMap, dir, currentMap
+							        , (-1 * sideMap->getWidth()) + currentMap->getBorderMapOffset(dir)
+							        , borderMap->getBorderMapOffset(utl::Direction::left)
+							        + ((dir == utl::Direction::down) ? 0 : -1 * (borderMap->getHeight() - sideMap->getHeight())));
 						}
 						if(rightMap.size() > 1)
 						{
@@ -102,7 +105,10 @@ void TileEngine::draw()
 								loadMap(rightMap);
 								sideMap = lastMap;
 							}
-							drawMap(sideMap, dir, currentMap, borderMap->getWidth() + currentMap->getBorderMapOffset(dir), borderMap->getBorderMapOffset(utl::Direction::right));
+							drawMap(sideMap, dir, currentMap
+							        , borderMap->getWidth() + currentMap->getBorderMapOffset(dir)
+							        , borderMap->getBorderMapOffset(utl::Direction::right)
+							        + ((dir == utl::Direction::down) ? 0 : -1 * (borderMap->getHeight() - sideMap->getHeight())));
 						}
 					}
 				}
@@ -134,7 +140,7 @@ void TileEngine::drawMap(TileMap* map, utl::Direction dir, TileMap* refMap, int 
 			cameraDisplacement.y -= tilesOffset * 64.f;
 			break;
 		case utl::Direction::up:
-			cameraDisplacement.y += refMap->getHeight() * 64.f;
+			cameraDisplacement.y += map->getHeight() * 64.f;
 			cameraDisplacement.y -= otherAxisOffset * 64.f;
 			cameraDisplacement.x -= tilesOffset * 64.f;
 			break;
@@ -211,6 +217,11 @@ void TileEngine::drawMap(TileMap* map, utl::Direction dir, TileMap* refMap, int 
 			break;
 		case TileMap::RenderMode::Sprite:
 			{
+				if(layerSelection >= (int)map->getLayers())
+				{
+					return;
+				}
+
 				const unsigned int firstLayer = (layerSelection == -1) ?  0 : layerSelection;
 				const unsigned int endLayer = (layerSelection == -1) ? map->getLayers() : (layerSelection + 1);
 
@@ -414,17 +425,21 @@ void TileEngine::closeMap(int mapID)
 	}
 	else if(idCount == 1)
 	{
+		resourceManager.kill(std::string("TILESTORAGE_") + getMap(mapID)->getName());
+
 		//TODO reuse vector slots rather than erasing
 		auto idIt = std::find(activeMaps.begin(), activeMaps.end(), mapID);
 		std::iter_swap(idIt, activeMaps.end() - 1);
 		activeMaps.erase(activeMaps.end() - 1);
-		
+
 		auto it = std::find_if(maps.begin(), maps.end(), [&](const TileMap& map)
 		{
 			return map.getID() == mapID;
 		});
 		std::iter_swap(it, maps.end() - 1);
 		maps.erase(maps.end() - 1);
+
+
 	}
 	else
 	{

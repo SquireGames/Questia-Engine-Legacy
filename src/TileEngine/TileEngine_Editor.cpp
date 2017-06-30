@@ -23,7 +23,7 @@ void TileEngine_Editor::loadMap(const std::string& mapName)
 
 	//load enough space for the maximum possible maps loaded, as pointers
 	//to tileMap objects are used (sortedTiles) and resizing invalidates pointers
-	tileEngine.maps.reserve(9);
+	tileEngine.maps.reserve(12);
 
 	if(tileEngine.mapLoaded(mapName))
 	{
@@ -360,12 +360,6 @@ void TileEngine_Editor::changeMapName(const std::string& newName)
 		return;
 	}
 
-	tileEngine.mapCount++;
-	int newMapID = tileEngine.mapCount;
-	map->setID(newMapID);
-	tileEngine.activeMaps.push_back(newMapID);
-	tileEngine.mapID[newName] = newMapID;
-
 	map->setName(newName);
 }
 
@@ -386,23 +380,24 @@ void TileEngine_Editor::changeBorderMap(utl::Direction dir, const std::string& m
 	const std::string& oldMapName = map->getBorderMap(dir);
 	if(oldMapName.size() > 1)
 	{
-		std::cout << oldMapName << std::endl;
 		TileMap* borderMap = tileEngine.getMap(oldMapName);
 		if(borderMap == nullptr)
 		{
 			tileEngine.loadMap(oldMapName);
 			borderMap = tileEngine.getMap(oldMapName);
 		}
-
-		borderMap->setBorderMapOffset(0, flipDir);
-		borderMap->setBorderMap(std::string(), flipDir);
-
+		if(borderMap->getBorderMap(flipDir) == map->getName())
+		{
+			borderMap->setBorderMapOffset(0, flipDir);
+			borderMap->setBorderMap(std::string(), flipDir);
+		}
 		saveFile.saveMap(borderMap);
 	}
 	tileEngine.closeMap(oldMapName);
 
 	map->setBorderMap(mapName, dir);
 	map->setBorderMapOffset(0, dir);
+	saveFile.saveMap(map);
 
 	//change border of new map
 	if(mapName.size() > 1)
@@ -428,6 +423,7 @@ void TileEngine_Editor::changeBorderOffset(utl::Direction dir, int offset)
 	}
 
 	map->setBorderMapOffset(offset, dir);
+	saveFile.saveMap(map);
 
 	//change border of new map
 	const std::string& mapName = map->getBorderMap(dir);
@@ -446,4 +442,24 @@ void TileEngine_Editor::changeBorderOffset(utl::Direction dir, int offset)
 		                              utl::Direction::left);
 		saveFile.saveMap(borderMap);
 	}
+}
+
+std::string TileEngine_Editor::getBorderMap(utl::Direction dir)
+{
+	TileMap* map = tileEngine.getMap(tileEngine.currentMapID);
+	if(map == nullptr)
+	{
+		return std::string();
+	}
+	return map->getBorderMap(dir);
+}
+
+std::string TileEngine_Editor::getMapName()
+{
+	TileMap* map = tileEngine.getMap(tileEngine.currentMapID);
+	if(map == nullptr)
+	{
+		return std::string();
+	}
+	return map->getName();
 }

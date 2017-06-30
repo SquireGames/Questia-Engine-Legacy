@@ -123,7 +123,6 @@ void SV_TileEngine::loadRenderData(TileMap& mapData)
 			}
 		}
 
-
 		//get chunk size
 		int remainder_x = mapData.getWidth() % 8;
 		int remainder_y = mapData.getHeight() % 8;
@@ -193,7 +192,7 @@ void SV_TileEngine::loadRenderData(TileMap& mapData)
 								const Tile& tileData = mapData.getTileKey().count(tileID) ? mapData.getTileKey().at(tileID) : mapData.getTileKey().at(-1);
 
 								//to prevent texture bleeding
-								float offset = 0.001;
+								float offset = 0.05;
 
 								//texture int rect
 								utl::IntRect texturePosition = tileData.texturePosition;
@@ -448,29 +447,18 @@ void SV_TileEngine::loadTiles(std::vector <std::pair <int, std::string>>& tileLo
 	for(unsigned int i = 0; i < tileLocations.size(); i++)
 	{
 		const std::string& filePath = tileLocations.at(i).second;
+		int id = tileLocations.at(i).first;
 		if(filePath.substr(filePath.size() - 4) == ".txt")
 		{
 			//see if there are any pngs to load to be overwritten
 			std::string pngPath = filePath.substr(0, filePath.size() - 4) + ".png";
 			if(utl::doesExist(pngPath))
 			{
-				bool isInTileLocs = false;
-				for(std::pair <int, std::string>& t : tileLocations)
-				{
-					if(t.second == pngPath)
-					{
-						isInTileLocs = true;
-						break;
-					}
-				}
-				if(!isInTileLocs)
-				{
-					mapTiles.emplace(++largestID, Tile(window, resourceManager));
-					tileLocations.push_back(std::make_pair(largestID, pngPath));
-					mapTiles.at(largestID).setTexture(pngPath);
-					mapTiles.at(largestID).setSource(filePath);
-					continue;
-				}
+				//if a tile was overwritten, there should never be a png source (filtered out in getTileLocations())
+				mapTiles.emplace(id, Tile(window, resourceManager));
+				mapTiles.at(id).setTexture(pngPath);
+				mapTiles.at(id).setSource(filePath);
+				continue;
 			}
 			//create any referenced textures if necessary
 			SaveFile sv_tileData(filePath);
@@ -600,9 +588,21 @@ void SV_TileEngine::loadTiles(std::vector <std::pair <int, std::string>>& tileLo
 
 				if(filePath.substr(filePath.size() - 4) == ".png")
 				{
-					if(!textureAtlas.addTexture(std::to_string(tileData.first), tileData.second))
+					if(!textureAtlas.addTexture(std::to_string(tileData.first), filePath))
 					{
 						std::cout << "TILEENGINE - Tile: '" << filePath << "' failed to load <Questia/TileEngine/SV_TileEngine.cpp>" << std::endl;
+					}
+				}
+				else if(filePath.substr(filePath.size() - 4) == ".txt")
+				{
+					std::string pngPath = filePath.substr(0, filePath.size() - 4) + ".png";
+					if(utl::doesExist(pngPath))
+					{
+						std::cout << "PNG PATH:" << pngPath << std::endl;
+						if(!textureAtlas.addTexture(std::to_string(tileData.first), pngPath))
+						{
+							std::cout << "TILEENGINE - Tile: '" << pngPath << "' failed to load <Questia/TileEngine/SV_TileEngine.cpp>" << std::endl;
+						}
 					}
 				}
 			}
@@ -616,7 +616,7 @@ void SV_TileEngine::loadTiles(std::vector <std::pair <int, std::string>>& tileLo
 				int id;
 				for(std::pair <int, std::string>& t : tileLocations)
 				{
-					if(t.second == tile.second.getTexturePath())
+					if(t.second == tile.second.getTexturePath() || t.second == tile.second.getSource())
 					{
 						isInTileLocs = true;
 						id = t.first;

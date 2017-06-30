@@ -9,8 +9,8 @@ GuiManager::GuiManager(sf::RenderWindow& window, ResourceManager& resourceManage
 	, resourceManager(resourceManager)
 	, mouseCoords(0,0)
 {
-	buttons.reserve(30);
-	visibleButtons.reserve(20);
+	buttons.reserve(60);
+	visibleButtons.reserve(50);
 	buttonIDs.clear();
 }
 
@@ -246,9 +246,10 @@ void GuiManager::createGroupFromTemplate(const std::string& groupName, const std
 	for(int it : templateIDs)
 	{
 		Button& btnTemplate = buttons.at(getPos(it));
+		std::pair<int, int> pos = btnTemplate.buttonPosition;
 		std::string btnName =  groupName + "__" + std::to_string(btnTemplate.buttonID);
 		Button& newBtn = copyButton(btnTemplate, btnName, btnTemplate.buttonID);
-		newBtn.setButton(gui::BtnChar::coords, btnTemplate.buttonPosition);
+		newBtn.setButton(gui::BtnChar::coords, pos);
 		
 		groupIDs.push_back(newBtn.buttonID);
 		
