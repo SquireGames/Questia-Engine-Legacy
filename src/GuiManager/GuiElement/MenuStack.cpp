@@ -38,20 +38,22 @@ void MenuStack::init(const std::string& stackName, int x, int y, GuiManager& gui
 
 	guiLoader.loadGui("menuStack");
 
-	guiManager.createList(stackName);
-	guiManager.setListTemplate("stackTemplate");
-	guiManager.setListSpacing(0, ((dir == utl::Direction::down) ? 24 : -24));
-	guiManager.setListPosition(std::make_pair(x, (dir == utl::Direction::down) ? y : (y - 24)));
+	GuiBuilder& guiBuilder = guiManager.edit();
+
+	guiBuilder.createList(stackName);
+	guiBuilder.setListTemplate("stackTemplate");
+	guiBuilder.setListSpacing(0, ((dir == utl::Direction::down) ? 24 : -24));
+	guiBuilder.setListPosition(std::make_pair(x, (dir == utl::Direction::down) ? y : (y - 24)));
 
 	//make all entries
 	for(unsigned int i = 0; i < entries.size(); i++)
 	{
 		std::string alias = entries[i].buttonName;
-		entries[i].buttonName = guiManager.getGroupEntry(guiManager.createListEntry(), "stackButtonTemplate");
-		guiManager.createAlias(alias, entries[i].buttonName);
-		guiManager.setBtnAtr(entries[i].buttonName, "buttonText", gui::BtnAtrChar::text, entries[i].entryText);
+		entries[i].buttonName = guiBuilder.getGroupEntry(guiBuilder.createListEntry(), "stackButtonTemplate");
+		guiBuilder.createAlias(alias, entries[i].buttonName);
+		guiBuilder.setBtnAtr(entries[i].buttonName, "buttonText", gui::BtnAtrChar::text, entries[i].entryText);
 	}
-	guiManager.setListAtr(listName, gui::BtnChar::isVisible, false);
+	guiBuilder.setListAtr(listName, gui::BtnChar::isVisible, false);
 }
 
 void MenuStack::handleInput(std::u32string& input)
@@ -79,7 +81,7 @@ void MenuStack::setActivity(bool active)
 	if(isStackActive != active)
 	{
 		isStackActive = active;
-		guiManager->setListAtr(listName, gui::BtnChar::isVisible, active);
+		guiManager->edit().setListAtr(listName, gui::BtnChar::isVisible, active);
 	}
 }
 

@@ -70,7 +70,7 @@ Engine::Engine(std::string windowName, int tickRate, int majorVersion, int minor
 	//set font and language
 	///TODO find better way to match fonts to languages
 	sf::Font font;
-	guiManager.setLang(saveFile.getLang());
+	guiManager.edit().setLang(saveFile.getLang());
 	if(saveFile.getLang() != "en")
 	{
 		font.loadFromFile("Media/Fonts/unifont-9.0.06.ttf");
@@ -82,7 +82,7 @@ Engine::Engine(std::string windowName, int tickRate, int majorVersion, int minor
 			font.loadFromFile("Media/Fonts/unifont-9.0.06.ttf");
 		}
 	}
-	guiManager.setFont(font);
+	guiManager.edit().setFont(font);
 
 	//allocate space for inputBuffer
 	inputBuffer.reserve(4);

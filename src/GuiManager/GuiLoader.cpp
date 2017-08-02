@@ -18,7 +18,9 @@ void GuiLoader::setGuiPack(const std::string& guiPack)
 
 void GuiLoader::loadGui(const std::string& gui)
 {
-	if(guiManager.isLoadedGuiPack(gui))
+	GuiBuilder& guiBuilder = guiManager.edit();
+	
+	if(guiBuilder.isLoadedGuiPack(gui))
 	{
 		return;
 	}
@@ -51,7 +53,7 @@ void GuiLoader::loadGui(const std::string& gui)
 
 				if(buttonAtr == "Text" && val.size() >= 3 && val.substr(0,2) == "T_")
 				{
-					uniText = guiManager.getText(val);
+					uniText = guiBuilder.getText(val);
 					isUniText = true;
 				}
 			}
@@ -65,19 +67,19 @@ void GuiLoader::loadGui(const std::string& gui)
 						if(commands == 3)
 						{
 							//create button name
-							guiManager.createButton(command[2]);
+							guiBuilder.createButton(command[2]);
 						}
 						else if(commands == 4)
 						{
 							if(utl::isNumber(command[3]))
 							{
 								//create button name layer
-								guiManager.createButton(command[2], utl::toInt(command[3]));
+								guiBuilder.createButton(command[2], utl::toInt(command[3]));
 							}
 							else
 							{
 								//create button copy original
-								guiManager.createButton(command[2], command[3]);
+								guiBuilder.createButton(command[2], command[3]);
 							}
 
 						}
@@ -87,19 +89,19 @@ void GuiLoader::loadGui(const std::string& gui)
 						if(commands == 3)
 						{
 							//create button-template name
-							guiManager.createButtonTemplate(command[2]);
+							guiBuilder.createButtonTemplate(command[2]);
 						}
 						else if(commands == 4)
 						{
 							if(utl::isNumber(command[3]))
 							{
 								//create button-template name layer
-								guiManager.createButtonTemplate(command[2], utl::toInt(command[3]));
+								guiBuilder.createButtonTemplate(command[2], utl::toInt(command[3]));
 							}
 							else
 							{
 								//create button-template copy original
-								guiManager.createButtonTemplate(command[2], command[3]);
+								guiBuilder.createButtonTemplate(command[2], command[3]);
 							}
 
 						}
@@ -109,41 +111,41 @@ void GuiLoader::loadGui(const std::string& gui)
 						if(commands == 4)
 						{
 							//create buttonAtr atrName atrType
-							guiManager.createBtnAtr(command[2], getBtnAtr(command[3]));
+							guiBuilder.createBtnAtr(command[2], getBtnAtr(command[3]));
 						}
 						else if(commands == 5)
 						{
 							//create buttonAtr buttonName atrName atrType
-							guiManager.createBtnAtr(command[2], command[3],  getBtnAtr(command[4]));
+							guiBuilder.createBtnAtr(command[2], command[3],  getBtnAtr(command[4]));
 						}
 					}
 					else if(command[1] == "Group")
 					{
 						//create group groupName
-						guiManager.createGroup(command[2]);
+						guiBuilder.createGroup(command[2]);
 					}
 					else if(command[1] == "GroupTemplate")
 					{
 						//create group-template template-name
-						guiManager.createGroupTemplate(command[2]);
+						guiBuilder.createGroupTemplate(command[2]);
 					}
 					else if(command[1] == "GroupFromTemplate")
 					{
 						if(commands == 4)
 						{
 							//create groupFromTemplate groupName templateName
-							guiManager.createGroupFromTemplate(command[2], command[3]);
+							guiBuilder.createGroupFromTemplate(command[2], command[3]);
 						}
 					}
 					else if(command[1] == "List")
 					{
 						//create list listName
-						guiManager.createList(command[2]);
+						guiBuilder.createList(command[2]);
 					}
 					else if(command[1] == "ListEntry")
 					{
 						//create listEntry listName
-						guiManager.createListEntry(command[2]);
+						guiBuilder.createListEntry(command[2]);
 					}
 				}
 				else if(command[0] == "set")
@@ -153,12 +155,12 @@ void GuiLoader::loadGui(const std::string& gui)
 						if(commands == 3)
 						{
 							//set ButtonLayer Layer
-							guiManager.setButtonLayer(utl::toInt(command[2]));
+							guiBuilder.setButtonLayer(utl::toInt(command[2]));
 						}
 						else if(commands == 4)
 						{
 							//set ButtonLayer Button Layer
-							guiManager.setButtonLayer(command[2], utl::toInt(command[3]));
+							guiBuilder.setButtonLayer(command[2], utl::toInt(command[3]));
 						}
 					}
 					else if(command[1] == "ListSpacing")
@@ -166,12 +168,12 @@ void GuiLoader::loadGui(const std::string& gui)
 						if(commands == 4)
 						{
 							//set ListSpacing Spacing
-							guiManager.setListSpacing(utl::toInt(command[2]), utl::toInt(command[3]));
+							guiBuilder.setListSpacing(utl::toInt(command[2]), utl::toInt(command[3]));
 						}
 						else if(commands == 5)
 						{
 							//set ListSpacing List Spacing
-							guiManager.setListSpacing(command[2], utl::toInt(command[3]), utl::toInt(command[4]));
+							guiBuilder.setListSpacing(command[2], utl::toInt(command[3]), utl::toInt(command[4]));
 						}
 					}
 					else if(command[1] == "ListTemplate")
@@ -179,12 +181,12 @@ void GuiLoader::loadGui(const std::string& gui)
 						if(commands == 3)
 						{
 							//set ListTemplate Template
-							guiManager.setListTemplate(command[2]);
+							guiBuilder.setListTemplate(command[2]);
 						}
 						else if(commands == 4)
 						{
 							//set ListTemplate List Template
-							guiManager.setListTemplate(command[2], command[3]);
+							guiBuilder.setListTemplate(command[2], command[3]);
 						}
 					}
 					else if(command[1] == "ListPosition")
@@ -192,12 +194,12 @@ void GuiLoader::loadGui(const std::string& gui)
 						if(commands == 4)
 						{
 							//set ListPosition x y
-							guiManager.setListPosition(std::make_pair(utl::toInt(command[2]), utl::toInt(command[3])));
+							guiBuilder.setListPosition(std::make_pair(utl::toInt(command[2]), utl::toInt(command[3])));
 						}
 						else if(commands == 5)
 						{
 							//set ListPosition List x y
-							guiManager.setListPosition(command[2], std::make_pair(utl::toInt(command[3]), utl::toInt(command[4])));
+							guiBuilder.setListPosition(command[2], std::make_pair(utl::toInt(command[3]), utl::toInt(command[4])));
 						}
 					}
 					else if(command[1] == "Button")
@@ -207,24 +209,24 @@ void GuiLoader::loadGui(const std::string& gui)
 							if(utl::isNumber(command[3]))
 							{
 								//set Button buttonCharacteristic int
-								guiManager.setButton(getBtnChar(command[2]), utl::toInt(command[3]));
+								guiBuilder.setButton(getBtnChar(command[2]), utl::toInt(command[3]));
 							}
 							else if(getBtnChar(command[2]) == gui::BtnChar::isVisible)
 							{
 								//set Button buttonCharacteristic bool
 								if(command[3] == "t")
 								{
-									guiManager.setButton(getBtnChar(command[2]), true);
+									guiBuilder.setButton(getBtnChar(command[2]), true);
 								}
 								else
 								{
-									guiManager.setButton(getBtnChar(command[2]), false);
+									guiBuilder.setButton(getBtnChar(command[2]), false);
 								}
 							}
 							else
 							{
 								//set Button buttonCharacteristic string
-								guiManager.setButton(getBtnChar(command[2]), command[3]);
+								guiBuilder.setButton(getBtnChar(command[2]), command[3]);
 							}
 						}
 						else if(commands == 5)
@@ -232,29 +234,29 @@ void GuiLoader::loadGui(const std::string& gui)
 							if(utl::isNumber(command[3]) && utl::isNumber(command[4]))
 							{
 								//set Button buttonCharacteristic int int
-								guiManager.setButton(getBtnChar(command[2]), std::make_pair(utl::toInt(command[3]), utl::toInt(command[4])));
+								guiBuilder.setButton(getBtnChar(command[2]), std::make_pair(utl::toInt(command[3]), utl::toInt(command[4])));
 							}
 							else if(utl::isNumber(command[4]))
 							{
 								//set Button buttonName buttonCharacteristic int
-								guiManager.setButton(command[2], getBtnChar(command[3]), utl::toInt(command[4]));
+								guiBuilder.setButton(command[2], getBtnChar(command[3]), utl::toInt(command[4]));
 							}
 							else if(getBtnChar(command[3]) == gui::BtnChar::isVisible)
 							{
 								//set Button buttonName buttonCharacteristic bool
 								if(command[4] == "t")
 								{
-									guiManager.setButton(command[2],getBtnChar(command[3]), true);
+									guiBuilder.setButton(command[2],getBtnChar(command[3]), true);
 								}
 								else
 								{
-									guiManager.setButton(command[2],getBtnChar(command[3]), false);
+									guiBuilder.setButton(command[2],getBtnChar(command[3]), false);
 								}
 							}
 							else
 							{
 								//set Button ButtonName buttonCharacteristic String
-								guiManager.setButton(command[2],getBtnChar(command[3]), command[4]);
+								guiBuilder.setButton(command[2],getBtnChar(command[3]), command[4]);
 							}
 						}
 						else if(commands == 6)
@@ -262,7 +264,7 @@ void GuiLoader::loadGui(const std::string& gui)
 							if(utl::isNumber(command[4]) && utl::isNumber(command[5]))
 							{
 								//set Button ButtonName buttonCharacteristic int int
-								guiManager.setButton(command[2],getBtnChar(command[3]), std::make_pair(utl::toInt(command[4]), utl::toInt(command[5])));
+								guiBuilder.setButton(command[2],getBtnChar(command[3]), std::make_pair(utl::toInt(command[4]), utl::toInt(command[5])));
 							}
 						}
 					}
@@ -273,35 +275,35 @@ void GuiLoader::loadGui(const std::string& gui)
 							if(utl::isNumber(command[3]))
 							{
 								//set BtnAtr AtrCharacteristic int
-								guiManager.setBtnAtr(getBtnAtrChar(command[2]), utl::toInt(command[3]));
+								guiBuilder.setBtnAtr(getBtnAtrChar(command[2]), utl::toInt(command[3]));
 							}
 							else if(getBtnChar(command[2]) == gui::BtnChar::isVisible)
 							{
 								//set BtnAtr AtrCharacteristic bool
 								if(command[3] == "t")
 								{
-									guiManager.setBtnAtr(getBtnAtrChar(command[2]), true);
+									guiBuilder.setBtnAtr(getBtnAtrChar(command[2]), true);
 								}
 								else
 								{
-									guiManager.setBtnAtr(getBtnAtrChar(command[2]), false);
+									guiBuilder.setBtnAtr(getBtnAtrChar(command[2]), false);
 								}
 							}
 							else if(getBtnAtrChar(command[2]) == gui::BtnAtrChar::flip || getBtnAtrChar(command[2]) == gui::BtnAtrChar::direction)
 							{
 								//set BtnAtr AtrCharacteristic(flip) char
-								guiManager.setBtnAtr(getBtnAtrChar(command[2]), command[3].at(0));
+								guiBuilder.setBtnAtr(getBtnAtrChar(command[2]), command[3].at(0));
 							}
 							else
 							{
 								//set BtnAtr AtrCharacteristic string
 								if(!isUniText)
 								{
-									guiManager.setBtnAtr(getBtnAtrChar(command[2]), command[3]);
+									guiBuilder.setBtnAtr(getBtnAtrChar(command[2]), command[3]);
 								}
 								else
 								{
-									guiManager.setBtnAtr(getBtnAtrChar(command[2]), uniText);
+									guiBuilder.setBtnAtr(getBtnAtrChar(command[2]), uniText);
 								}
 
 							}
@@ -311,7 +313,7 @@ void GuiLoader::loadGui(const std::string& gui)
 							if(utl::isNumber(command[3]) && utl::isNumber(command[4]))
 							{
 								//set BtnAtr AtrCharacteristic int int
-								guiManager.setBtnAtr(getBtnAtrChar(command[2]), std::make_pair(utl::toInt(command[3]), utl::toInt(command[4])));
+								guiBuilder.setBtnAtr(getBtnAtrChar(command[2]), std::make_pair(utl::toInt(command[3]), utl::toInt(command[4])));
 							}
 						}
 						else if(commands == 6)
@@ -319,40 +321,40 @@ void GuiLoader::loadGui(const std::string& gui)
 							//set BtnAtr AtrCharacteristic int int int
 							if(utl::isNumber(command[3]) && utl::isNumber(command[4]) && utl::isNumber(command[5]))
 							{
-								guiManager.setBtnAtr(getBtnAtrChar(command[2]), sf::Color(utl::toInt(command[3]), utl::toInt(command[4]),utl::toInt(command[5])));
+								guiBuilder.setBtnAtr(getBtnAtrChar(command[2]), sf::Color(utl::toInt(command[3]), utl::toInt(command[4]),utl::toInt(command[5])));
 							}
 							else if(utl::isNumber(command[5]))
 							{
 								//set BtnAtr ButtonName AtrName AtrCharacteristic int
-								guiManager.setBtnAtr(command[2], command[3], getBtnAtrChar(command[4]), utl::toInt(command[5]));
+								guiBuilder.setBtnAtr(command[2], command[3], getBtnAtrChar(command[4]), utl::toInt(command[5]));
 							}
 							else if(getBtnChar(command[4]) == gui::BtnChar::isVisible)
 							{
 								//set BtnAtr ButtonName AtrName AtrCharacteristic bool
 								if(command[5] == "t")
 								{
-									guiManager.setBtnAtr(command[2], command[3], getBtnAtrChar(command[4]), true);
+									guiBuilder.setBtnAtr(command[2], command[3], getBtnAtrChar(command[4]), true);
 								}
 								else
 								{
-									guiManager.setBtnAtr(command[2], command[3], getBtnAtrChar(command[4]), false);
+									guiBuilder.setBtnAtr(command[2], command[3], getBtnAtrChar(command[4]), false);
 								}
 							}
 							else if(getBtnAtrChar(command[4]) == gui::BtnAtrChar::flip || getBtnAtrChar(command[4]) == gui::BtnAtrChar::direction)
 							{
 								//set BtnAtr ButtonName AtrName  AtrCharacteristic(flip) char
-								guiManager.setBtnAtr(command[2], command[3], getBtnAtrChar(command[4]), command[5].at(0));
+								guiBuilder.setBtnAtr(command[2], command[3], getBtnAtrChar(command[4]), command[5].at(0));
 							}
 							else
 							{
 								//set BtnAtr ButtonName AtrName AtrCharacteristic string
 								if(!isUniText)
 								{
-									guiManager.setBtnAtr(command[2], command[3], getBtnAtrChar(command[4]), command[5]);
+									guiBuilder.setBtnAtr(command[2], command[3], getBtnAtrChar(command[4]), command[5]);
 								}
 								else
 								{
-									guiManager.setBtnAtr(command[2], command[3], getBtnAtrChar(command[4]), uniText);
+									guiBuilder.setBtnAtr(command[2], command[3], getBtnAtrChar(command[4]), uniText);
 								}
 
 							}
@@ -362,7 +364,7 @@ void GuiLoader::loadGui(const std::string& gui)
 							if(utl::isNumber(command[5]) && utl::isNumber(command[6]))
 							{
 								////set BtnAtr ButtonName AtrName AtrCharacteristic int int
-								guiManager.setBtnAtr(command[2], command[3], getBtnAtrChar(command[4]), std::make_pair(utl::toInt(command[5]), utl::toInt(command[6])));
+								guiBuilder.setBtnAtr(command[2], command[3], getBtnAtrChar(command[4]), std::make_pair(utl::toInt(command[5]), utl::toInt(command[6])));
 							}
 						}
 						else if(commands == 8)
@@ -370,7 +372,7 @@ void GuiLoader::loadGui(const std::string& gui)
 							if(utl::isNumber(command[5]) && utl::isNumber(command[6]) && utl::isNumber(command[7]))
 							{
 								//set BtnAtr ButtonName AtrName AtrCharacteristic int int int
-								guiManager.setBtnAtr(command[2], command[3],getBtnAtrChar(command[4]), sf::Color(utl::toInt(command[5]), utl::toInt(command[6]),utl::toInt(command[7])));
+								guiBuilder.setBtnAtr(command[2], command[3],getBtnAtrChar(command[4]), sf::Color(utl::toInt(command[5]), utl::toInt(command[6]),utl::toInt(command[7])));
 							}
 						}
 					}
@@ -381,24 +383,24 @@ void GuiLoader::loadGui(const std::string& gui)
 							if(utl::isNumber(command[3]))
 							{
 								//set Group buttonCharacteristic int
-								guiManager.setGroupAtr(getBtnChar(command[2]), utl::toInt(command[3]));
+								guiBuilder.setGroupAtr(getBtnChar(command[2]), utl::toInt(command[3]));
 							}
 							else if(getBtnChar(command[2]) == gui::BtnChar::isVisible)
 							{
 								//set Group buttonCharacteristic bool
 								if(command[3] == "t")
 								{
-									guiManager.setGroupAtr(getBtnChar(command[2]), true);
+									guiBuilder.setGroupAtr(getBtnChar(command[2]), true);
 								}
 								else
 								{
-									guiManager.setGroupAtr(getBtnChar(command[2]), false);
+									guiBuilder.setGroupAtr(getBtnChar(command[2]), false);
 								}
 							}
 							else
 							{
 								//set Group buttonCharacteristic string
-								guiManager.setGroupAtr(getBtnChar(command[2]), command[3]);
+								guiBuilder.setGroupAtr(getBtnChar(command[2]), command[3]);
 							}
 						}
 						else if(commands == 5)
@@ -406,29 +408,29 @@ void GuiLoader::loadGui(const std::string& gui)
 							if(utl::isNumber(command[3]) && utl::isNumber(command[4]))
 							{
 								//set Group buttonCharacteristic int int
-								guiManager.setGroupAtr(getBtnChar(command[2]), std::make_pair(utl::toInt(command[3]), utl::toInt(command[4])));
+								guiBuilder.setGroupAtr(getBtnChar(command[2]), std::make_pair(utl::toInt(command[3]), utl::toInt(command[4])));
 							}
 							else if(utl::isNumber(command[4]))
 							{
 								//set Group groupName buttonCharacteristic int
-								guiManager.setGroupAtr(command[2], getBtnChar(command[3]), utl::toInt(command[4]));
+								guiBuilder.setGroupAtr(command[2], getBtnChar(command[3]), utl::toInt(command[4]));
 							}
 							else if(getBtnChar(command[3]) == gui::BtnChar::isVisible)
 							{
 								//set Group groupName buttonCharacteristic bool
 								if(command[4] == "t")
 								{
-									guiManager.setGroupAtr(command[2],getBtnChar(command[3]), true);
+									guiBuilder.setGroupAtr(command[2],getBtnChar(command[3]), true);
 								}
 								else
 								{
-									guiManager.setGroupAtr(command[2],getBtnChar(command[3]), false);
+									guiBuilder.setGroupAtr(command[2],getBtnChar(command[3]), false);
 								}
 							}
 							else
 							{
 								//set Group groupName buttonCharacteristic String
-								guiManager.setGroupAtr(command[2],getBtnChar(command[3]), command[4]);
+								guiBuilder.setGroupAtr(command[2],getBtnChar(command[3]), command[4]);
 							}
 						}
 						else if(commands == 6)
@@ -436,7 +438,7 @@ void GuiLoader::loadGui(const std::string& gui)
 							if(utl::isNumber(command[4]) && utl::isNumber(command[5]))
 							{
 								//set Group groupName buttonCharacteristic int int
-								guiManager.setGroupAtr(command[2],getBtnChar(command[3]), std::make_pair(utl::toInt(command[4]), utl::toInt(command[5])));
+								guiBuilder.setGroupAtr(command[2],getBtnChar(command[3]), std::make_pair(utl::toInt(command[4]), utl::toInt(command[5])));
 							}
 						}
 					}
@@ -447,24 +449,24 @@ void GuiLoader::loadGui(const std::string& gui)
 							if(utl::isNumber(command[3]))
 							{
 								//set List buttonCharacteristic int
-								guiManager.setListAtr(getBtnChar(command[2]), utl::toInt(command[3]));
+								guiBuilder.setListAtr(getBtnChar(command[2]), utl::toInt(command[3]));
 							}
 							else if(getBtnChar(command[2]) == gui::BtnChar::isVisible)
 							{
 								//set List buttonCharacteristic bool
 								if(command[3] == "t")
 								{
-									guiManager.setListAtr(getBtnChar(command[2]), true);
+									guiBuilder.setListAtr(getBtnChar(command[2]), true);
 								}
 								else
 								{
-									guiManager.setListAtr(getBtnChar(command[2]), false);
+									guiBuilder.setListAtr(getBtnChar(command[2]), false);
 								}
 							}
 							else
 							{
 								//set List buttonCharacteristic string
-								guiManager.setListAtr(getBtnChar(command[2]), command[3]);
+								guiBuilder.setListAtr(getBtnChar(command[2]), command[3]);
 							}
 						}
 						else if(commands == 5)
@@ -472,29 +474,29 @@ void GuiLoader::loadGui(const std::string& gui)
 							if(utl::isNumber(command[3]) && utl::isNumber(command[4]))
 							{
 								//set List buttonCharacteristic int int
-								guiManager.setListAtr(getBtnChar(command[2]), std::make_pair(utl::toInt(command[3]), utl::toInt(command[4])));
+								guiBuilder.setListAtr(getBtnChar(command[2]), std::make_pair(utl::toInt(command[3]), utl::toInt(command[4])));
 							}
 							else if(utl::isNumber(command[4]))
 							{
 								//set List ListName buttonCharacteristic int
-								guiManager.setListAtr(command[2], getBtnChar(command[3]), utl::toInt(command[4]));
+								guiBuilder.setListAtr(command[2], getBtnChar(command[3]), utl::toInt(command[4]));
 							}
 							else if(getBtnChar(command[3]) == gui::BtnChar::isVisible)
 							{
 								//set List ListName buttonCharacteristic bool
 								if(command[4] == "t")
 								{
-									guiManager.setListAtr(command[2],getBtnChar(command[3]), true);
+									guiBuilder.setListAtr(command[2],getBtnChar(command[3]), true);
 								}
 								else
 								{
-									guiManager.setListAtr(command[2],getBtnChar(command[3]), false);
+									guiBuilder.setListAtr(command[2],getBtnChar(command[3]), false);
 								}
 							}
 							else
 							{
 								//set List ListName buttonCharacteristic String
-								guiManager.setListAtr(command[2],getBtnChar(command[3]), command[4]);
+								guiBuilder.setListAtr(command[2],getBtnChar(command[3]), command[4]);
 							}
 						}
 						else if(commands == 6)
@@ -502,7 +504,7 @@ void GuiLoader::loadGui(const std::string& gui)
 							if(utl::isNumber(command[4]) && utl::isNumber(command[5]))
 							{
 								//set List ListName buttonCharacteristic int int
-								guiManager.setListAtr(command[2],getBtnChar(command[3]), std::make_pair(utl::toInt(command[4]), utl::toInt(command[5])));
+								guiBuilder.setListAtr(command[2],getBtnChar(command[3]), std::make_pair(utl::toInt(command[4]), utl::toInt(command[5])));
 							}
 						}
 					}
@@ -514,12 +516,12 @@ void GuiLoader::loadGui(const std::string& gui)
 						if(commands == 3)
 						{
 							//addTo group entryName
-							guiManager.addToGroup(command[2]);
+							guiBuilder.addToGroup(command[2]);
 						}
 						else if(commands == 4)
 						{
 							//addTo group groupName entryName
-							guiManager.addToGroup(command[2], command[3]);
+							guiBuilder.addToGroup(command[2], command[3]);
 						}
 					}
 				}
@@ -531,7 +533,7 @@ void GuiLoader::loadGui(const std::string& gui)
 					if(command[1] == "listEntry")
 					{
 						//create listEntry
-						guiManager.createListEntry();
+						guiBuilder.createListEntry();
 					}
 				}
 			}
