@@ -4,36 +4,30 @@ GuiManager::GuiManager(sf::RenderWindow& window, ResourceManager& resourceManage
 	window(window)
 	, resourceManager(resourceManager)
 	, mouseCoords(0,0)
-	, guiBuilder(window, resourceManager, buttons, orderedDrawnButtons, buttonIDs)
+	, guiLoader(*this)
+	, guiBuilder(window, resourceManager, guiLoader, buttons, orderedDrawnButtons, buttonIDs)
 {
 	buttons.reserve(60);
 	orderedDrawnButtons.reserve(50);
 	buttonIDs.clear();
 }
 
-GuiManager::~GuiManager() noexcept
-{
-
-}
-
-GuiBuilder& GuiManager::edit() noexcept 
+GuiBuilder& GuiManager::edit() noexcept
 {
 	return guiBuilder;
 }
 
-void GuiManager::setMousePosition(utl::Vector2f mouseCoords) noexcept
+void GuiManager::setGuiPack(const std::string& guiPack)
 {
-	for(auto& it : buttons)
-	{
-		if(it.isActive)
-		{
-			it.update(std::make_pair((int)mouseCoords.x, (int)mouseCoords.y));
-		}
-	}
-	this->mouseCoords = std::move(mouseCoords);
+	guiLoader.setGuiPack(guiPack);
 }
 
-bool GuiManager::isHovered(int buttonID) noexcept
+void GuiManager::loadGui(const std::string& gui)
+{
+	guiLoader.loadGui(gui);
+}
+
+bool GuiManager::isHovered(int buttonID) const noexcept
 {
 #ifdef DEBUGMODE
 	if(getButton(buttonID) == nullptr)
@@ -53,15 +47,20 @@ void GuiManager::draw() noexcept
 	}
 }
 
-Button* GuiManager::getButton(const int buttonID)
+void GuiManager::setMousePosition(utl::Vector2f mouseCoords) noexcept
 {
-	for(unsigned int it = 0; it < buttons.size(); it++)
+	for(auto& it : buttons)
 	{
-		if(buttonID == buttons.at(it).buttonID)
+		if(it.isActive)
 		{
-			return &buttons.at(it);
+			it.update(std::make_pair((int)mouseCoords.x, (int)mouseCoords.y));
 		}
 	}
-	return nullptr;
+	this->mouseCoords = std::move(mouseCoords);
 }
 
+const Button* GuiManager::getButton(int buttonID) const noexcept
+{
+	auto it = std::find_if(buttons.begin(), buttons.end(), [buttonID](const Button& btn) {return buttonID == btn.buttonID;});
+	return (it == buttons.end()) ? nullptr : &*it;
+}

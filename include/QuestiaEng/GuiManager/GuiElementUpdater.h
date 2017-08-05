@@ -1,19 +1,19 @@
-#ifndef GUIHANDLER_H
-#define GUIHANDLER_H
+#ifndef GUIELEMENTUPDATER_H
+#define GUIELEMENTUPDATER_H
 
 #include <string>
 
 #include "QuestiaEng/GuiManager/GuiElement/GuiElement.h"
 #include "QuestiaEng/GuiManager/GuiElement/TabBar.h"
 
-class GuiHandler
+class GuiElementUpdater
 {
 public:
-	GuiHandler(MouseListener& mouse);
-	~GuiHandler();
+	GuiElementUpdater(MouseListener& mouse);
+	~GuiElementUpdater();
 
-	void reg(GuiElement* guiElement);
-	void regInput(GuiElement* guiElement);
+	void regMouseUpdates(GuiElement* guiElement);
+	void regTextUpdates(GuiElement* guiElement);
 	void update(std::u32string& input);
 	void clear();
 
@@ -24,4 +24,4 @@ private:
 	std::vector<GuiElement*> inputs;
 };
 
-#endif // GUIHANDLER_H
+#endif // GUIELEMENTUPDATER_H

@@ -48,7 +48,7 @@ void StatusBar::init(const std::string& barName, GuiManager& guiManager, GuiLoad
 		guiBuilder.setBtnAtr(gui::BtnAtrChar::color, sf::Color::Black);
 		guiBuilder.setBtnAtr(gui::BtnAtrChar::text, entries[i].atrName_key);
 		guiBuilder.setBtnAtr(gui::BtnAtrChar::coords, std::make_pair(trav_x, 0));
-		int textSpace = sf::Text(entries[i].atrName_key, *guiBuilder.getFont(), 18).getGlobalBounds().width;
+		int textSpace = sf::Text(entries[i].atrName_key, guiBuilder.getFont(), 18).getGlobalBounds().width;
 		trav_x += textSpace;
 		entries[i].atrName_key = atrName_key;
 

@@ -35,8 +35,8 @@ void QueryWindow::init(const std::string& windowName, GuiManager& guiManager, Gu
 
 	guiBuilder.createGroupFromTemplate(windowName, "queryWindowTemplate");
 	groupName = windowName;
-	button_windowBox   = guiBuilder.getGroupEntry(windowName, "windowBox");
-	button_closeButton = guiBuilder.getGroupEntry(windowName, "windowClose");
+	button_windowBox   = guiBuilder.getGroupEntryID(windowName, "windowBox");
+	button_closeButton = guiBuilder.getGroupEntryID(windowName, "windowClose");
 	guiBuilder.setBtnAtr(button_windowBox, "windowSprite", gui::BtnAtrChar::size, std::make_pair(windowSize_x, windowSize_y));
 
 	//add queries

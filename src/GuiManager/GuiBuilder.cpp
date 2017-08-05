@@ -1,22 +1,152 @@
 #include "QuestiaEng/GuiManager/GuiBuilder.h"
 
-GuiBuilder::GuiBuilder(sf::RenderWindow& window, ResourceManager& resourceManager
+//forward declared from header
+#include "QuestiaEng/GuiManager/GuiLoader.h"
+
+GuiBuilder::GuiBuilder(sf::RenderWindow& window, ResourceManager& resourceManager, GuiLoader& guiLoader
                        , std::vector<Button>& buttons, std::vector <Button*>& orderedDrawnButtons
-					   , std::unordered_map<std::string, int>& buttonIDs) noexcept:
+                       , std::unordered_map<std::string, int>& buttonIDs) noexcept:
 	window(window)
 	, resourceManager(resourceManager)
+	, guiLoader(guiLoader)
 	, buttons(buttons)
 	, orderedDrawnButtons(orderedDrawnButtons)
 	, buttonIDs(buttonIDs)
 {
-
 }
 
-GuiBuilder::~GuiBuilder() noexcept
+void GuiBuilder::purgeButtons() noexcept
 {
+	buttons.clear();
+	unusedPos.clear();
+	groups.clear();
+#ifdef DEBUGMODE
+	groupTemplates.clear();
+#endif
+	lists.clear();
+	orderedDrawnButtons.clear();
+	visibleButtonIDs.clear();
+	guiLoader.loadedGuis.clear();
+	buttonIDs.clear();
+
+	buttonCount = 0;
+	lastButton = -1;
+	lastBtnAtr = std::string();
+	lastGroup = std::string();
+	lastList = std::string();
 }
 
-void GuiBuilder::createButton(const std::string& buttonName, int layer)
+void GuiBuilder::setFont(sf::Font buttonFont) noexcept
+{
+	this->buttonFont = buttonFont;
+}
+
+sf::Font& GuiBuilder::getFont() noexcept
+{
+	return buttonFont;
+}
+
+void GuiBuilder::setLang(std::string lang) noexcept
+{
+	this->lang = lang;
+	SaveFile langSave("Data/Language Pack/" + lang + "/gui.txt", true);
+	if(langSave.readFile('='))
+	{
+		langPairs = langSave.getSaveList_uni();
+	}
+}
+//TODO Have different context's for different categories, aka gui, items..
+std::u32string GuiBuilder::getText(const std::string& key) const noexcept
+{
+	std::u32string str = utl::toU32(key);
+	for(auto& p : langPairs)
+	{
+		if(p.first == str)
+		{
+			return p.second;
+		}
+	}
+	return U"nil";
+}
+
+bool GuiBuilder::existsButton(const std::string& buttonName) const noexcept
+{
+#ifdef DEBUGMODE
+	if(getPos(buttonName) == -1)
+	{
+		LOG("<GUI Verify> Button with name: '" + buttonName + "' does not exists");
+		return false;
+	}
+	return true;
+#else
+	return (getPos(buttonName) != -1);
+#endif
+}
+
+bool GuiBuilder::existsButtonTemplate(const std::string& buttonName) const noexcept
+{
+#ifdef DEBUGMODE
+	if(!(existsButton(buttonName) && buttons.at(getPos(buttonName)).isTemplate))
+	{
+		LOG("<GUI Verify> Button Template with name: '" + buttonName + "' does not exists");
+		return false;
+	}
+	return true;
+#else
+	return (existsButton(buttonName) && buttons.at(getPos(buttonName)).isTemplate);
+#endif
+}
+
+bool GuiBuilder::existsButtonAtr(const std::string& buttonName, gui::BtnAtr atr, const std::string& atrName) const noexcept
+{
+	if(!existsButton(buttonName))
+	{
+		return false;
+	}
+	Button& btn = buttons.at(getPos(buttonName));
+	return btn.count(atr, atrName);
+}
+
+bool GuiBuilder::existsGroup(const std::string& groupName) const noexcept
+{
+	return (std::find_if(groups.begin(), groups.end(), [&groupName](const std::pair<std::string, std::vector<int>>& s) {return s.first == groupName;}) != groups.end());
+}
+
+bool GuiBuilder::existsGroupTemplate(const std::string& groupName) const noexcept
+{
+#ifdef DEBUGMODE
+	return (std::find_if(groupTemplates.begin(), groupTemplates.end(), [&groupName](const std::string& s) {return s == groupName;}) != groupTemplates.end());
+#endif
+	return existsGroup(groupName);
+}
+
+bool GuiBuilder::existsInGroup(const std::string& groupName, const std::string& buttonName) const noexcept
+{
+	if(!existsButton(buttonName))
+	{
+		return false;
+	}
+	int buttonID = buttons.at(getPos(buttonName)).buttonID;
+	const std::vector<int>& groupIDs = getGroupIDs(groupName);
+	return (std::find_if(groupIDs.begin(), groupIDs.end(), [buttonID](int id) {return id == buttonID;}) != groupIDs.end());
+}
+
+bool GuiBuilder::existsInGroupTemplate(const std::string& groupName, const std::string& buttonName) const noexcept
+{
+	return (existsButtonTemplate(buttonName) && existsInGroup(groupName, buttonName));
+}
+
+bool GuiBuilder::existsList(const std::string& listName) const noexcept
+{
+	return (std::find_if(lists.begin(), lists.end(), [&listName](const ListData& l) {return l.listName == listName;}) != lists.end());
+}
+
+bool GuiBuilder::existsListGroup(const std::string& listName, const std::string& groupName) const noexcept
+{
+	return (getList(listName).groupTemplate == groupName);
+}
+
+void GuiBuilder::createButton(const std::string& buttonName, int layer) noexcept
 {
 #ifdef DEBUGMODE
 	if(getPos(buttonName) != -1)
@@ -32,7 +162,7 @@ void GuiBuilder::createButton(const std::string& buttonName, int layer)
 	placeInDrawList(&btn);
 }
 
-void GuiBuilder::createButton(const std::string& copyName, const std::string& originalName)
+void GuiBuilder::createButton(const std::string& copyName, const std::string& originalName) noexcept
 {
 #ifdef DEBUGMODE
 	if(getPos(originalName) == -1)
@@ -52,7 +182,7 @@ void GuiBuilder::createButton(const std::string& copyName, const std::string& or
 	lastButton = btn.buttonID;
 }
 
-void GuiBuilder::createAlias(const std::string& alias, const std::string& buttonName)
+void GuiBuilder::createAlias(const std::string& alias, const std::string& buttonName) noexcept
 {
 #ifdef DEBUGMODE
 	if(getPos(buttonName) == -1)
@@ -75,7 +205,29 @@ void GuiBuilder::createAlias(const std::string& alias, const std::string& button
 	buttonIDs.emplace(std::make_pair(alias, buttonID));
 }
 
-void GuiBuilder::createButtonTemplate(const std::string& buttonName, int layer)
+void GuiBuilder::createAlias(const std::string& alias, int buttonID) noexcept
+{
+#ifdef DEBUGMODE
+	if(getPos(buttonID) == -1)
+	{
+		LOG("Button with ID: '" + std::to_string(buttonID) + "' does not exist");
+		return;
+	}
+	if(getPos(alias) != -1)
+	{
+		LOG("Button with name: '" + alias + "' already exists, failed to make alias");
+		return;
+	}
+	if(buttonIDs.count(alias))
+	{
+		LOG("Alias with name: '" + alias + "' already exists");
+		return;
+	}
+#endif
+	buttonIDs.emplace(std::make_pair(alias, buttonID));
+}
+
+void GuiBuilder::createButtonTemplate(const std::string& buttonName, int layer) noexcept
 {
 #ifdef DEBUGMODE
 	if(getPos(buttonName) != -1)
@@ -89,7 +241,7 @@ void GuiBuilder::createButtonTemplate(const std::string& buttonName, int layer)
 	lastButton = btn.buttonID;
 }
 
-void GuiBuilder::createButtonTemplate(const std::string& copyName, const std::string& originalName)
+void GuiBuilder::createButtonTemplate(const std::string& copyName, const std::string& originalName) noexcept
 {
 #ifdef DEBUGMODE
 	if(getPos(originalName) == -1)
@@ -109,12 +261,12 @@ void GuiBuilder::createButtonTemplate(const std::string& copyName, const std::st
 	lastButton = newBtn.buttonID;
 }
 
-void GuiBuilder::createBtnAtr(const std::string& atrName, gui::BtnAtr buttonAtr)
+void GuiBuilder::createBtnAtr(const std::string& atrName, gui::BtnAtr buttonAtr) noexcept
 {
 	createBtnAtr(lastButton, atrName, buttonAtr);
 }
 
-void GuiBuilder::createBtnAtr(const std::string& buttonName, const std::string& atrName, gui::BtnAtr buttonAtr)
+void GuiBuilder::createBtnAtr(const std::string& buttonName, const std::string& atrName, gui::BtnAtr buttonAtr) noexcept
 {
 #ifdef DEBUGMODE
 	if(getPos(buttonName) == -1)
@@ -126,7 +278,7 @@ void GuiBuilder::createBtnAtr(const std::string& buttonName, const std::string& 
 	createBtnAtr(buttonIDs.at(buttonName), atrName, buttonAtr);
 }
 
-void GuiBuilder::createBtnAtr(int buttonID, const std::string& atrName, gui::BtnAtr buttonAtr)
+void GuiBuilder::createBtnAtr(int buttonID, const std::string& atrName, gui::BtnAtr buttonAtr) noexcept
 {
 #ifdef DEBUGMODE
 	if(getPos(buttonID) == -1)
@@ -141,12 +293,12 @@ void GuiBuilder::createBtnAtr(int buttonID, const std::string& atrName, gui::Btn
 	lastBtnAtr = atrName;
 }
 
-void GuiBuilder::setButtonLayer(int layer)
+void GuiBuilder::setButtonLayer(int layer) noexcept
 {
 	setButtonLayer(lastButton, layer);
 }
 
-void GuiBuilder::setButtonLayer(const std::string& buttonName, int layer)
+void GuiBuilder::setButtonLayer(const std::string& buttonName, int layer) noexcept
 {
 #ifdef DEBUGMODE
 	if(getPos(buttonName) == -1)
@@ -158,7 +310,7 @@ void GuiBuilder::setButtonLayer(const std::string& buttonName, int layer)
 	setButtonLayer(buttonIDs.at(buttonName), layer);
 }
 
-void GuiBuilder::setButtonLayer(int buttonID, int layer)
+void GuiBuilder::setButtonLayer(int buttonID, int layer) noexcept
 {
 #ifdef DEBUGMODE
 	if(getPos(buttonID) == -1)
@@ -186,10 +338,10 @@ void GuiBuilder::setButtonLayer(int buttonID, int layer)
 	placeInDrawList(&btn);
 }
 
-void GuiBuilder::createGroup(const std::string& groupName)
+void GuiBuilder::createGroup(const std::string& groupName) noexcept
 {
 #ifdef DEBUGMODE
-	if(groupExists(groupName))
+	if(existsGroup(groupName))
 	{
 		LOG("Group with name: '" + groupName + "' already exists");
 		return;
@@ -199,15 +351,15 @@ void GuiBuilder::createGroup(const std::string& groupName)
 	lastGroup = groupName;
 }
 
-void GuiBuilder::createGroupTemplate(const std::string& groupName)
+void GuiBuilder::createGroupTemplate(const std::string& groupName) noexcept
 {
 #ifdef DEBUGMODE
-	if(groupTemplateExists(groupName))
+	if(existsGroupTemplate(groupName))
 	{
 		LOG("Group Template with name: '" + groupName + "' already exists");
 		return;
 	}
-	if(groupExists(groupName))
+	if(existsGroup(groupName))
 	{
 		LOG("Group with name: '" + groupName + "' already exists");
 		return;
@@ -217,10 +369,10 @@ void GuiBuilder::createGroupTemplate(const std::string& groupName)
 	createGroup(groupName);
 }
 
-void GuiBuilder::createGroupFromTemplate(const std::string& groupName, const std::string& templateName)
+void GuiBuilder::createGroupFromTemplate(const std::string& groupName, const std::string& templateName) noexcept
 {
 #ifdef DEBUGMODE
-	if(!groupTemplateExists(templateName))
+	if(!existsGroupTemplate(templateName))
 	{
 		LOG("Group Template with name: '" + templateName + "' does not exist");
 		return;
@@ -244,12 +396,12 @@ void GuiBuilder::createGroupFromTemplate(const std::string& groupName, const std
 	lastGroup = groupName;
 }
 
-void GuiBuilder::addToGroup(const std::string& entryName)
+void GuiBuilder::addToGroup(const std::string& entryName) noexcept
 {
 	addToGroup(lastGroup, entryName);
 }
 
-void GuiBuilder::addToGroup(const std::string& groupName, const std::string& entryName)
+void GuiBuilder::addToGroup(const std::string& groupName, const std::string& entryName) noexcept
 {
 #ifdef DEBUGMODE
 	if(getPos(entryName) == -1)
@@ -257,12 +409,12 @@ void GuiBuilder::addToGroup(const std::string& groupName, const std::string& ent
 		LOG("Button with name: '" + entryName + "' does not exist");
 		return;
 	}
-	if(!groupExists(groupName))
+	if(!existsGroup(groupName))
 	{
 		LOG("Group with name: '" + groupName + "' does not exist");
 		return;
 	}
-	if(groupTemplateExists(groupName) && !(buttons.at(getPos(entryName)).isTemplate))
+	if(existsGroupTemplate(groupName) && !(buttons.at(getPos(entryName)).isTemplate))
 	{
 		LOG("Button with name: '" + entryName + "' is not a template, and therefore can't be added to a group template");
 		return;
@@ -281,7 +433,7 @@ void GuiBuilder::addToGroup(const std::string& groupName, const std::string& ent
 	getGroupIDs(groupName).push_back(buttons.at(getPos(entryName)).buttonID);
 }
 
-std::string GuiBuilder::getGroupEntry(const std::string& groupName, const std::string& buttonName)
+std::string GuiBuilder::getGroupEntry(const std::string& groupName, const std::string& buttonName) const noexcept
 {
 	//get button ID
 	int realButtonID = getGroupEntryID(groupName, buttonName);
@@ -299,7 +451,7 @@ std::string GuiBuilder::getGroupEntry(const std::string& groupName, const std::s
 	}
 	return std::string();
 }
-int GuiBuilder::getGroupEntryID(const std::string& groupName, const std::string& buttonName)
+int GuiBuilder::getGroupEntryID(const std::string& groupName, const std::string& buttonName) const noexcept
 {
 #ifdef DEBUGMODE
 	if(getPos(buttonName) == -1)
@@ -307,12 +459,12 @@ int GuiBuilder::getGroupEntryID(const std::string& groupName, const std::string&
 		LOG("Button with name: '" + buttonName + "' does not exist");
 		return -1;
 	}
-	if(!groupExists(groupName))
+	if(!existsGroup(groupName))
 	{
 		LOG("Group with name: '" + groupName + "' does not exist");
 		return -1;
 	}
-	if(groupTemplateExists(groupName))
+	if(existsGroupTemplate(groupName))
 	{
 		LOG("Group with name: '" + groupName + "' is a template, and therefore can't have real entries");
 		return -1;
@@ -343,7 +495,7 @@ int GuiBuilder::getGroupEntryID(const std::string& groupName, const std::string&
 	int buttonTemplateID = buttons.at(getPos(buttonName)).buttonID;
 
 	//find the real button ID
-	std::vector<int>& groupIDs = getGroupIDs(groupName);
+	const std::vector<int>& groupIDs = getGroupIDs(groupName);
 	for(int id : groupIDs)
 	{
 		Button& btn = buttons.at(getPos(id));
@@ -356,10 +508,10 @@ int GuiBuilder::getGroupEntryID(const std::string& groupName, const std::string&
 	return -1;
 }
 
-void GuiBuilder::createList(const std::string& listName)
+void GuiBuilder::createList(const std::string& listName) noexcept
 {
 #ifdef DEBUGMODE
-	if(listExists(listName))
+	if(existsList(listName))
 	{
 		LOG("List with name: '" + listName + "' already exists");
 		return;
@@ -369,25 +521,25 @@ void GuiBuilder::createList(const std::string& listName)
 	lastList = listName;
 }
 
-void GuiBuilder::setListTemplate(const std::string& groupTemplate)
+void GuiBuilder::setListTemplate(const std::string& groupTemplate) noexcept
 {
 	setListTemplate(lastList, groupTemplate);
 }
 
-void GuiBuilder::setListTemplate(const std::string& listName, const std::string& groupTemplate)
+void GuiBuilder::setListTemplate(const std::string& listName, const std::string& groupTemplate) noexcept
 {
 #ifdef DEBUGMODE
-	if(!listExists(listName))
+	if(!existsList(listName))
 	{
 		LOG("List with name: '" + listName + "' does not exist");
 		return;
 	}
-	if(!groupExists(groupTemplate))
+	if(!existsGroup(groupTemplate))
 	{
 		LOG("Group with name: '" + groupTemplate + "' does not exist");
 		return;
 	}
-	if(!groupTemplateExists(groupTemplate))
+	if(!existsGroupTemplate(groupTemplate))
 	{
 		LOG("Group Template with name: '" + groupTemplate + "' does not exist");
 		return;
@@ -396,15 +548,15 @@ void GuiBuilder::setListTemplate(const std::string& listName, const std::string&
 	getList(listName).groupTemplate = groupTemplate;
 }
 
-void GuiBuilder::setListSpacing(int spacing_x, int spacing_y)
+void GuiBuilder::setListSpacing(int spacing_x, int spacing_y) noexcept
 {
 	setListSpacing(lastList, spacing_x, spacing_y);
 }
 
-void GuiBuilder::setListSpacing(const std::string& listName, int spacing_x, int spacing_y)
+void GuiBuilder::setListSpacing(const std::string& listName, int spacing_x, int spacing_y) noexcept
 {
 #ifdef DEBUGMODE
-	if(!listExists(listName))
+	if(!existsList(listName))
 	{
 		LOG("List with name: '" + listName + "' does not exist");
 		return;
@@ -413,15 +565,15 @@ void GuiBuilder::setListSpacing(const std::string& listName, int spacing_x, int 
 	getList(listName).listSpacing = std::make_pair(spacing_x, spacing_y);
 }
 
-void GuiBuilder::setListPosition(std::pair<int, int> position)
+void GuiBuilder::setListPosition(std::pair<int, int> position) noexcept
 {
 	setListPosition(lastList, position);
 }
 
-void GuiBuilder::setListPosition(const std::string& listName, std::pair<int, int> position)
+void GuiBuilder::setListPosition(const std::string& listName, std::pair<int, int> position) noexcept
 {
 #ifdef DEBUGMODE
-	if(!listExists(listName))
+	if(!existsList(listName))
 	{
 		LOG("List with name: '" + listName + "' does not exist");
 		return;
@@ -430,15 +582,15 @@ void GuiBuilder::setListPosition(const std::string& listName, std::pair<int, int
 	getList(listName).position = position;
 }
 
-std::string GuiBuilder::createListEntry()
+std::string GuiBuilder::createListEntry() noexcept
 {
 	return createListEntry(lastList);
 }
 
-std::string GuiBuilder::createListEntry(const std::string& listName)
+std::string GuiBuilder::createListEntry(const std::string& listName) noexcept
 {
 #ifdef DEBUGMODE
-	if(!listExists(listName))
+	if(!existsList(listName))
 	{
 		LOG("List with name: '" + listName + "' does not exist");
 		return std::string();
@@ -449,7 +601,7 @@ std::string GuiBuilder::createListEntry(const std::string& listName)
 		LOG("List with name: '" + listName + "' does not have a set Group Template");
 		return std::string();
 	}
-	if(!groupTemplateExists(l.groupTemplate))
+	if(!existsGroupTemplate(l.groupTemplate))
 	{
 		LOG("List with name: '" + listName + "' does not have a valid Group Template (" + l.groupTemplate + ")");
 		return std::string();
@@ -467,10 +619,10 @@ std::string GuiBuilder::createListEntry(const std::string& listName)
 	return entryName;
 }
 
-void GuiBuilder::deleteList(const std::string& listName)
+void GuiBuilder::deleteList(const std::string& listName) noexcept
 {
 #ifdef DEBUGMODE
-	if(!listExists(listName))
+	if(!existsList(listName))
 	{
 		LOG("List with name: '" + listName + "' does not exist");
 		return;
@@ -493,10 +645,10 @@ void GuiBuilder::deleteList(const std::string& listName)
 	}
 }
 
-void GuiBuilder::deleteGroup(const std::string& groupName)
+void GuiBuilder::deleteGroup(const std::string& groupName) noexcept
 {
 #ifdef DEBUGMODE
-	if(!groupExists(groupName))
+	if(!existsGroup(groupName))
 	{
 		LOG("Group with name: '" + groupName + "' does not exist");
 		return;
@@ -519,12 +671,12 @@ void GuiBuilder::deleteGroup(const std::string& groupName)
 	}
 }
 
-void GuiBuilder::deleteButton(const std::string& buttonName)
+void GuiBuilder::deleteButton(const std::string& buttonName) noexcept
 {
 	deleteButton(buttonIDs.at(buttonName));
 }
 
-void GuiBuilder::deleteButton(int buttonID)
+void GuiBuilder::deleteButton(int buttonID) noexcept
 {
 #ifdef DEBUGMODE
 	if(getPos(buttonID) == -1)
@@ -580,43 +732,81 @@ void GuiBuilder::deleteButton(int buttonID)
 	}
 }
 
-inline bool GuiBuilder::groupExists(const std::string& entry)
+int GuiBuilder::getNewID(const std::string& buttonName) noexcept
 {
-	return (std::find_if(groups.begin(), groups.end(), [&](const std::pair<std::string, std::vector<int>>& s) {return s.first == entry;}) != groups.end());
+	int newButtonID = buttonCount;
+	buttonCount++;
+	buttonIDs.emplace(std::make_pair(buttonName, newButtonID));
+	return newButtonID;
 }
-#ifdef DEBUGMODE
-inline bool GuiBuilder::groupTemplateExists(const std::string& entry)
+Button& GuiBuilder::emplaceButton(bool isTemplate, const std::string& buttonName, int templateID) noexcept
 {
-	return (std::find_if(groupTemplates.begin(), groupTemplates.end(), [&](const std::string& s) {return s == entry;}) != groupTemplates.end());
-}
-#endif
-inline bool GuiBuilder::listExists(const std::string& list)
-{
-	return (std::find_if(lists.begin(), lists.end(), [&](const ListData& l) {return l.listName == list;}) != lists.end());
-}
-inline std::vector<int>& GuiBuilder::getGroupIDs(const std::string& entry)
-{
-#ifdef DEBUGMODE
-	if(!groupExists(entry))
+	int buttonID = getNewID(buttonName);
+	if(unusedPos.size())
 	{
-		LOG("Group with name: '" + entry + "' does not exist");
+		int pos = unusedPos.back();
+		unusedPos.pop_back();
+		buttons.at(pos) = Button(window, resourceManager, buttonFont, isTemplate, buttonID, templateID);
+		return buttons.at(pos);
+	}
+	buttons.emplace_back(Button(window, resourceManager, buttonFont, isTemplate, buttonID, templateID));
+	refreshDrawVector();
+	return buttons.back();
+}
+Button& GuiBuilder::copyButton(Button& old, const std::string& buttonName, int templateID) noexcept
+{
+	int buttonID = getNewID(buttonName);
+	int oldButtonID = old.buttonID;
+	if(buttons.capacity() < (buttons.size() + 2))
+	{
+		buttons.reserve(buttons.size() + 20);
+	}
+	Button& realOld = buttons.at(getPos(oldButtonID));
+
+	if(unusedPos.size())
+	{
+		int pos = unusedPos.back();
+		unusedPos.pop_back();
+		buttons.at(pos) = Button(realOld, buttonID, templateID);
+		return buttons.at(pos);
+	}
+	buttons.emplace_back(Button(realOld, buttonID, templateID));
+	refreshDrawVector();
+	return buttons.back();
+}
+
+int GuiBuilder::getPos(int buttonID) const noexcept
+{
+	for(unsigned int it = 0; it < buttons.size(); it++)
+	{
+		if(buttonID == buttons.at(it).buttonID)
+		{
+			return (int)it;
+		}
+	}
+	return -1;
+}
+
+const std::vector<int>& GuiBuilder::getGroupIDs(const std::string& groupName) const noexcept
+{
+#ifdef DEBUGMODE
+	if(!existsGroup(groupName))
+	{
+		LOG("Group with name: '" + groupName + "' does not exist");
 		return groups.back().second;
 	}
 #endif
-	for(auto& it : groups)
-	{
-		if(it.first == entry)
-		{
-			return it.second;
-		}
-	}
-	//should never reach here
-	return groups.back().second;
+	return (*std::find_if(groups.begin(), groups.end(), [&groupName](const std::pair<std::string, std::vector<int>>& s) {return s.first == groupName;})).second;
 }
-inline GuiBuilder::ListData& GuiBuilder::getList(const std::string& listName)
+std::vector<int>& GuiBuilder::getGroupIDs(const std::string& groupName) noexcept
+{
+	return const_cast<std::vector<int>&>(getGroupIDs(groupName));
+}
+
+const GuiBuilder::ListData& GuiBuilder::getList(const std::string& listName) const noexcept
 {
 #ifdef DEBUGMODE
-	if(!listExists(listName))
+	if(!existsList(listName))
 	{
 		LOG("List with name: '" + listName + "' does not exist");
 		return lists.back();
@@ -632,8 +822,12 @@ inline GuiBuilder::ListData& GuiBuilder::getList(const std::string& listName)
 	//should never reach here
 	return lists.back();
 }
+GuiBuilder::ListData& GuiBuilder::getList(const std::string& listName) noexcept
+{
+	return const_cast<GuiBuilder::ListData&>(getList(listName));
+}
 
-void GuiBuilder::placeInDrawList(Button* button)
+void GuiBuilder::placeInDrawList(Button* button) noexcept
 {
 	int layer = button->layer;
 	std::vector<int>::iterator it = visibleButtonIDs.begin();
@@ -654,48 +848,11 @@ void GuiBuilder::placeInDrawList(Button* button)
 	refreshDrawVector();
 }
 
-void GuiBuilder::refreshDrawVector()
+void GuiBuilder::refreshDrawVector() noexcept
 {
 	orderedDrawnButtons.clear();
 	for(int id : visibleButtonIDs)
 	{
 		orderedDrawnButtons.push_back(&buttons.at(getPos(id)));
 	}
-}
-
-
-void GuiBuilder::setFont(sf::Font buttonFont)
-{
-	this->buttonFont = buttonFont;
-}
-
-bool GuiBuilder::isLoadedGuiPack(const std::string& guiPack)
-{
-	if(std::find(loadedGuiPacks.begin(), loadedGuiPacks.end(), guiPack) == loadedGuiPacks.end())
-	{
-		loadedGuiPacks.push_back(guiPack);
-		return false;
-	}
-	return true;
-}
-
-void GuiBuilder::purgeButtons() noexcept
-{
-	buttons.clear();
-	unusedPos.clear();
-	groups.clear();
-#ifdef DEBUGMODE
-	groupTemplates.clear();
-#endif
-	lists.clear();
-	orderedDrawnButtons.clear();
-	visibleButtonIDs.clear();
-	loadedGuiPacks.clear();
-	buttonIDs.clear();
-	
-	buttonCount = 0;
-	lastButton = -1;
-	lastBtnAtr = std::string();
-	lastGroup = std::string();
-	lastList = std::string();
 }

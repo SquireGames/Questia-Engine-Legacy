@@ -68,8 +68,8 @@ private:
 	int querySelection = -1;
 
 	std::string groupName;
-	std::string button_windowBox;
-	std::string button_closeButton;
+	int button_windowBox;
+	int button_closeButton;
 	std::string button_submitButton;
 
 	std::vector<std::pair<std::string, Query>> queryValues;

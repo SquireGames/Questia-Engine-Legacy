@@ -51,7 +51,7 @@ void TabBar::init(const std::string& tabBarName, GuiManager& guiManager, GuiLoad
 
 	guiBuilder.createGroupFromTemplate(tabBarName, "tabBarTemplate");
 	groupName = tabBarName;
-	button_bar = guiBuilder.getGroupEntry(groupName, "barTemplate");
+	button_bar = guiBuilder.getGroupEntryID(groupName, "barTemplate");
 
 	//tab positioning along x axis
 	unsigned int trav_x = 0;
@@ -70,7 +70,7 @@ void TabBar::init(const std::string& tabBarName, GuiManager& guiManager, GuiLoad
 		tabs[i].menu.init("S_" + tabName, trav_x, ((dir == utl::Direction::down) ? 1080-22-offset_y : 22 + offset_y), guiManager, guiLoader);
 
 		//adjust to width of text
-		sf::Text t(tabs[i].tabName, *guiBuilder.getFont(), 15);
+		sf::Text t(tabs[i].tabName, guiBuilder.getFont(), 15);
 		unsigned int tabWidth = t.getGlobalBounds().width + 14;
 		guiBuilder.setBtnAtr(tabName, "buttonSprite", gui::BtnAtrChar::size, std::make_pair(tabWidth, 22));
 		guiBuilder.setButton(tabName, gui::BtnChar::bounds, "buttonSprite");

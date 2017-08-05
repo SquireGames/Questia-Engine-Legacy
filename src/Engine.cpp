@@ -33,8 +33,7 @@ Engine::Engine(std::string windowName, int tickRate, int majorVersion, int minor
 	//managers
 	, resourceManager()
 	, guiManager(window, resourceManager)
-	, guiHandler(mouseListener)
-	, guiLoader(guiManager)
+	, guiElementUpdater(mouseListener)
 	, tileEngine(window, resourceManager)
 	, tileEngineEditor(window, resourceManager, tileEngine)
 	, entityManager(resourceManager, window)
@@ -56,7 +55,7 @@ Engine::Engine(std::string windowName, int tickRate, int majorVersion, int minor
 		window.setVerticalSyncEnabled(true);
 		break;
 	case -1:
-		window.setFramerateLimit(100000);
+		window.setFramerateLimit(100'000);
 		window.setVerticalSyncEnabled(false);
 		break;
 	default:
@@ -162,7 +161,7 @@ void Engine::processInput()
 			break;
 		}
 	}
-	guiHandler.update(inputBuffer);
+	guiElementUpdater.update(inputBuffer);
 	inputBuffer.clear();
 }
 

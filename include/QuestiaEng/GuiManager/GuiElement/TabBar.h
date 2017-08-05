@@ -25,7 +25,7 @@ public:
 	//if one tab bar is right below another, to prevent double selection
 	void setBelow(TabBar& other);
 
-	//automatically called if MenuStack is registered into GuiHandler
+	//automatically called if MenuStack is registered into GuiElementUpdater
 	void update(MouseListener& mouse);
 
 	void setActivity(bool isActive);
@@ -64,7 +64,7 @@ private:
 	std::vector<Tab> tabs;
 
 	std::string groupName;
-	std::string button_bar;
+	int button_bar;
 
 	TabBar* otherBar = nullptr;
 

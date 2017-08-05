@@ -47,11 +47,10 @@ void MenuStack::init(const std::string& stackName, int x, int y, GuiManager& gui
 
 	//make all entries
 	for(unsigned int i = 0; i < entries.size(); i++)
-	{
-		std::string alias = entries[i].buttonName;
-		entries[i].buttonName = guiBuilder.getGroupEntry(guiBuilder.createListEntry(), "stackButtonTemplate");
-		guiBuilder.createAlias(alias, entries[i].buttonName);
-		guiBuilder.setBtnAtr(entries[i].buttonName, "buttonText", gui::BtnAtrChar::text, entries[i].entryText);
+	{ 
+		int buttonID = entries[i].buttonID = guiBuilder.getGroupEntryID(guiBuilder.createListEntry(), "stackButtonTemplate");
+		guiBuilder.createAlias(entries[i].buttonName, buttonID);
+		guiBuilder.setBtnAtr(buttonID, "buttonText", gui::BtnAtrChar::text, entries[i].entryText);
 	}
 	guiBuilder.setListAtr(listName, gui::BtnChar::isVisible, false);
 }
@@ -63,16 +62,16 @@ void MenuStack::handleInput(std::u32string& input)
 
 void MenuStack::update(MouseListener& mouse)
 {
-	if(toHide)
+	if(hideNextTick)
 	{
 		setActivity(false);
-		toHide = false;
+		hideNextTick = false;
 		return;
 	}
 
 	if(mouse.isMouseReleased(ctr::Input::LMouse))
 	{
-		toHide = true;
+		hideNextTick = true;
 	}
 }
 

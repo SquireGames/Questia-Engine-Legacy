@@ -28,13 +28,14 @@ private:
 	GuiManager* guiManager;
 	bool isStackActive = false;
 	//makes menuStack hide next tick
-	bool toHide = false;
+	bool hideNextTick = false;
 
 	struct Entry
 	{
 		Entry(const std::string& entryText):entryText(entryText) {}
 		std::string entryText;
 		std::string buttonName;
+		int buttonID = -1;
 		//TODO make possible boolean toggle
 	};
 	std::vector<Entry> entries;

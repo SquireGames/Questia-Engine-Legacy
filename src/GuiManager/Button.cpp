@@ -2,7 +2,7 @@
 
 //TODO give more descriptive LOG's
 
-Button::Button(sf::RenderWindow& window, ResourceManager& resourceManager, sf::Font& buttonFont, bool isTemplate, int buttonID, int buttonGroupID):
+Button::Button(sf::RenderWindow& window, ResourceManager& resourceManager, sf::Font& buttonFont, bool isTemplate, int buttonID, int buttonGroupID) noexcept:
 	window(window)
 	, resourceManager(resourceManager)
 	, buttonFont(buttonFont)
@@ -12,7 +12,7 @@ Button::Button(sf::RenderWindow& window, ResourceManager& resourceManager, sf::F
 	, isTemplate(isTemplate)
 	, isVisible(true)
 {}
-Button::Button(const Button& oldButton, int buttonID, int buttonGroupID):
+Button::Button(const Button& oldButton, int buttonID, int buttonGroupID) noexcept:
 	window(oldButton.window)
 	, resourceManager(oldButton.resourceManager)
 	, buttonFont(oldButton.buttonFont)
@@ -28,7 +28,7 @@ Button::Button(const Button& oldButton, int buttonID, int buttonGroupID):
 	, percents(oldButton.percents)
 {}
 
-Button& Button::operator=(const Button& other)
+Button& Button::operator=(const Button& other) noexcept
 {
 	buttonPosition 	= other.buttonPosition;
 	buttonBounds 	= other.buttonBounds;
@@ -48,12 +48,12 @@ Button& Button::operator=(const Button& other)
 	return *this;
 }
 
-void Button::setButton(gui::BtnChar buttonChar, const char* value)
+void Button::setButton(gui::BtnChar buttonChar, const char* value) noexcept
 {
 	std::string str = std::string(value);
 	setButton(buttonChar, str);
 }
-void Button::setButton(gui::BtnChar buttonChar, const std::string& value)
+void Button::setButton(gui::BtnChar buttonChar, const std::string& value) noexcept
 {
 	switch(buttonChar)
 	{
@@ -80,7 +80,7 @@ void Button::setButton(gui::BtnChar buttonChar, const std::string& value)
 		break;
 	}
 }
-void Button::setButton(gui::BtnChar buttonChar, bool value)
+void Button::setButton(gui::BtnChar buttonChar, bool value) noexcept
 {
 	switch(buttonChar)
 	{
@@ -96,7 +96,7 @@ void Button::setButton(gui::BtnChar buttonChar, bool value)
 		break;
 	}
 }
-void Button::setButton(gui::BtnChar buttonChar, int value)
+void Button::setButton(gui::BtnChar buttonChar, int value) noexcept
 {
 	switch(buttonChar)
 	{
@@ -117,7 +117,7 @@ void Button::setButton(gui::BtnChar buttonChar, int value)
 	}
 	isCoordsChanged = true;
 }
-void Button::setButton(gui::BtnChar buttonChar, std::pair <int, int> value)
+void Button::setButton(gui::BtnChar buttonChar, std::pair <int, int> value) noexcept
 {
 	switch(buttonChar)
 	{
@@ -137,7 +137,7 @@ void Button::setButton(gui::BtnChar buttonChar, std::pair <int, int> value)
 	}
 }
 
-void Button::addBtnAtr(const std::string& atrName, gui::BtnAtr buttonAtr)
+void Button::addBtnAtr(const std::string& atrName, gui::BtnAtr buttonAtr) noexcept
 {
 	switch(buttonAtr)
 	{
@@ -157,7 +157,7 @@ void Button::addBtnAtr(const std::string& atrName, gui::BtnAtr buttonAtr)
 		break;
 	}
 }
-void Button::setBtnAtr(const std::string& atrName, gui::BtnAtrChar atrChar, const std::string& value)
+void Button::setBtnAtr(const std::string& atrName, gui::BtnAtrChar atrChar, const std::string& value) noexcept
 {
 	int elementID = count(atrName, sprites);
 	if(elementID != -1)
@@ -210,7 +210,7 @@ void Button::setBtnAtr(const std::string& atrName, gui::BtnAtrChar atrChar, cons
 		}
 	}
 }
-void Button::setBtnAtr(const std::string& atrName, gui::BtnAtrChar atrChar, const std::u32string& value)
+void Button::setBtnAtr(const std::string& atrName, gui::BtnAtrChar atrChar, const std::u32string& value) noexcept
 {
 	int elementID = count(atrName, texts);
 	if(elementID != -1)
@@ -232,7 +232,7 @@ void Button::setBtnAtr(const std::string& atrName, gui::BtnAtrChar atrChar, cons
 	LOG("'" + atrName + "' is not an existing Text.");
 #endif
 }
-void Button::setBtnAtr(const std::string& atrName, gui::BtnAtrChar atrChar, std::pair<int, int> value)
+void Button::setBtnAtr(const std::string& atrName, gui::BtnAtrChar atrChar, std::pair<int, int> value) noexcept
 {
 	int elementID = count(atrName, sprites);
 	if(elementID != -1)
@@ -302,7 +302,7 @@ void Button::setBtnAtr(const std::string& atrName, gui::BtnAtrChar atrChar, std:
 		return;
 	}
 }
-void Button::setBtnAtr(const std::string& atrName, gui::BtnAtrChar atrChar, sf::Color color)
+void Button::setBtnAtr(const std::string& atrName, gui::BtnAtrChar atrChar, sf::Color color) noexcept
 {
 	int elementID = count(atrName, sprites);
 	if(elementID != -1)
@@ -333,7 +333,7 @@ void Button::setBtnAtr(const std::string& atrName, gui::BtnAtrChar atrChar, sf::
 	LOG("No ButtonAtr with name: '" + atrName + "'  in use of set|ButtonAtr|" + atrName + "|<Should be Color>|<Color>");
 #endif
 }
-void Button::setBtnAtr(const std::string& atrName, gui::BtnAtrChar atrChar, int value)
+void Button::setBtnAtr(const std::string& atrName, gui::BtnAtrChar atrChar, int value) noexcept
 {
 	int elementID = count(atrName, sprites);
 	if(elementID != -1)
@@ -491,7 +491,7 @@ void Button::setBtnAtr(const std::string& atrName, gui::BtnAtrChar atrChar, int 
 		return;
 	}
 }
-void Button::setBtnAtr(const std::string& atrName, gui::BtnAtrChar atrChar, char value)
+void Button::setBtnAtr(const std::string& atrName, gui::BtnAtrChar atrChar, char value) noexcept
 {
 	int elementID = count(atrName, sprites);
 	if(elementID != -1)
@@ -670,7 +670,7 @@ void Button::setBtnAtr(const std::string& atrName, gui::BtnAtrChar atrChar, char
 	}
 }
 
-void Button::update(std::pair <int, int> mouseCoords)
+void Button::update(std::pair <int, int> mouseCoords) noexcept
 {
 	if(mouseCoords.first >  buttonPosition.first + scroll_x && mouseCoords.first  < buttonPosition.first + scroll_x  + buttonBounds.first &&
 	        mouseCoords.second > buttonPosition.second + scroll_y && mouseCoords.second < buttonPosition.second + scroll_y + buttonBounds.second)
@@ -693,7 +693,7 @@ void Button::update(std::pair <int, int> mouseCoords)
 	}
 }
 
-void Button::draw()
+void Button::draw() noexcept
 {
 	if(isVisible && !isTemplate)
 	{
@@ -783,3 +783,24 @@ void Button::draw()
 	}
 }
 
+bool Button::count(gui::BtnAtr atr, const std::string& atrName) const noexcept
+{
+	switch(atr)
+	{
+	case gui::BtnAtr::Sprite:
+		return count(atrName, sprites);
+		break;
+	case gui::BtnAtr::Text:
+		return count(atrName, texts);
+		break;
+	case gui::BtnAtr::Hover:
+		return count(atrName, hovers);
+		break;
+	case gui::BtnAtr::Percent:
+		return count(atrName, percents);
+		break;
+	default:
+		break;
+	}
+	return false;
+}

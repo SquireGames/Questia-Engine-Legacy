@@ -1,29 +1,30 @@
 #include "QuestiaEng/GuiManager/GuiLoader.h"
 
-GuiLoader::GuiLoader(GuiManager& guiManager):
+#include "QuestiaEng/GuiManager/GuiManager.h"
+
+#include "QuestiaEng/Utl/Logger.h"
+
+GuiLoader::GuiLoader(GuiManager& guiManager) noexcept:
 	guiManager(guiManager)
 {
 	//ctor
 }
 
-GuiLoader::~GuiLoader()
-{
-	//dtor
-}
-
-void GuiLoader::setGuiPack(const std::string& guiPack)
+void GuiLoader::setGuiPack(const std::string& guiPack) noexcept
 {
 	primaryPack = guiPack;
 }
 
-void GuiLoader::loadGui(const std::string& gui)
+void GuiLoader::loadGui(const std::string& gui) noexcept
 {
 	GuiBuilder& guiBuilder = guiManager.edit();
-	
-	if(guiBuilder.isLoadedGuiPack(gui))
+
+	if(isLoadedGui(gui))
 	{
 		return;
 	}
+	loadedGuis.push_back(gui);
+
 	std::cout << "Loading GUI: " << gui << std::endl;
 
 	std::string filePath = "Data/Gui Pack/" + primaryPack + "/" + gui + ".txt";
@@ -34,7 +35,12 @@ void GuiLoader::loadGui(const std::string& gui)
 
 	guiFile.setFilePath(filePath);
 
-	if(guiFile.readFile('^'))
+	if(!guiFile.readFile('^'))
+	{
+		LOG("FATAL ERROR - Guiloader failed to read file path:" + filePath);
+		return;
+	}
+	else
 	{
 		std::vector<std::string> guiCommands = guiFile.getItemKeyList();
 
@@ -539,13 +545,17 @@ void GuiLoader::loadGui(const std::string& gui)
 			}
 		}
 	}
-	else
+}
+bool GuiLoader::isLoadedGui(const std::string& gui) const noexcept
+{
+	if(std::find(loadedGuis.begin(), loadedGuis.end(), gui) == loadedGuis.end())
 	{
-		throw std::runtime_error("FATAL ERROR - Guiloader failed to read file path:" + filePath);
+		return false;
 	}
+	return true;
 }
 
-gui::BtnAtr GuiLoader::getBtnAtr(std::string buttonAtr)
+gui::BtnAtr GuiLoader::getBtnAtr(const std::string& buttonAtr) const noexcept
 {
 	if(buttonAtr == "Sprite")
 	{
@@ -567,7 +577,7 @@ gui::BtnAtr GuiLoader::getBtnAtr(std::string buttonAtr)
 	return gui::BtnAtr::Sprite;
 }
 
-gui::BtnAtrChar GuiLoader::getBtnAtrChar(std::string buttonAtrCharacteristic)
+gui::BtnAtrChar GuiLoader::getBtnAtrChar(const std::string& buttonAtrCharacteristic) const noexcept
 {
 	if(buttonAtrCharacteristic == "CharSize")
 	{
@@ -617,7 +627,7 @@ gui::BtnAtrChar GuiLoader::getBtnAtrChar(std::string buttonAtrCharacteristic)
 	return gui::BtnAtrChar::size;
 }
 
-gui::BtnChar GuiLoader::getBtnChar(std::string buttonCharacteristic)
+gui::BtnChar GuiLoader::getBtnChar(const std::string& buttonCharacteristic) const noexcept
 {
 	if(buttonCharacteristic == "AddToScroll_X")
 	{
