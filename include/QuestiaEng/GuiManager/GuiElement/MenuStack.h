@@ -13,7 +13,7 @@ public:
 	~MenuStack();
 
 	int addEntry(const std::string& text, const std::string& buttonName);
-	void init(const std::string& stackName, int x, int y, GuiManager& guiManager, GuiLoader& guiLoader);
+	void init(const std::string& stackName, int x, int y, GuiManager& guiManager);
 	
 	unsigned int size() {return entries.size();}
 	

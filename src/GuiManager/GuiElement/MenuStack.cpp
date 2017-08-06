@@ -31,12 +31,12 @@ int MenuStack::addEntry(const std::string& text, const std::string& buttonName)
 	return tabID;
 }
 
-void MenuStack::init(const std::string& stackName, int x, int y, GuiManager& guiManager, GuiLoader& guiLoader)
+void MenuStack::init(const std::string& stackName, int x, int y, GuiManager& guiManager)
 {
 	this->guiManager = &guiManager;
 	listName = stackName;
 
-	guiLoader.loadGui("menuStack");
+	guiManager.loadGui("menuStack");
 
 	GuiBuilder& guiBuilder = guiManager.edit();
 

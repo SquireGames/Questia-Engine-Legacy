@@ -40,10 +40,10 @@ void TabBar::addEntry(const std::string& entryText, const std::string&buttonName
 	tabs.at(mostRecentTab).menu.addEntry(entryText, buttonName);
 }
 
-void TabBar::init(const std::string& tabBarName, GuiManager& guiManager, GuiLoader& guiLoader)
+void TabBar::init(const std::string& tabBarName, GuiManager& guiManager)
 {
 	this->guiManager = &guiManager;
-	guiLoader.loadGui("tabBar");
+	guiManager.loadGui("tabBar");
 	
 	GuiBuilder& guiBuilder = guiManager.edit();
 
@@ -67,7 +67,7 @@ void TabBar::init(const std::string& tabBarName, GuiManager& guiManager, GuiLoad
 		guiBuilder.setBtnAtr(tabName, "buttonText", gui::BtnAtrChar::text, tabs[i].tabName);
 
 		//make MenuStacks
-		tabs[i].menu.init("S_" + tabName, trav_x, ((dir == utl::Direction::down) ? 1080-22-offset_y : 22 + offset_y), guiManager, guiLoader);
+		tabs[i].menu.init("S_" + tabName, trav_x, ((dir == utl::Direction::down) ? 1080-22-offset_y : 22 + offset_y), guiManager);
 
 		//adjust to width of text
 		sf::Text t(tabs[i].tabName, guiBuilder.getFont(), 15);

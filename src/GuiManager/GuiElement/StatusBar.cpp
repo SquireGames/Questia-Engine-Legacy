@@ -12,14 +12,14 @@ StatusBar::~StatusBar()
 
 }
 
-void StatusBar::init(const std::string& barName, GuiManager& guiManager, GuiLoader& guiLoader)
+void StatusBar::init(const std::string& barName, GuiManager& guiManager)
 {
 	this->guiManager = &guiManager;
 	buttonName = barName;
 	
 	GuiBuilder& guiBuilder = guiManager.edit();
 
-	guiLoader.loadGui("statusBar");
+	guiManager.loadGui("statusBar");
 
 	int pos_y = ((dir == utl::Direction::down) ? 1080-22-offset_y : offset_y);
 

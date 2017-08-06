@@ -15,15 +15,13 @@ void QueryWindow::addQuery(const std::string& queryID, const std::string& queryQ
 	queryValues.push_back(std::make_pair(queryID, Query(queryQuestion, queryType)));
 }
 
-void QueryWindow::init(const std::string& windowName, GuiManager& guiManager, GuiLoader* guiLoader, std::function<void()> handle)
+void QueryWindow::init(const std::string& windowName, GuiManager& guiManager, std::function<void()> handle)
 {
 	this->guiManager = &guiManager;
-	
+
 	GuiBuilder& guiBuilder = guiManager.edit();
-	if(guiLoader != nullptr)
-	{
-		guiLoader->loadGui("queryWindow");
-	}
+
+	guiManager.loadGui("queryWindow");
 
 	handleRes = handle;
 
@@ -97,10 +95,10 @@ void QueryWindow::reInit()
 	windowPos_x =  610;
 	windowPos_y =  500;
 	querySelection = -1;
-	
+
 	guiManager->edit().deleteGroup(groupName);
 
-	init(groupName, *guiManager, nullptr, handleRes);
+	init(groupName, *guiManager, handleRes);
 }
 
 int QueryWindow::getResult_int(const std::string& queryID)

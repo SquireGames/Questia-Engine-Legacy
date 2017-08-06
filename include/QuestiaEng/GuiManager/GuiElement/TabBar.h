@@ -20,7 +20,7 @@ public:
 	void addSpace(int spacing);
 	void addEntry(int tabID, const std::string& entryText, const std::string& buttonName);
 	void addEntry(const std::string& entryText, const std::string& buttonName);
-	void init(const std::string& tabBarName, GuiManager& guiManager, GuiLoader& guiLoader);
+	void init(const std::string& tabBarName, GuiManager& guiManager);
 
 	//if one tab bar is right below another, to prevent double selection
 	void setBelow(TabBar& other);

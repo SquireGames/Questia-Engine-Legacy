@@ -59,7 +59,7 @@ void GuiManager::setMousePosition(utl::Vector2f mouseCoords) noexcept
 	this->mouseCoords = std::move(mouseCoords);
 }
 
-const Button* GuiManager::getButton(int buttonID) const noexcept
+const Button* const GuiManager::getButton(int buttonID) const noexcept
 {
 	auto it = std::find_if(buttons.begin(), buttons.end(), [buttonID](const Button& btn) {return buttonID == btn.buttonID;});
 	return (it == buttons.end()) ? nullptr : &*it;

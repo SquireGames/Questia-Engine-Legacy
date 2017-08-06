@@ -475,7 +475,7 @@ int GuiBuilder::getGroupEntryID(const std::string& groupName, const std::string&
 		return -1;
 	}
 	//checks if template exists in group
-	std::vector<int>& ids = getGroupIDs(groupName);
+	const std::vector<int>& ids = getGroupIDs(groupName);
 	int templateID = buttons.at(getPos(buttonName)).buttonID;
 	bool templateExists = false;
 	for(int id : ids)
@@ -800,7 +800,8 @@ const std::vector<int>& GuiBuilder::getGroupIDs(const std::string& groupName) co
 }
 std::vector<int>& GuiBuilder::getGroupIDs(const std::string& groupName) noexcept
 {
-	return const_cast<std::vector<int>&>(getGroupIDs(groupName));
+	const GuiBuilder* const constThis = this;
+	return const_cast<std::vector<int>&>(constThis->getGroupIDs(groupName));
 }
 
 const GuiBuilder::ListData& GuiBuilder::getList(const std::string& listName) const noexcept
@@ -824,7 +825,8 @@ const GuiBuilder::ListData& GuiBuilder::getList(const std::string& listName) con
 }
 GuiBuilder::ListData& GuiBuilder::getList(const std::string& listName) noexcept
 {
-	return const_cast<GuiBuilder::ListData&>(getList(listName));
+	const GuiBuilder* const constThis = this;
+	return const_cast<GuiBuilder::ListData&>(constThis->getList(listName));
 }
 
 void GuiBuilder::placeInDrawList(Button* button) noexcept

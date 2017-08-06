@@ -42,9 +42,9 @@ public:
 	void setMousePosition(utl::Vector2f mouseCoords) noexcept;
 
 private:
-	const Button* getButton(int buttonID) const noexcept;
+	const Button* const getButton(int buttonID) const noexcept;
 	template<class String, typename = typename std::enable_if<std::is_constructible<std::string, String>::value>::type>
-	const Button* getButton(String&& name) const noexcept;
+	const Button* const getButton(String&& name) const noexcept;
 
 	sf::RenderWindow& window;
 	ResourceManager& resourceManager;
@@ -66,7 +66,7 @@ inline bool GuiManager::isHovered(String&& buttonName) const noexcept
 #ifdef DEBUGMODE
 	if(getButton(buttonName) == nullptr)
 	{
-		LOG("Button with name: '" + buttonName + "' does not exist");
+		LOG(std::string("Button with name: '") + buttonName + "' does not exist");
 		return false;
 	}
 #endif
@@ -74,12 +74,12 @@ inline bool GuiManager::isHovered(String&& buttonName) const noexcept
 }
 
 template<class String, typename = typename std::enable_if<std::is_constructible<std::string, String>::value>::type>
-inline const Button* GuiManager::getButton(String&& name) const noexcept
+inline const Button* const GuiManager::getButton(String&& name) const noexcept
 {
 #ifdef DEBUGMODE
 	if(!buttonIDs.count(name))
 	{
-		LOG("Button with name: '" + name + "' does not exist");
+		LOG(std::string("Button with name: '") + name + "' does not exist");
 		return nullptr;
 	}
 #endif
