@@ -17,7 +17,6 @@ void TileEngine::loadMap(const std::string& mapName)
 {
 	if(mapLoaded(mapName))
 	{
-		lastMap = &maps.back();
 		return;
 	}
 

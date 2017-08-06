@@ -672,23 +672,28 @@ void Button::setBtnAtr(const std::string& atrName, gui::BtnAtrChar atrChar, char
 
 void Button::update(std::pair <int, int> mouseCoords) noexcept
 {
-	if(mouseCoords.first >  buttonPosition.first + scroll_x && mouseCoords.first  < buttonPosition.first + scroll_x  + buttonBounds.first &&
+	bool wasHovered = isHovered;
+	if(mouseCoords.first >  buttonPosition.first + scroll_x && mouseCoords.first < buttonPosition.first + scroll_x + buttonBounds.first &&
 	        mouseCoords.second > buttonPosition.second + scroll_y && mouseCoords.second < buttonPosition.second + scroll_y + buttonBounds.second)
 	{
 		isHovered = (isActive && isVisible);
-		for(unsigned int i = 0; i < hovers.size(); i++)
+		if(wasHovered != isHovered)
 		{
-			hovers.at(i).isChanged = true;
-			hovers.at(i).isHoveredOver = true;
+			for(unsigned int i = 0; i < hovers.size(); i++)
+			{
+				hovers.at(i).isChanged = true;
+			}
 		}
 	}
 	else
 	{
 		isHovered = false;
-		for(unsigned int i = 0; i < hovers.size(); i++)
+		if(wasHovered != isHovered)
 		{
-			hovers.at(i).isChanged = true;
-			hovers.at(i).isHoveredOver = false;
+			for(unsigned int i = 0; i < hovers.size(); i++)
+			{
+				hovers.at(i).isChanged = true;
+			}
 		}
 	}
 }
@@ -748,7 +753,7 @@ void Button::draw() noexcept
 			OverlaySprite& ovr = hovers.at(i);
 			if(!(ovr.isChanged || isCoordsChanged))
 			{
-				if(ovr.isHoveredOver && isActive)
+				if(isHovered && isActive)
 				{
 					window.draw(ovr.rectOverlay);
 				}
@@ -756,9 +761,9 @@ void Button::draw() noexcept
 			else
 			{
 				ovr.rectOverlay.setPosition(buttonPosition.first  + ovr.position.first  + scroll_x,
-				                            buttonPosition.second +ovr.position.second + scroll_y);
+				                            buttonPosition.second + ovr.position.second + scroll_y);
 				ovr.isChanged = false;
-				if(ovr.isHoveredOver && isActive)
+				if(isHovered && isActive)
 				{
 					window.draw(ovr.rectOverlay);
 				}
