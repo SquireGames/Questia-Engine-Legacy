@@ -2,7 +2,7 @@
 
 ThreadPool_Fixed::ThreadPool_Fixed(unsigned int threads):
     maxThreads(std::min(threads, std::thread::hardware_concurrency()))
-  //  , threadSync(maxThreads+1)
+    , threadSync(maxThreads+1)
 {
     for (unsigned int it = 0; it != maxThreads; it++)
     {
@@ -12,7 +12,7 @@ ThreadPool_Fixed::ThreadPool_Fixed(unsigned int threads):
 
 ThreadPool_Fixed::ThreadPool_Fixed():
     maxThreads(std::thread::hardware_concurrency())
-   // , threadSync(maxThreads+1)
+    , threadSync(maxThreads+1)
 {
     for (unsigned int it = 0; it != maxThreads; it++)
     {
@@ -30,14 +30,13 @@ void ThreadPool_Fixed::addTask(std::function<void()> task)
     taskPool.emplace_back(TaskObj(task));
 }
 
-
 void ThreadPool_Fixed::threadFunc()
 {
     while(true)
     {
         //wait until flag to start something
-        //threadSync.wait();
-
+        threadSync.wait();
+	
         if(killAll)
         {
             return;
@@ -58,7 +57,7 @@ void ThreadPool_Fixed::threadFunc()
         }
 
         //make sure all threads finish
-       // threadSync.wait();
+        threadSync.wait();
     }
 }
 
@@ -75,10 +74,10 @@ void ThreadPool_Fixed::runTasks()
     }
 
     //start threads
-    //threadSync.wait();
+    threadSync.wait();
 
     //wait for threads to finish
-    //threadSync.wait();
+    threadSync.wait();
 }
 
 void ThreadPool_Fixed::kill()
@@ -88,7 +87,7 @@ void ThreadPool_Fixed::kill()
         killAll = true;
 
         //wait for tasks to finish
-      //  threadSync.wait();
+        threadSync.wait();
 
         //join all threads
         for(auto& thread : threadPool)

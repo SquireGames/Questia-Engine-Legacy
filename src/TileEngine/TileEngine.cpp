@@ -6,7 +6,6 @@ TileEngine::TileEngine(sf::RenderWindow& window, ResourceManager& resourceManage
 {
 	//load enough space for the maximum possible maps loaded, as pointers
 	//to tileMap objects are used (sortedTiles) and resizing invalidates pointers
-	maps.reserve(12);
 }
 
 void TileEngine::setMode(TileMap::TextureMode textureMode, TileMap::RenderMode renderMode)
