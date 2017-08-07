@@ -4,7 +4,9 @@ TileEngine::TileEngine(sf::RenderWindow& window, ResourceManager& resourceManage
 	window(window)
 	, resourceManager(resourceManager)
 {
-
+	//load enough space for the maximum possible maps loaded, as pointers
+	//to tileMap objects are used (sortedTiles) and resizing invalidates pointers
+	maps.reserve(12);
 }
 
 void TileEngine::setMode(TileMap::TextureMode textureMode, TileMap::RenderMode renderMode)
@@ -21,7 +23,7 @@ void TileEngine::loadMap(const std::string& mapName)
 	}
 
 	//create the map
-	maps.emplace_back(SV_TileEngine(resourceManager).openMap(mapName, window, textureMode, renderMode));
+	maps.push_back(SV_TileEngine(resourceManager).openMap(mapName, window, textureMode, renderMode));
 	lastMap = &maps.back();
 
 	lastMap->setID(++mapCount);

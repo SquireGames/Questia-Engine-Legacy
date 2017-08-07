@@ -1,8 +1,8 @@
 #include "QuestiaEng/TileEngine/SV_TileEngine.h"
 
-SV_TileEngine::SV_TileEngine(ResourceManager& _resourceManager):
-	resourceManager(_resourceManager)
-	, textureAtlas(_resourceManager)
+SV_TileEngine::SV_TileEngine(ResourceManager& resourceManager):
+	resourceManager(resourceManager)
+	, textureAtlas(resourceManager)
 {
 
 }
@@ -610,13 +610,14 @@ void SV_TileEngine::loadTiles(std::vector <std::pair <int, std::string>>& tileLo
 			mapData.setAtlasTexture("TILESTORAGE_" + mapName, &resourceManager.getTexture("TILESTORAGE_" + mapName));
 
 			//set texture coordinates for every tile
-			for(std::pair<const int, Tile>& tile : mapTiles)
+			for(std::pair<const int, Tile>& tilePair : mapTiles)
 			{
+				Tile& tile = tilePair.second;
 				bool isInTileLocs = false;
 				int id;
 				for(std::pair <int, std::string>& t : tileLocations)
 				{
-					if(t.second == tile.second.getTexturePath() || t.second == tile.second.getSource())
+					if(t.second == tile.getTexturePath())
 					{
 						isInTileLocs = true;
 						id = t.first;
@@ -625,7 +626,7 @@ void SV_TileEngine::loadTiles(std::vector <std::pair <int, std::string>>& tileLo
 				}
 				if(isInTileLocs)
 				{
-					tile.second.texturePosition = compiledTexture.textureCoords.at(std::to_string(id));
+					tile.texturePosition = compiledTexture.textureCoords.at(std::to_string(id));
 				}
 			}
 			break;
