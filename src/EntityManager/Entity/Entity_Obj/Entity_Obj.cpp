@@ -1,6 +1,6 @@
 #include "QuestiaEng/EntityManager/Entity/Entity_Obj/Entity_Obj.h"
 
-Entity_Obj::Entity_Obj(unsigned int id, EntityManager& entityManager, ResourceManager& resourceManager, utl::Vector2f coords):
+Entity_Obj::Entity_Obj(unsigned int id, EntityManager& entityManager, ResourceManager* resourceManager, utl::Vector2f coords):
     Entity(id, entityManager)
 	, coords(coords)
     , resourceManager(resourceManager)
@@ -13,12 +13,9 @@ Entity_Obj::~Entity_Obj()
     //dtor
 }
 
-void Entity_Obj::draw(sf::RenderWindow& window, DrawLayer drawLayer)
+void Entity_Obj::defaultUses()
 {
-
+	useUpdate(this);
+	useObj(this);
 }
 
-int Entity_Obj::getGroundOffset()
-{
-	return 16;
-}

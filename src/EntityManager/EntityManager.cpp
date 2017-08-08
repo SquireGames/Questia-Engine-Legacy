@@ -7,12 +7,30 @@
 #include "QuestiaEng/EntityManager/Entity/Entity_Obj/Entity_Coll/Entity_Living/Entity_Living.h"
 #include "QuestiaEng/EntityManager/Entity/Entity_Obj/Entity_Coll/Entity_Living/Entity_Player/Entity_Player.h"
 
+#ifdef DEBUGMODE
+#include "QuestiaEng/Utl/Logger.h"
+#endif
+
 EntityManager::EntityManager(ResourceManager& resourceManager, sf::RenderWindow& window):
-	resourceManager(resourceManager)
-	, window(window)
+	resourceManager(&resourceManager)
+	, window(&window)
+#ifdef DEBUGMODE
+	, displayTextures(true)
+#endif
 {
-	std::cout<<"DEBUG: Entity Manager Initialized"<<std::endl;
+	std::cout<<"DEBUG: <Client> Entity Manager Initialized"<<std::endl;
 }
+
+EntityManager::EntityManager():
+	resourceManager(nullptr)
+	, window(nullptr)
+#ifdef DEBUGMODE
+	, displayTextures(false)
+#endif
+{
+	std::cout<<"DEBUG: <Server> Entity Manager Initialized"<<std::endl;
+}
+
 
 EntityManager::~EntityManager()
 {
@@ -53,6 +71,14 @@ void EntityManager::update()
 
 void EntityManager::draw(DrawLayer drawLayer)
 {
+#ifdef DEBUGMODE
+	if(!displayTextures)
+	{
+		LOG("EntityManager - Tried drawing with Server mode constructor");
+		return;
+	}
+#endif
+
 	//sort entities by y value
 	std::sort(entities_Obj.begin(), entities_Obj.end(),
 	          [](Entity_Obj* obj_1, Entity_Obj* obj_2)
@@ -62,7 +88,7 @@ void EntityManager::draw(DrawLayer drawLayer)
 
 	for(auto& entity : entities_Obj)
 	{
-		entity->draw(window, drawLayer);
+		entity->draw(*window, drawLayer);
 	}
 }
 
@@ -174,15 +200,23 @@ void EntityManager::drawCollBounds(sf::RenderWindow& window, const Bounds* bound
 
 void EntityManager::draw_coll()
 {
+#ifdef DEBUGMODE
+	if(!displayTextures)
+	{
+		LOG("EntityManager - Tried drawing with Server mode constructor");
+		return;
+	}
+#endif
+
 	for(auto& entity : entities_Coll)
 	{
-		drawCollBounds(window, entity->getHitBounds(), entity->coords, sf::Color::Blue);
-		drawCollBounds(window, entity->getCollBounds(), entity->coords, sf::Color::Red);
+		drawCollBounds(*window, entity->getHitBounds(), entity->coords, sf::Color::Blue);
+		drawCollBounds(*window, entity->getCollBounds(), entity->coords, sf::Color::Red);
 	}
 	for(auto& entity : entities_Obj)
 	{
 		auto originPoint = Bounds(Dot(utl::Vector2f(16, entity->getGroundOffset())));
-		drawCollBounds(window, &originPoint, entity->coords, sf::Color::Yellow);
+		drawCollBounds(*window, &originPoint, entity->coords, sf::Color::Yellow);
 	}
 }
 
@@ -239,7 +273,7 @@ void EntityManager::reg(const std::string& name, std::function<Entity*(unsigned 
 {
 	entityRegistry[name] = entity;
 }
-void EntityManager::reg(const std::string& name, std::function<Entity*(unsigned int id, EntityManager&, ResourceManager&, utl::Vector2f coords)> entity)
+void EntityManager::reg(const std::string& name, std::function<Entity*(unsigned int id, EntityManager&, ResourceManager*, utl::Vector2f coords)> entity)
 {
 	entityRegistry_Obj[name] = entity;
 }
@@ -247,7 +281,9 @@ void EntityManager::reg(const std::string& name, std::function<Entity*(unsigned 
 int EntityManager::spawn(const std::string& name)
 {
 	int id = getNewID();
-	entities.emplace_back(std::unique_ptr<Entity>(entityRegistry.at(name)(id, *this)));
+	std::unique_ptr<Entity> entity(entityRegistry.at(name)(id, *this));
+	entity->defaultUses();
+	entities.push_back(std::move(entity));
 	ids.push_back(id);
 	return id;
 }
@@ -255,7 +291,9 @@ int EntityManager::spawn(const std::string& name)
 int EntityManager::spawn(const std::string& name, utl::Vector2f coords)
 {
 	int id = getNewID();
-	entities.emplace_back(std::unique_ptr<Entity>(entityRegistry_Obj.at(name)(id, *this, resourceManager, coords)));
+	std::unique_ptr<Entity> entity(entityRegistry_Obj.at(name)(id, *this, resourceManager, coords));
+	entity->defaultUses();
+	entities.emplace_back(std::move(entity));
 	ids.push_back(id);
 	return id;
 }

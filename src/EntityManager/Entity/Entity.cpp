@@ -12,9 +12,9 @@ Entity::~Entity()
     //dtor
 }
 
-void Entity::update()
+void Entity::defaultUses()
 {
-
+	useUpdate(this);
 }
 
 unsigned int Entity::getID()

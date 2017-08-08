@@ -1,6 +1,6 @@
 #include "QuestiaEng/EntityManager/Entity/Entity_Obj/Entity_Coll/Entity_Coll.h"
 
-Entity_Coll::Entity_Coll(unsigned int id, EntityManager& entityManager, ResourceManager& resourceManager, utl::Vector2f coords):
+Entity_Coll::Entity_Coll(unsigned int id, EntityManager& entityManager, ResourceManager* resourceManager, utl::Vector2f coords):
     Entity_Obj(id, entityManager, resourceManager, coords)
 {
     //ctor
@@ -26,17 +26,11 @@ void Entity_Coll::onCollision(Entity_Coll& other)
     onCollision(other.properties, other.getID());
 }
 
-void Entity_Coll::onCollision(const std::map <pKey, pValue>& properties, unsigned int entityID)
+void Entity_Coll::defaultUses()
 {
-
+	useUpdate(this);
+	useObj(this);
+	useColl(this);
 }
 
-const Bounds* Entity_Coll::getCollBounds()
-{
-	return nullptr;
-}
-const Bounds* Entity_Coll::getHitBounds()
-{
-	return nullptr;
-}
 

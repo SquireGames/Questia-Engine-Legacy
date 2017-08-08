@@ -1,28 +1,56 @@
 #include "QuestiaEng/TileEngine/TileEngine.h"
 
 TileEngine::TileEngine(sf::RenderWindow& window, ResourceManager& resourceManager):
-	window(window)
-	, resourceManager(resourceManager)
+	window(&window)
+	, resourceManager(&resourceManager)
+#ifdef DEBUGMODE
+	, displayTextures(true)
+#endif
 {
-	//load enough space for the maximum possible maps loaded, as pointers
-	//to tileMap objects are used (sortedTiles) and resizing invalidates pointers
+
 }
+
+TileEngine::TileEngine():
+	window(nullptr)
+	, resourceManager(nullptr)
+#ifdef DEBUGMODE
+	, displayTextures(false)
+#endif
+{
+
+}
+
 
 void TileEngine::setMode(TileMap::TextureMode textureMode, TileMap::RenderMode renderMode)
 {
+#ifdef DEBUGMODE
+	if(!displayTextures)
+	{
+		LOG("TileEngine - Tried setting mode with Server mode constructor");
+		return;
+	}
+#endif
 	this->textureMode = textureMode;
 	this->renderMode = renderMode;
 }
 
 void TileEngine::loadMap(const std::string& mapName)
 {
+#ifdef DEBUGMODE
+	if(!displayTextures)
+	{
+		LOG("TileEngine - Tried loading textures with Server mode constructor");
+		return;
+	}
+#endif
+
 	if(mapLoaded(mapName))
 	{
 		return;
 	}
 
 	//create the map
-	maps.push_back(SV_TileEngine(resourceManager).openMap(mapName, window, textureMode, renderMode));
+	maps.push_back(SV_TileEngine(*resourceManager).openMap(mapName, *window, textureMode, renderMode));
 	lastMap = &maps.back();
 
 	lastMap->setID(++mapCount);
@@ -39,9 +67,12 @@ void TileEngine::loadMap(const std::string& mapName)
 
 void TileEngine::closeMaps()
 {
-	for(auto& map : maps)
+	if(resourceManager != nullptr)
 	{
-		resourceManager.kill(std::string("TILESTORAGE_") + map.getName());
+		for(auto& map : maps)
+		{
+			(*resourceManager).kill(std::string("TILESTORAGE_") + map.getName());
+		}
 	}
 	maps.clear();
 	activeMaps.clear();
@@ -51,6 +82,14 @@ void TileEngine::closeMaps()
 
 void TileEngine::draw()
 {
+#ifdef DEBUGMODE
+	if(!displayTextures)
+	{
+		LOG("TileEngine - Tried drawing with Server mode constructor");
+		return;
+	}
+#endif
+
 	if(currentMapID == -1)
 	{
 		return;
@@ -122,6 +161,14 @@ void TileEngine::draw()
 
 void TileEngine::drawMap(TileMap* map, utl::Direction dir, TileMap* refMap, int tilesOffset, int otherAxisOffset)
 {
+#ifdef DEBUGMODE
+	if(!displayTextures)
+	{
+		LOG("TileEngine - Tried drawing with Server mode constructor");
+		return;
+	}
+#endif
+
 	utl::Vector2f cameraDisplacement = utl::Vector2f(0,0);
 	if(refMap != nullptr)
 	{
@@ -197,10 +244,10 @@ void TileEngine::drawMap(TileMap* map, utl::Direction dir, TileMap* refMap, int 
 				sf::Texture* atlasPtr = map->getAtlas();
 				std::vector<sf::VertexArray> const& chunkVector = map->getChunks();
 
-				sf::View view = window.getView();
-				sf::View transView = window.getView();
+				sf::View view = (*window).getView();
+				sf::View transView = (*window).getView();
 				transView.move(cameraDisplacement.sf());
-				window.setView(transView);
+				(*window).setView(transView);
 
 				for(unsigned int it_layer = 0; it_layer < layers; it_layer++)
 				{
@@ -208,11 +255,11 @@ void TileEngine::drawMap(TileMap* map, utl::Direction dir, TileMap* refMap, int 
 					{
 						for(int it_x = minChunk_x; it_x < (maxChunk_x + 1); it_x++)
 						{
-							window.draw(chunkVector[getChunk(it_x, it_y, it_layer, map)], atlasPtr);
+							(*window).draw(chunkVector[getChunk(it_x, it_y, it_layer, map)], atlasPtr);
 						}
 					}
 				}
-				window.setView(view);
+				(*window).setView(view);
 			}
 			break;
 		case TileMap::RenderMode::Sprite:
@@ -225,10 +272,10 @@ void TileEngine::drawMap(TileMap* map, utl::Direction dir, TileMap* refMap, int 
 				const unsigned int firstLayer = (layerSelection == -1) ?  0 : layerSelection;
 				const unsigned int endLayer = (layerSelection == -1) ? map->getLayers() : (layerSelection + 1);
 
-				sf::View view = window.getView();
-				sf::View transView = window.getView();
+				sf::View view = (*window).getView();
+				sf::View transView = (*window).getView();
 				transView.move(cameraDisplacement.sf());
-				window.setView(transView);
+				(*window).setView(transView);
 
 				//holds all changed transparencies
 				std::vector<int> modifiedTiles = std::vector<int>();
@@ -262,7 +309,7 @@ void TileEngine::drawMap(TileMap* map, utl::Direction dir, TileMap* refMap, int 
 						}
 					}
 				}
-				window.setView(view);
+				(*window).setView(view);
 			}
 			break;
 		default:
@@ -274,12 +321,26 @@ void TileEngine::drawMap(TileMap* map, utl::Direction dir, TileMap* refMap, int 
 
 void TileEngine::setViewportSize(float width, float height)
 {
+#ifdef DEBUGMODE
+	if(!displayTextures)
+	{
+		LOG("TileEngine - Tried setting the viewport size with Server mode constructor");
+		return;
+	}
+#endif
 	tileFit_x = (width  / 64.f) + 2; // +2 for transitioning tiles
 	tileFit_y = (height / 64.f) + 2; // +2 for transitioning tiles
 }
 
 void TileEngine::setPosition(utl::Vector2f& pos)
 {
+#ifdef DEBUGMODE
+	if(!displayTextures)
+	{
+		LOG("TileEngine - Tried setting camera position with Server mode constructor");
+		return;
+	}
+#endif
 	cameraPosition = pos;
 	if(currentMapID == -1)
 	{
@@ -425,8 +486,11 @@ void TileEngine::closeMap(int mapID)
 	}
 	else if(idCount == 1)
 	{
-		resourceManager.kill(std::string("TILESTORAGE_") + getMap(mapID)->getName());
-
+		if(resourceManager != nullptr)
+		{
+			(*resourceManager).kill(std::string("TILESTORAGE_") + getMap(mapID)->getName());
+		}
+		
 		//TODO reuse vector slots rather than erasing
 		auto idIt = std::find(activeMaps.begin(), activeMaps.end(), mapID);
 		std::iter_swap(idIt, activeMaps.end() - 1);
@@ -438,8 +502,6 @@ void TileEngine::closeMap(int mapID)
 		});
 		std::iter_swap(it, maps.end() - 1);
 		maps.erase(maps.end() - 1);
-
-
 	}
 	else
 	{
