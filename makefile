@@ -5,7 +5,7 @@ CC          := g++
 CFLAGS      := -std=c++14 -Wall -MP -MD -fPIC
 DEBUGFLAGS  := -g -DDEBUGMODE=1
 LDFLAGS	    := -shared
-LIB_win     := -L lib/SFML-2.4.2-win/lib -lsfml-audio -lsfml-network -lsfml-graphics -lsfml-window -lsfml-system -lstdc++fs -lktmw32
+LIB_win     := -L lib/SFML-2.4.2-win/lib -lsfml-audio -lsfml-network -lsfml-graphics -lsfml-window -lsfml-system -L lib/Cryptopp-5.6.5-win -lcryptopp -lstdc++fs -lktmw32
 LIB_lin     := -lsfml-audio -lsfml-network -lsfml-graphics -lsfml-window -lsfml-system -lstdc++fs
 SRCEXT      := cpp
 
