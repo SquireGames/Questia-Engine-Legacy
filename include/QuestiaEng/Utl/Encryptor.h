@@ -11,8 +11,21 @@ class RawBytes
 public:
 	RawBytes(std::unique_ptr<char[]> data, int length);
 	RawBytes(const utl::RawBytes&);
+	RawBytes(utl::RawBytes&&) = default;
+	RawBytes& operator= (const utl::RawBytes&);
+	RawBytes& operator= (utl::RawBytes&&) = default;
 	virtual ~RawBytes() = default;
+	
+	RawBytes(const std::u32string& str);
+	RawBytes(const std::string& str);
+	RawBytes(const char* str);
+	
 	void printValue() const;
+	void printAsStr() const;
+	void printHex() const;
+	
+	unsigned char* get(); 
+	int size() const;
 	
 	const RawBytes operator+ (const RawBytes& rhs);
 
@@ -21,19 +34,14 @@ protected:
 	int length;
 };
 
-
 class RandomSalt : public RawBytes
 {
 public:
 	RandomSalt(int length);
 };
-class StringSalt : public RawBytes
-{
-public:
-	StringSalt(const std::u32string& str);
-	StringSalt(const std::string& str);
-	StringSalt(const char* str);
-};
+
+//hashes
+void hash_whirlpool(RawBytes& data);
 
 }
 
