@@ -30,10 +30,10 @@ public:
 private:
     struct Event
     {
-        Event(TaskType _taskType, utl::Ticker _ticker, std::function<void(float taskPercentage)> _task):
-            taskType(_taskType)
-            , ticker(_ticker)
-            , task(_task)
+        Event(TaskType taskType, utl::Ticker ticker, std::function<void(float taskPercentage)> task):
+            taskType(taskType)
+            , ticker(ticker)
+            , task(task)
         {}
         TaskType taskType;
         utl::Ticker ticker;

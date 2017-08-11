@@ -6,16 +6,34 @@
 namespace utl
 {
 
-struct Salt
+class RawBytes
 {
-	std::unique_ptr<unsigned char[]> data;
-	int length;
-	
+public:
+	RawBytes(std::unique_ptr<char[]> data, int length);
+	RawBytes(const utl::RawBytes&);
+	virtual ~RawBytes() = default;
 	void printValue() const;
+	
+	const RawBytes operator+ (const RawBytes& rhs);
+
+protected:
+	std::unique_ptr<char[]> data;
+	int length;
 };
 
-//generates a random salt
-Salt generateSalt(int bytes);
+
+class RandomSalt : public RawBytes
+{
+public:
+	RandomSalt(int length);
+};
+class StringSalt : public RawBytes
+{
+public:
+	StringSalt(const std::u32string& str);
+	StringSalt(const std::string& str);
+	StringSalt(const char* str);
+};
 
 }
 
