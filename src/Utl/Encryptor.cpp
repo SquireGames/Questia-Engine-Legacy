@@ -19,20 +19,23 @@ utl::RawBytes::RawBytes(const utl::RawBytes& other):
 {
 	char* thisDataIt = data.get();
 	const char* otherDataIt = other.data.get();
-	for(int i = 0; i < length; i++)
+	for(unsigned int i = 0; i < length; i++)
 	{
 		*thisDataIt = *otherDataIt;
 		otherDataIt++;
 		thisDataIt++;
 	}
 }
-utl::RawBytes& utl::RawBytes::operator= (const utl::RawBytes& rhs)
+utl::RawBytes& utl::RawBytes::operator=(const utl::RawBytes& rhs)
 {
-	data.reset(new char[rhs.length]);
-	length = rhs.length;
+	if(length != rhs.length)
+	{
+		data.reset(new char[rhs.length]);
+		length = rhs.length;
+	}
 	char* thisDataIt = data.get();
 	const char* otherDataIt = rhs.data.get();
-	for(int i = 0; i < length; i++)
+	for(unsigned int i = 0; i < length; i++)
 	{
 		*thisDataIt = *otherDataIt;
 		otherDataIt++;
@@ -41,20 +44,20 @@ utl::RawBytes& utl::RawBytes::operator= (const utl::RawBytes& rhs)
 	return *this;
 }
 
-const utl::RawBytes utl::RawBytes::operator+(const RawBytes& rhs)
+const utl::RawBytes utl::RawBytes::operator+(const RawBytes& rhs) const
 {
 	int newLength = length + rhs.length;
 	utl::RawBytes newBytes{std::make_unique<char[]>(newLength), newLength};
 	char* thisDataIt = data.get();
 	char* newDataIt = newBytes.data.get();
 	char* rhsDataIt = rhs.data.get();
-	for(int i = 0; i < length; i++)
+	for(unsigned int i = 0; i < length; i++)
 	{
 		*newDataIt = *thisDataIt;
 		newDataIt++;
 		thisDataIt++;
 	}
-	for(int i = 0; i < rhs.length; i++)
+	for(unsigned int i = 0; i < rhs.length; i++)
 	{
 		*newDataIt = *rhsDataIt;
 		newDataIt++;
@@ -62,10 +65,33 @@ const utl::RawBytes utl::RawBytes::operator+(const RawBytes& rhs)
 	}
 	return newBytes;
 }
+
+bool utl::RawBytes::operator==(const RawBytes& other) const
+{
+	if(length != other.length)
+	{
+		return false;
+	}
+	
+	unsigned char* thisData = reinterpret_cast<unsigned char*>(static_cast<char*>(data.get()));
+	unsigned char* otherData = reinterpret_cast<unsigned char*>(static_cast<char*>(other.data.get()));
+	
+	for(unsigned int i = 0; i < length; i++)
+	{
+		if(*thisData != *otherData)
+		{
+			return false;
+		}
+		thisData++;
+		otherData++;
+	}
+	return true;
+}
+
 void utl::RawBytes::printValue() const
 {
 	const char* pData = data.get();
-	for(int i = 0; i < length; i++)
+	for(unsigned int i = 0; i < length; i++)
 	{
 		std::cout << static_cast<int>(*(pData + i));
 		if(i != length - 1)
@@ -78,7 +104,7 @@ void utl::RawBytes::printValue() const
 void utl::RawBytes::printAsStr() const
 {
 	const char* pData = data.get();
-	for(int i = 0; i < length; i++)
+	for(unsigned int i = 0; i < length; i++)
 	{
 		std::cout << (*(pData + i));
 	}
@@ -97,9 +123,24 @@ unsigned char* utl::RawBytes::get()
 	return reinterpret_cast<unsigned char*>(static_cast<char*>(data.get()));
 }
 
+const unsigned char* utl::RawBytes::getConst() const
+{
+	return reinterpret_cast<unsigned char*>(static_cast<char*>(data.get()));
+}
+
 int utl::RawBytes::size() const
 {
 	return length;
+}
+
+void utl::RawBytes::restrictPacketExtraction(unsigned int byteCount)
+{
+	largestPacketSize = byteCount;
+}
+
+unsigned int utl::RawBytes::getRestrictedPacketSize()
+{
+	return largestPacketSize;
 }
 
 utl::RandomSalt::RandomSalt(int length):
@@ -146,4 +187,48 @@ void utl::hash_whirlpool(utl::RawBytes& data)
 	                          new CryptoPP::HashFilter(
 	                              whirlpool, new CryptoPP::Redirector(sink)));
 	data = output;
+}
+
+sf::Packet& operator<< (sf::Packet& packet, const utl::RawBytes& bytes)
+{
+	packet << sf::Int32(bytes.size());
+	for(const unsigned char* it = bytes.getConst(); it < (bytes.getConst() + bytes.size());  it++)
+	{
+		packet << *it;
+	}
+	return packet;
+}
+
+sf::Packet& operator<< (sf::Packet& packet, const utl::RandomSalt& bytes)
+{
+	packet << sf::Int32(bytes.size());
+	for(const unsigned char* it = bytes.getConst(); it < (bytes.getConst() + bytes.size());  it++)
+	{
+		packet << *it;
+	}
+	return packet;
+}
+
+sf::Packet& operator>> (sf::Packet& packet, utl::RawBytes& bytes)
+{
+	unsigned int length;
+	if(!(packet >> length) || (bytes.getRestrictedPacketSize() && (length > bytes.getRestrictedPacketSize())))
+	{
+		//TODO give warning
+		return packet;
+	}
+	
+	utl::RawBytes data(std::make_unique<char[]>(length), length);
+	for(unsigned char* it = data.get(); it < (data.get() + bytes.size());  it++)
+	{
+		unsigned char currentByte;
+		if(!(packet >> currentByte))
+		{
+			//TODO give warning
+			return packet;
+		}
+		*it = currentByte;
+	}
+	bytes = data;
+	return packet;
 }
