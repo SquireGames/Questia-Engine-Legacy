@@ -23,16 +23,17 @@ public:
 
 	//registers state, only call this once per state
 	void reg(const std::string& name, std::function<State*()> state);
+	void reg(const std::string& name, std::function<State*(std::shared_ptr<void>)> state);
 
 	//adds state to top of state stack
-	void pushState(const std::string& stateName);
+	void pushState(const std::string& stateName, std::shared_ptr<void> parameters = nullptr);
 	//queues deletion of top state (if any)
 	void popState();
 	//queues deletion of top state (if any), queues new state
-	void changeState(const std::string& stateName);
+	void changeState(const std::string& stateName, std::shared_ptr<void> parameters = nullptr);
 	//queues transition, which pops top (if any) and loads new state on other thread
 	//loadingState cannot use any texture loading operation
-	void transitionState(const std::string& newState, const std::string& loadingState);
+	void transitionState(const std::string& newState, const std::string& loadingState, std::shared_ptr<void> newStateParameters = nullptr);
 
 	//state functions
 	void sUpdate();
@@ -57,10 +58,14 @@ private:
 
 	//holds index of highest state
 	unsigned int stackIndex = -1;
+	
+	//holds the next state parameters in between functions
+	//it has to be shared_ptr for type erasure
+	std::shared_ptr<void> pParameter;
 
 	//state containers
-	std::vector<std::unique_ptr<State>> stateStack;
-	std::map<std::string, std::function<State*()>> stateMap;
+	std::vector<std::shared_ptr<State>> stateStack;
+	std::map<std::string, std::function<State*(std::shared_ptr<void>)>> stateMap;
 
 	//used to queue deletion. new state, and transitions
 	bool isDelQueued = false;

@@ -1,13 +1,15 @@
-#include "QuestiaEng/Multiplayer/Server.h"
+#include "QuestiaEng/Multiplayer/Server/Server.h"
 
 #include "SFML/System/Time.hpp"
 
-Server::Server(std::string serverName, int tickRate, int threads, unsigned short hostUDPPort, unsigned short hostTCPPort):
+Server::Server(std::string serverName, int tickRate, int threads, unsigned short hostTCPPort, unsigned short hostUDPPort):
 	serverName(serverName)
 	, tickRate(tickRate)
 	, threads(threads)
-	, hostUDPPort(hostUDPPort)
 	, hostTCPPort(hostTCPPort)
+	, hostUDPPort(hostUDPPort)
+	, continueRunning(true)
+	, serverOnline(false)
 	, accounts()
 	, clients()
 	, socketListenerThread()
@@ -18,37 +20,50 @@ Server::Server(std::string serverName, int tickRate, int threads, unsigned short
 {
 	tcpListener.listen(hostTCPPort);
 	udpSocket.bind(hostUDPPort);
+	
+	tcpListener.setBlocking(true);
+	udpSocket.setBlocking(true);
+	
+	std::cout << "Server Started!"<< std::endl; 
+	std::cout << "Local IP  = " << sf::IpAddress::getLocalAddress().toString() << ":" << tcpListener.getLocalPort() << std::endl;
+	std::cout << "Remote IP = " << sf::IpAddress::getPublicAddress(sf::seconds(5)).toString() << ":" << tcpListener.getLocalPort() << std::endl;
 
 	socketListenerThread = std::thread(Server::socketListenerFun, this);
 }
 
 Server::~Server()
 {
-	//TODO gracefully close all threads
+	serverOnline = false;
+	continueRunning = false;
+	//TODO save state of server or something
+	
+
+	//kill the thread
+	socketListenerThread.join();
 }
 
 void Server::startServer()
 {
-	//TODO verify the server is not already running
+	serverOnline = true;
 }
 
 void Server::terminate()
 {
-
+	//TODO save state of server or something
+	serverOnline = false;
 }
 
 void Server::socketListenerFun()
 {
-	bool continueRunning = true;
-	bool serverOnline = true;
-
 	sf::SocketSelector selector;
+	selector.add(tcpListener);
+	selector.add(udpSocket);
 
 	while(continueRunning)
 	{
 		while(serverOnline)
 		{
-			if(selector.wait(sf::milliseconds(1)))
+			if(selector.wait(sf::seconds(1)))
 			{
 				//new client
 				if(selector.isReady(tcpListener))
@@ -56,8 +71,10 @@ void Server::socketListenerFun()
 					sf::TcpSocket* newClient = new sf::TcpSocket;
 					if(tcpListener.accept(*newClient) == sf::Socket::Done)
 					{
+						newClient->setBlocking(true);
 						selector.add(*newClient);
 						clients.registerNewConnection(newClient);
+						std::cout << "New Client connected! IP = " << newClient->getRemoteAddress().toString() << ":" << newClient->getRemotePort() << std::endl;
 					}
 					else
 					{
@@ -101,7 +118,7 @@ void Server::socketListenerFun()
 				}
 			}
 		}
-		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	}
 }
 
@@ -131,10 +148,10 @@ void Server::handleLoginPacket(Client& client, sf::Packet& packet, PALogin packe
 				//valid username
 				utl::RandomSalt serverChallenge(64);
 				utl::RawBytes clientRegSeed;// = clients.getRegSeed(username);
-				
+
 				sf::Packet responsePacket = generateHeaderOnlyPacket(PHeader::Login, PALogin::S2_ServerSendServerChalAndRegSeed);
 				responsePacket << serverChallenge << clientRegSeed;
-				
+
 				client.getSocket().send(responsePacket);
 				clientLogin.lastLoginHeader =  PALogin::S2_ServerSendServerChalAndRegSeed;
 			}

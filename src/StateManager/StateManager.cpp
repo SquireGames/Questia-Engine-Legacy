@@ -22,13 +22,19 @@ StateManager::~StateManager()
 
 void StateManager::reg(const std::string& name, std::function<State*()> state)
 {
+	stateMap[name] = [=](std::shared_ptr<void>){return state();};
+}
+
+void StateManager::reg(const std::string& name, std::function<State*(std::shared_ptr<void>)> state)
+{
 	stateMap[name] = state;
 }
 
-void StateManager::pushState(const std::string& stateName)
+void StateManager::pushState(const std::string& stateName, std::shared_ptr<void> parameters)
 {
 	isStateQueued = true;
 	newStateName = stateName;
+	pParameter = std::move(parameters);
 }
 void StateManager::popState()
 {
@@ -38,11 +44,12 @@ void StateManager::popState()
 		delIndex = stateStack.size() - 1;
 	}
 }
-void StateManager::transitionState(const std::string& newState, const std::string& loadingState)
+void StateManager::transitionState(const std::string& newState, const std::string& loadingState, std::shared_ptr<void> newStateParameters)
 {
 	isTransitionQueued = true;
 	newStateName = newState;
 	newTransitionName = loadingState;
+	pParameter = std::move(newStateParameters);
 }
 
 void StateManager::deleteState(unsigned int index)
@@ -62,7 +69,7 @@ void StateManager::createState(const std::string& stateName)
 	if(stateMap.count(stateName))
 	{
 		stackIndex++;
-		stateStack.push_back(std::unique_ptr<State>(stateMap[stateName]()));
+		stateStack.push_back(std::shared_ptr<State>(stateMap[stateName](std::move(pParameter))));
 		//init state
 		stateStack.at(stackIndex)->eng = &eng;
 		stateStack.at(stackIndex)->init();
@@ -82,7 +89,7 @@ void StateManager::makeTransition(const std::string& newState, const std::string
 	loadingThread = std::thread([=]()
 	{
 		sf::Context context;
-		State* state = stateMap[newState]();
+		State* state = stateMap[newState](std::move(pParameter));
 		state->eng = &eng;
 		state->init();
 		thrPromise.set_value(state);
@@ -106,12 +113,12 @@ void StateManager::checkQueues()
 	}
 	checkLoading();
 }
-void StateManager::changeState(const std::string& stateName)
+void StateManager::changeState(const std::string& stateName, std::shared_ptr<void> parameters)
 {
 	//queue a state deletion
 	popState();
 	//add new state to front of stack
-	pushState(stateName);
+	pushState(stateName, std::move(parameters));
 }
 
 
