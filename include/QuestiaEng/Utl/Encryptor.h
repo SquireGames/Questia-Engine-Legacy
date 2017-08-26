@@ -25,9 +25,9 @@ public:
 	const RawBytes operator+ (const RawBytes& rhs) const;
 	bool operator== (const RawBytes& other) const;
 	
-	void printValue() const;
-	void printAsStr() const;
-	void printHex() const;
+	std::string toCharValueString() const;
+	std::string toString() const;
+	std::string toHexString() const;
 	
 	unsigned char* get(); 
 	const unsigned char* getConst() const; 

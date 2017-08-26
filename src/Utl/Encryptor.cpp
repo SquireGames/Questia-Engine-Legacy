@@ -88,35 +88,39 @@ bool utl::RawBytes::operator==(const RawBytes& other) const
 	return true;
 }
 
-void utl::RawBytes::printValue() const
+std::string utl::RawBytes::toCharValueString() const
 {
 	const char* pData = data.get();
+	std::string retStr;
 	for(unsigned int i = 0; i < length; i++)
 	{
-		std::cout << static_cast<int>(*(pData + i));
+		retStr = retStr + std::to_string(static_cast<int>(*(pData + i)));
 		if(i != length - 1)
 		{
-			std::cout << ",";
+			retStr = retStr + ",";
 		}
-
 	}
+	return retStr;
 }
-void utl::RawBytes::printAsStr() const
+std::string utl::RawBytes::toString() const
 {
 	const char* pData = data.get();
+	std::string retStr;
+	retStr.reserve(length + 1);
 	for(unsigned int i = 0; i < length; i++)
 	{
-		std::cout << (*(pData + i));
+		retStr = retStr + (*(pData + i));
 	}
+	return retStr;
 }
-void utl::RawBytes::printHex() const
+std::string utl::RawBytes::toHexString() const
 {
 	std::string output;
 	const unsigned char* input = reinterpret_cast<const unsigned char*>(static_cast<char*>(data.get()));
 	CryptoPP::StringSource ss(input, length, true,
 	                          new CryptoPP::HexEncoder(
 	                              new CryptoPP::StringSink(output)));
-	std::cout << output;
+	return output;
 }
 unsigned char* utl::RawBytes::get()
 {
