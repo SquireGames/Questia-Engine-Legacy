@@ -71,9 +71,19 @@ ifeq ($(OS),Windows_NT)
 	$(CC) tests/Main.cpp -o tests/test.exe  -std=c++14 $(INC) $(LIB) $(LIB_TEST_win) -L bin -lquestia-eng.$(MAJOR).$(MINOR).$(PATCH)
 	-cmd /c del /f tests\libquestia-eng.$(MAJOR).$(MINOR).$(PATCH).dll
 	-cmd /c copy bin\libquestia-eng.$(MAJOR).$(MINOR).$(PATCH).dll tests\libquestia-eng.$(MAJOR).$(MINOR).$(PATCH).dll
-	-cmd /c $(subst /,\\, $(wildcard tests/*.exe))
+	-cmd /c tests\test.exe
 else
 	@echo TODO implement
+endif
+
+cleanTest:
+	@echo Cleaning Test...
+ifeq ($(OS),Windows_NT)
+	-cmd /c del /f tests\test.d
+	-cmd /c del /f tests\test.exe
+	-cmd /c del /f tests\libquestia-eng.$(MAJOR).$(MINOR).$(PATCH).dll
+else
+	$(RM) -r $(BUILDDIR_R) $(TARGET_R)
 endif
 
 release: $(OBJECTS) $(TARGET)$(EXT)
@@ -95,7 +105,7 @@ else
 endif
 	$(CC) $(CFLAGS) $(INC) -c -o $@ $<
 
-clean: cleanRelease cleanDebug
+clean: cleanRelease cleanDebug cleanTest
 
 cleanRelease:
 	@echo Cleaning Release...

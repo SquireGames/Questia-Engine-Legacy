@@ -5,7 +5,7 @@ It uses Crypto++ Library 5.6.5 to encrypt sensitive data. It uses AngelScript 2.
 
 Building:
 ----------------
-Questia Engine currently supports Windows and Linux OS. A compilation guide is found [here](https://github.com/SquireGames/Questia-Engine/wiki/Compling-guide).
+Questia Engine currently supports Windows and Linux OS. A compilation and testing guide is found [here](https://github.com/SquireGames/Questia-Engine/wiki/Compling-guide).
 
 
 License:
