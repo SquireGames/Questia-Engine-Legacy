@@ -8,11 +8,6 @@ Building:
 Questia Engine currently supports Windows and Linux OS. A compilation guide is found [here](https://github.com/SquireGames/Questia-Engine/wiki/Compling-guide).
 
 
-Testing:
-----------------
-To run the tests, first add all the necessary libraries into the directory _tests_ (other than the engine, that gets copied into the directory automatically), and then run `make test`. 
-
-
 License:
 ----------------
 This project is licensed under the terms of the GNU GPLv3 license, see LICENSE.txt.
