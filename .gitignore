@@ -54,3 +54,4 @@ Thumbs.db
 # Code::Blocks generated files #
 ################################
 *.save
+*.project
