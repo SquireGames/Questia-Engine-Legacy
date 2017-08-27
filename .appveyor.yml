@@ -11,10 +11,10 @@ environment:
 clone_folder: c:\build
 
 before_build:
-  - set Path=C:\MinGW\bin;%Path%
+  - set Path=C:\mingw-w64\i686-6.3.0-posix-dwarf-rt_v5-rev1\bin;%Path%
   - g++ --version
   - mingw32-make --version
 
 build_script:
   - cd c:\build
-  - ps: C:\MinGW\bin\mingw32-make test
+  - ps: mingw32-make test
