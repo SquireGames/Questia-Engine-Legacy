@@ -11,7 +11,7 @@ environment:
 clone_folder: c:\build
 
 before_build:
-  - set Path=C:\mingw-w64\i686-6.3.0-posix-dwarf-rt_v5-rev1\bin;%Path%
+  - set Path=C:\mingw-w64\bin;%Path%
   - g++ --version
   - mingw32-make --version
 
