@@ -1,0 +1,15 @@
+branches:
+  only:
+    - master
+
+environment:
+  matrix:
+  - example: questia-eng
+    name: win32
+    platform: mingw
+
+clone_folder: c:\build
+
+build_script:
+  - cd c:\build
+  - cmd \C make test
