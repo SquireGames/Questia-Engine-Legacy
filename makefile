@@ -71,6 +71,17 @@ ifeq ($(OS),Windows_NT)
 	$(CC) tests/Main.cpp -o tests/test.exe  -std=c++14 $(INC) $(LIB) $(LIB_TEST_win) -L bin -lquestia-eng.$(MAJOR).$(MINOR).$(PATCH)
 	-cmd /c del /f tests\libquestia-eng.$(MAJOR).$(MINOR).$(PATCH).dll
 	-cmd /c copy bin\libquestia-eng.$(MAJOR).$(MINOR).$(PATCH).dll tests\libquestia-eng.$(MAJOR).$(MINOR).$(PATCH).dll
+	-cmd /c copy lib\AngelScript-2.31.2-win\libangelscript.a tests\libangelscript.a
+	-cmd /c copy lib\Cryptopp-5.6.5-win\libcryptopp.a tests\libcryptopp.a
+	-cmd /c copy lib\SFML-2.4.2-win\bin\openal32.dll tests\openal32.dll
+	-cmd /c copy lib\SFML-2.4.2-win\bin\sfml-audio-2.dll tests\sfml-audio-2.dll
+	-cmd /c copy lib\SFML-2.4.2-win\bin\sfml-graphics-2.dll tests\sfml-graphics-2.dll
+	-cmd /c copy lib\SFML-2.4.2-win\bin\sfml-network-2.dll tests\sfml-network-2.dll
+	-cmd /c copy lib\SFML-2.4.2-win\bin\sfml-system-2.dll tests\sfml-system-2.dll
+	-cmd /c copy lib\SFML-2.4.2-win\bin\sfml-window-2.dll tests\sfml-window-2.dll
+	-cmd /c copy lib\Windows\libgcc_s_dw2-1.dll tests\libgcc_s_dw2-1.dll
+	-cmd /c copy "lib\Windows\libstdc++-6.dll" "tests\libstdc++-6.dll"
+	-cmd /c copy lib\Windows\libwinpthread-1.dll tests\libwinpthread-1.dll
 	-cmd /c tests\test.exe
 else
 	@echo TODO implement
@@ -82,6 +93,17 @@ ifeq ($(OS),Windows_NT)
 	-cmd /c del /f tests\test.d
 	-cmd /c del /f tests\test.exe
 	-cmd /c del /f tests\libquestia-eng.$(MAJOR).$(MINOR).$(PATCH).dll
+	-cmd /c del /f tests\libangelscript.a
+	-cmd /c del /f tests\libcryptopp.a
+	-cmd /c del /f tests\openal32.dll
+	-cmd /c del /f tests\sfml-audio-2.dll
+	-cmd /c del /f tests\sfml-graphics-2.dll
+	-cmd /c del /f tests\sfml-network-2.dll
+	-cmd /c del /f tests\sfml-system-2.dll
+	-cmd /c del /f tests\sfml-window-2.dll
+	-cmd /c del /f tests\libgcc_s_dw2-1.dll
+	-cmd /c del /f tests\"libstdc++-6.dll"
+	-cmd /c del /f tests\libwinpthread-1.dll
 else
 	$(RM) -r $(BUILDDIR_R) $(TARGET_R)
 endif
