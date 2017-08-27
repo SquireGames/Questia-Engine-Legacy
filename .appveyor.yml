@@ -12,5 +12,4 @@ clone_folder: c:\build
 
 build_script:
   - cd c:\build
-  - cmd
-  - mingw32-make test
+  - ps: mingw32-make test
